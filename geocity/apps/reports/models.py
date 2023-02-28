@@ -347,13 +347,14 @@ class SectionMap(Section):
             )
 
 
-class SectionParagraph(Section):
-    class TextAlign(models.TextChoices):
-        LEFT = "left", _("Gauche")
-        RIGHT = "right", _("Droite")
-        CENTER = "center", _("Centre")
-        JUSTIFY = "justify", _("Justifié")
+class TextAlign(models.TextChoices):
+    LEFT = "left", _("Gauche")
+    RIGHT = "right", _("Droite")
+    CENTER = "center", _("Centre")
+    JUSTIFY = "justify", _("Justifié")
 
+
+class SectionParagraph(Section):
     class Location(models.TextChoices):
         CONTENT = "content", _("Toute la largeur")
         LEFT = "left", _("Gauche")
@@ -700,6 +701,12 @@ class HeaderFooterDateTime(HeaderFooter):
 
 
 class HeaderFooterParagraph(HeaderFooter):
+    text_align = models.CharField(
+        _("Alignement du texte"),
+        choices=TextAlign.choices,
+        default=TextAlign.LEFT,
+        max_length=255,
+    )
     content = models.TextField(
         _("Contenu"),
         help_text=_("Texte à afficher"),
