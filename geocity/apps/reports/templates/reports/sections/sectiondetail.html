@@ -6,7 +6,7 @@
 
 {% block content %}
     {% if request_data.properties.submission_fields %}
-        <div class="flex_container" style="line-height:{{section.line_height}};">
+        <div class="flex_container">
             <div class="flex_item-100">
                 {% if section.show_form_name %}
                     <h3>{{form}}</h3>
@@ -15,7 +15,7 @@
                     {% for form, fields in request_data.properties.submission_fields.items %}
                         {% for key, field in fields.items %}
                             {% if not key in section.undesired_properties %}
-                                <span class="bold">{{key}} : </span>{{field}}<br>
+                                <div style="line-height:{{section.line_height}};"><span class="bold">{{key}} : </span>{{field}}<br></div>
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
@@ -25,8 +25,10 @@
                     {% for form, fields in request_data.properties.submission_fields.items %}
                         {% for key, field in fields.items %}
                             {% if not key in section.undesired_properties %}
-                                <div class="flex_item-40"><span class="bold">{{key}}</span></div>
-                                <div class="flex_item-60">{{field}}</div>
+                                <div style="line-height:{{section.line_height}};">
+                                    <div class="flex_item-40"><span class="bold">{{key}}</span></div>
+                                    <div class="flex_item-60">{{field}}</div>
+                                </div>
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
