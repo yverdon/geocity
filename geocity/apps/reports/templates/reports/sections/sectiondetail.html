@@ -25,10 +25,9 @@
                     {% for form, fields in request_data.properties.submission_fields.items %}
                         {% for key, field in fields.items %}
                             {% if not key in section.undesired_properties %}
-                                <div style="padding-top:{{section.line_height}}px;">
-                                    <div class="flex_item-40"><span class="bold">{{key}}</span></div>
-                                    <div class="flex_item-60">{{field}}</div>
-                                </div>
+                                <div class="flex_item-40"><span class="bold">{{key}}</span></div>
+                                <div class="flex_item-60">{{field}}</div>
+                                <div style="padding-top:{{section.line_height}}px;"></div>
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
