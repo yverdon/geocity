@@ -731,8 +731,8 @@ class HeaderFooterParagraph(HeaderFooter):
         result = (
             BeautifulSoup(mark_safe(rendered_html))
             .get_text()
-            .replace("\r", " \A ")
-            .replace("\n", " \A ")
+            .replace("\r", "\A ")
+            .replace("\n", "\A ")
         )
         return result
 
