@@ -8,11 +8,11 @@
       {% include "reports/report.css" %}
       {% comment %} meta content (see https://www.quackit.com/css/at-rules/css_top-left-corner_at-rule.cfm) {% endcomment %}
       @page{
-        {% for rendered_style in rendered_styles %}{{rendered_style}}{% endfor %}
+        {% for rendered_header_footer in rendered_header_footers %}{{rendered_header_footer}}{% endfor %}
       }
       @page :first{
-        {% for rendered_style_not_first_page in rendered_styles_not_first_page %}{{rendered_style_not_first_page}}{% endfor %}
-        {% for rendered_style_first_page in rendered_styles_first_page %}{{rendered_style_first_page}}{% endfor %}
+        {% for rendered_header_footer_not_first_page in rendered_header_footers_not_first_page %}{{rendered_header_footer_not_first_page}}{% endfor %}
+        {% for rendered_header_footer_first_page in rendered_header_footers_first_page %}{{rendered_header_footer_first_page}}{% endfor %}
       }
     </style>
 

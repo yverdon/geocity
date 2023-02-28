@@ -24,7 +24,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "complementarydocumenttypeforadminsite",
         "reportlayout",
         "section",
-        "style",
+        "headerfooter",
     ],
 }
 

@@ -43,6 +43,7 @@ class ReportLayout(models.Model):
     font_family = models.CharField(
         _("Police"),
         max_length=1024,
+        default="Roboto",
         blank=True,
         null=True,
         help_text=_(
@@ -50,17 +51,17 @@ class ReportLayout(models.Model):
         ),
     )
     font_size_section = models.PositiveIntegerField(
-        _("Taille de la police des paragraphes"),
+        _("Taille de la police"),
         default=12,
         help_text=_(
             "Taille de la police (en pixels). S'applique à tous les paragraphes"
         ),
     )
-    font_size_style = models.PositiveIntegerField(
-        _("Taille de la police des style"),
+    font_size_header_footer = models.PositiveIntegerField(
+        _("Taille de la police en-tête et pied de page"),
         default=11,
         help_text=_(
-            "Taille de la police (en pixels). S'applique à tous les style (en-tête, pied de page et bordures)"
+            "Taille de la police (en pixels). S'applique à tous les en-tête et pieds de page"
         ),
     )
 
@@ -69,7 +70,7 @@ class ReportLayout(models.Model):
         verbose_name_plural = _("3.1 Formats de papier")
 
     background = BackgroundFileField(
-        _("Papier à entête"),
+        _("Papier à en-tête"),
         null=True,
         blank=True,
         upload_to="backgound_paper",
@@ -209,12 +210,12 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
 
 
 class heading(models.TextChoices):
-    H1 = "h1", _("h1")
-    H2 = "h2", _("h2")
-    H3 = "h3", _("h3")
-    H4 = "h4", _("h4")
-    H5 = "h5", _("h5")
-    H6 = "h6", _("h6")
+    H1 = "h1", _("Titre 1")
+    H2 = "h2", _("Titre 2")
+    H3 = "h3", _("Titre 3")
+    H4 = "h4", _("Titre 4")
+    H5 = "h5", _("Titre 5")
+    H6 = "h6", _("Titre 6")
 
 
 class Section(PolymorphicModel):
@@ -488,8 +489,8 @@ class SectionDetail(Section):
     STYLE_1 = 1
 
     STYLES = (
-        (STYLE_0, _("champ: valeur")),
-        (STYLE_1, _("champ    valeur")),
+        (STYLE_0, _("champ : valeur")),
+        (STYLE_1, _("champ (tab) valeur")),
     )
 
     title = models.CharField(
@@ -630,14 +631,14 @@ class SectionCreditor(Section):
         verbose_name = _("Adresse de facturation")
 
 
-class SectionMailing(Section):
+class SectionRecipient(Section):
     padding_top = None
     is_recommended = models.BooleanField(
         _("Recommandée"),
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-    padding_top_mailing = models.PositiveIntegerField(
+    padding_top_recipient = models.PositiveIntegerField(
         _("Espace vide au dessus"),
         default=20,
         help_text=_(
@@ -646,10 +647,10 @@ class SectionMailing(Section):
     )
 
     class Meta:
-        verbose_name = _("Publipostage")
+        verbose_name = _("Destinataire")
 
 
-class Style(PolymorphicModel):
+class HeaderFooter(PolymorphicModel):
     class Location(models.TextChoices):
         BOTTOM_CENTER = "@bottom-center", _("Pied de page - Centre")
         BOTTOM_LEFT = "@bottom-left", _("Pied de page - Gauche")
@@ -679,13 +680,15 @@ class Style(PolymorphicModel):
     )
 
     report = models.ForeignKey(
-        Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="styles"
+        Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="header_footers"
     )
     page = models.PositiveSmallIntegerField(
         _("Page"),
         choices=PAGES,
         default=ALL_PAGES,
-        help_text=_("Choix des pages auxquelles doit s'appliquer le style"),
+        help_text=_(
+            "Choix des pages auxquelles doit s'appliquer l'en-tête et pied de page"
+        ),
     )
     location = models.CharField(
         _("Emplacement"),
@@ -698,33 +701,33 @@ class Style(PolymorphicModel):
         """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
         return {
             **base_context,
-            "style": self,
+            "header_footer": self,
             "settings": settings,
         }
 
     class Meta:
-        verbose_name = _("Style")
-        verbose_name_plural = _("Styles")
+        verbose_name = _("En-tête et pied de page")
+        verbose_name_plural = _("En-têtes et pieds de page")
 
     @property
     def css_class(self):
-        return re.sub("^Style", "style-", self.__class__.__name__).lower()
+        return re.sub("^HeaderFooter", "hf-", self.__class__.__name__).lower()
 
     def __str__(self):
         return self._meta.verbose_name
 
 
-class StylePageNumber(Style):
+class HeaderFooterPageNumber(HeaderFooter):
     class Meta:
         verbose_name = _("Numéro de page")
 
 
-class StyleDateTime(Style):
+class HeaderFooterDateTime(HeaderFooter):
     class Meta:
         verbose_name = _("Date et heure")
 
 
-class StyleParagraph(Style):
+class HeaderFooterParagraph(HeaderFooter):
     content = models.TextField(
         _("Contenu"),
         help_text=_("Texte à afficher"),
@@ -762,7 +765,7 @@ class StyleParagraph(Style):
         }
 
 
-class StyleLogo(Style):
+class HeaderFooterLogo(HeaderFooter):
     logo = BackgroundFileField(
         _("Logo"),
         upload_to="backgound_paper",
@@ -770,8 +773,8 @@ class StyleLogo(Style):
         validators=[FileExtensionValidator(allowed_extensions=["png"])],
     )
 
-    height = models.PositiveIntegerField(
-        _("Hauteur"),
+    logo_size = models.PositiveIntegerField(
+        _("Taille"),
         default=60,
         help_text=_(
             "Défini la taille de l'image en %. Choisir un nombre compris entre 0 et 100"
