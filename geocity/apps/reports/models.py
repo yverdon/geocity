@@ -615,7 +615,7 @@ class SectionRecipient(Section):
     )
 
     def __init__(self, *args, **kwargs):
-        self._meta.get_field("padding_top").default = 20
+        self._meta.get_field("padding_top").default = 40
         super().__init__(*args, **kwargs)
 
     class Meta:
