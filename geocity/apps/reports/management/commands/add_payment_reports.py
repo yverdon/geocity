@@ -4,12 +4,7 @@ from django.core.files import File
 from django.core.management import BaseCommand
 from django.utils.translation import gettext
 
-from geocity.apps.reports.models import (
-    Report,
-    ReportLayout,
-    SectionParagraph,
-    SectionParagraphRight,
-)
+from geocity.apps.reports.models import Report, ReportLayout, SectionParagraph
 
 
 class Command(BaseCommand):
@@ -25,7 +20,7 @@ class Command(BaseCommand):
         )
         report.save()
 
-        section_paragraph_1 = SectionParagraphRight(
+        section_paragraph_1 = SectionParagraph(
             order=1,
             report=report,
             title="",
@@ -33,10 +28,11 @@ class Command(BaseCommand):
 Date :&nbsp;{{ transaction_data.creation_date }}<br />
 <strong>Ann&eacute;e :&nbsp;{{ transaction_data.creation_date_year }}</strong><br />
 Page : 1/1</p>""",
+            location="right",
         )
         section_paragraph_1.save()
 
-        section_paragraph_2 = SectionParagraphRight(
+        section_paragraph_2 = SectionParagraph(
             order=2,
             report=report,
             title="",
@@ -45,6 +41,7 @@ Page : 1/1</p>""",
 <p>{{request_data.properties.author.first_name}}&nbsp;{{request_data.properties.author.last_name}}<br />
 {{request_data.properties.author.address}}<br />
 {{request_data.properties.author.zipcode}}&nbsp;{{request_data.properties.author.city}}</p>""",
+            location="right",
         )
         section_paragraph_2.save()
 
@@ -105,7 +102,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
         )
         report.save()
 
-        section_paragraph_1 = SectionParagraphRight(
+        section_paragraph_1 = SectionParagraph(
             order=1,
             report=report,
             title="",
@@ -113,10 +110,11 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 Date :&nbsp;{{ transaction_data.creation_date }}<br />
 <strong>Ann&eacute;e :&nbsp;{{ transaction_data.creation_date_year }}</strong><br />
 Page : 1/1</p>""",
+            location="right",
         )
         section_paragraph_1.save()
 
-        section_paragraph_2 = SectionParagraphRight(
+        section_paragraph_2 = SectionParagraph(
             order=2,
             report=report,
             title="",
@@ -125,6 +123,7 @@ Page : 1/1</p>""",
 <p>{{request_data.properties.author.first_name}}&nbsp;{{request_data.properties.author.last_name}}<br />
 {{request_data.properties.author.address}}<br />
 {{request_data.properties.author.zipcode}}&nbsp;{{request_data.properties.author.city}}</p>""",
+            location="right",
         )
         section_paragraph_2.save()
 

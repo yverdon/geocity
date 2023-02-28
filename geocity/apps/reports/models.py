@@ -209,7 +209,7 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
     return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
 
 
-class heading(models.TextChoices):
+class Heading(models.TextChoices):
     H1 = "h1", _("Titre 1")
     H2 = "h2", _("Titre 2")
     H3 = "h3", _("Titre 3")
@@ -263,8 +263,8 @@ class SectionMap(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -348,20 +348,38 @@ class SectionMap(Section):
 
 
 class SectionParagraph(Section):
+    class TextAlign(models.TextChoices):
+        LEFT = "left", _("Gauche")
+        RIGHT = "right", _("Droite")
+        CENTER = "center", _("Centre")
+        JUSTIFY = "justify", _("Justifié")
+
+    class Location(models.TextChoices):
+        CONTENT = "content", _("Toute la largeur")
+        LEFT = "left", _("Gauche")
+        RIGHT = "right", _("Droite")
+
     title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
-    is_justified = models.BooleanField(
-        _("Texte justifié"),
-        default=True,
-        help_text=_("Justifier le texte ?"),
+    text_align = models.CharField(
+        _("Alignement du texte"),
+        choices=TextAlign.choices,
+        default=TextAlign.JUSTIFY,
+        max_length=255,
+    )
+    location = models.CharField(
+        _("Emplacement du bloc"),
+        choices=Location.choices,
+        default=Location.CONTENT,
+        max_length=255,
     )
     content = RichTextField(
         _("Contenu"),
@@ -398,64 +416,14 @@ class SectionParagraph(Section):
         }
 
 
-class SectionParagraphRight(Section):
-    title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
-    title_size = models.CharField(
-        _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
-        max_length=255,
-        help_text=_(
-            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
-        ),
-    )
-    is_justified = models.BooleanField(
-        _("Texte justifié"),
-        default=True,
-        help_text=_("Justifier le texte ?"),
-    )
-    content = RichTextField(
-        _("Contenu"),
-        help_text=(
-            _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
-            )
-        ),
-    )
-
-    class Meta:
-        verbose_name = _("Paragraphe libre aligné à droite")
-
-    def _render_user_template(self, base_context):
-        # User template have only access to pure json elements for security reasons
-        inner_context = {
-            # TODO rename to `submission_data` (& migrate sections) to match new naming
-            "request_data": base_context["request_data"],
-            "form_data": base_context["form_data"],
-            "date": date,  # To use : {{date[0]}} / {{date[1]}} / etc..
-        }
-        if "transaction_data" in base_context:
-            inner_context["transaction_data"] = base_context["transaction_data"]
-        env = SandboxedEnvironment()
-        rendered_html = env.from_string(self.content).render(inner_context)
-        return mark_safe(rendered_html)
-
-    def prepare_context(self, request, base_context):
-        # Return updated context
-        return {
-            **super().prepare_context(request, base_context),
-            "rendered_content": self._render_user_template(base_context),
-        }
-
-
 class SectionContact(Section):
     title = models.CharField(
         _("Titre"), default="Contact·s", blank=True, max_length=2000
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -472,8 +440,8 @@ class SectionAuthor(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -498,8 +466,8 @@ class SectionDetail(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -517,6 +485,14 @@ class SectionDetail(Section):
         choices=STYLES,
         default=STYLE_0,
         help_text=_("Choisir le style d'affichage"),
+    )
+    line_height = models.CharField(
+        _("Interligne"),
+        default="normal",
+        max_length=255,
+        help_text=_(
+            "Espace entre deux lignes.\nExemples : normal, 2.5, 3em, 150%, 32px.\n<a href='https://developer.mozilla.org/en-US/docs/Web/CSS/line-height'>documentation</a>"
+        ),
     )
     undesired_properties = models.CharField(
         _("Nom de champs a masquer"),
@@ -542,8 +518,8 @@ class SectionPlanning(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -565,8 +541,8 @@ class SectionValidation(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -583,8 +559,8 @@ class SectionAmendProperty(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -601,8 +577,8 @@ class SectionStatus(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -619,8 +595,8 @@ class SectionCreditor(Section):
     )
     title_size = models.CharField(
         _("Taille des titres"),
-        choices=heading.choices,
-        default=heading.H2,
+        choices=Heading.choices,
+        default=Heading.H2,
         max_length=255,
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
@@ -632,19 +608,15 @@ class SectionCreditor(Section):
 
 
 class SectionRecipient(Section):
-    padding_top = None
     is_recommended = models.BooleanField(
         _("Recommandée"),
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-    padding_top_recipient = models.PositiveIntegerField(
-        _("Espace vide au dessus"),
-        default=20,
-        help_text=_(
-            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
-        ),
-    )
+
+    def __init__(self, *args, **kwargs):
+        self._meta.get_field("padding_top").default = 20
+        super().__init__(*args, **kwargs)
 
     class Meta:
         verbose_name = _("Destinataire")
