@@ -487,13 +487,12 @@ class SectionDetail(Section):
         default=STYLE_0,
         help_text=_("Choisir le style d'affichage"),
     )
-    line_height = models.CharField(
+    line_height = models.PositiveSmallIntegerField(
         _("Interligne"),
-        default="normal",
-        max_length=255,
-        help_text=_(
-            "Espace entre deux lignes.\nExemples : normal, 2.5, 3em, 150%, 32px.\n<a href='https://developer.mozilla.org/en-US/docs/Web/CSS/line-height'>documentation</a>"
-        ),
+        default=12,
+        blank=True,
+        null=True,
+        help_text=_("Espace (en pixels) entre deux détails"),
     )
     undesired_properties = models.CharField(
         _("Nom de champs a masquer"),
