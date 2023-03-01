@@ -281,7 +281,9 @@ def user_profile_edit(request):
             models.UserProfile, pk=request.user.userprofile.pk
         )
         user_profile_form = forms.GenericUserProfileForm(
-            request.POST or None, instance=permit_author_instance
+            request.POST or None,
+            instance=permit_author_instance,
+            create=False,
         )
 
     if (
@@ -304,7 +306,10 @@ def user_profile_edit(request):
 
 def user_profile_create(request):
     django_user_form = forms.NewDjangoAuthUserForm(request.POST or None)
-    user_profile_form = forms.GenericUserProfileForm(request.POST or None)
+    user_profile_form = forms.GenericUserProfileForm(
+        request.POST or None,
+        create=True,
+    )
     is_valid = django_user_form.is_valid() and user_profile_form.is_valid()
 
     if is_valid:
