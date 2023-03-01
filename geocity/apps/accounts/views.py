@@ -188,7 +188,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 
         # Custom template defined in current site
         site_custom_template = models.TemplateCustomization.objects.filter(
-            siteprofile__id=site_id
+            siteprofile__site_id=site_id
         ).first()
         if site_custom_template:
             customization = self.get_custom_template_values(site_custom_template)
