@@ -79,9 +79,3 @@ class AddressWidget(forms.TextInput):
 
 class AdvancedGeometryWidget(forms.TextInput):
     template_name = "advancedgeometrywidget/advancedgeometrywidget.html"
-
-    @property
-    def media(self):
-        return forms.Media(
-            js=("libs/js/advanced-geometry-edition/geocity-wc-map.js",),
-        )
