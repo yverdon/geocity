@@ -109,11 +109,16 @@ class DepartmentSubmissionFilterSet(BaseSubmissionFilterSet):
         lookup_expr="icontains",
         label=_("Auteur de la demande"),
     )
+    shortname = django_filters.filters.CharFilter(
+        lookup_expr="icontains",
+        label=_("Nom court"),
+    )
 
     class Meta:
         model = models.Submission
         fields = [
             "id",
+            "shortname",
             "status",
             "forms__administrative_entities",
             "forms__category",
