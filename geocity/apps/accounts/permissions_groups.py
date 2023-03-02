@@ -14,6 +14,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "contacttypeforadminsite",
         "paymentsettings",
         "price",
+        "formprice",
     ],
     "submissions": [
         "submissionamendfield",
