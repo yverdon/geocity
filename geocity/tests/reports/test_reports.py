@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from geocity.apps.reports.models import (
     HeaderFooterDateTime,
-    HeaderFooterLogo,
     HeaderFooterPageNumber,
     HeaderFooterParagraph,
     SectionAmendProperty,
@@ -265,32 +264,54 @@ class ReportsTests(ReportsTestsBase):
         header_footers_config = {
             1: {
                 HeaderFooterPageNumber: {
-                    # "page": int,
-                    # "location": char,
+                    "page": 2,  # Not first page
+                    "location": "@bottom-center",
                 }
             },
             2: {
                 HeaderFooterDateTime: {
-                    # "page": int,
-                    # "location": char,
+                    "page": 1,  # Only first page
+                    "location": "@bottom-center",
                 }
             },
             3: {
                 HeaderFooterParagraph: {
-                    # "page": int,
-                    # "location": char,
-                    # "text_align": char,
-                    # "content": char, # try multiline
+                    "page": 0,  # All pages
+                    "location": "@bottom-left",
+                    "text_align": "Left",
+                    "content": """
+                    Place Pestalozzi, CH-1401 Yverdon-les-Bains
+                    Second line
+                    """,
                 }
             },
             4: {
-                HeaderFooterLogo: {
-                    # "page": int,
-                    # "location": char,
-                    # "logo": File(logo),
-                    # "logo_size": int,
+                HeaderFooterParagraph: {
+                    "page": 2,  # Not first page
+                    "location": "@bottom-right",
+                    "text_align": "Right",
+                    "content": """
+                    Place Pestalozzi, CH-1401 Yverdon-les-Bains
+                    Second line
+                    """,
                 }
             },
+            # 5: {
+            #     HeaderFooterLogo: {
+            #         "page": 1, # Only first page
+            #         "location": "@bottom-right",
+            #         "logo": File(qr_code),
+            #         "logo_size": 80,
+            #     }
+            # },
+            # 6: {
+            #     HeaderFooterLogo: {
+            #         "page": 1, # Only first page
+            #         "location": "@top-left",
+            #         "logo": File(logo),
+            #         "logo_size": 70,
+            #     }
+            # },
         }
 
         for key, section_config in sections_config.items():
