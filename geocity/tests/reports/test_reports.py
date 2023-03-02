@@ -281,7 +281,7 @@ class ReportsTests(ReportsTestsBase):
                     "text_align": "Left",
                     "content": """
                     Place Pestalozzi, CH-1401 Yverdon-les-Bains
-                    Second line
+Second line
                     """,
                 }
             },
@@ -292,7 +292,7 @@ class ReportsTests(ReportsTestsBase):
                     "text_align": "Right",
                     "content": """
                     Place Pestalozzi, CH-1401 Yverdon-les-Bains
-                    Second line
+Second line
                     """,
                 }
             },
