@@ -36,7 +36,7 @@ OTHER_PERMISSIONS_CODENAMES = [
     "add_group",
     "change_group",
     "delete_group",
-    "view_private_submission",
+    "view_private_form",
 ]
 
 if not settings.ALLOW_REMOTE_USER_AUTH:
@@ -54,7 +54,7 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "validate_submission",
     "classify_submission",
     "edit_submission",
-    "view_private_submission",
+    "view_private_form",
     "can_generate_pdf",
     "can_refund_transactions",
     "can_revert_refund_transactions",
