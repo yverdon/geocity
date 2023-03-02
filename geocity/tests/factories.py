@@ -26,7 +26,7 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
-    user = factory.SubFactory("geocity.tests.factories.UserFactory", actor=None)
+    user = factory.SubFactory("geocity.tests.factories.UserFactory")
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -37,7 +37,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
-    actor = factory.RelatedFactory(UserProfileFactory, "user")
+    userprofile = factory.RelatedFactory(UserProfileFactory, "user")
     password = "password"
 
     @classmethod

@@ -14,7 +14,7 @@
 
 {% block content %}
 
-  {% submission_progressbar steps StepType.ACTORS %}
+  {% submission_progressbar steps StepType.CONTACTS %}
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}

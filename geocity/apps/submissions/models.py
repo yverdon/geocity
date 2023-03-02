@@ -295,7 +295,7 @@ class Submission(models.Model):
             ("validate_submission", _("Valider les demandes")),
             ("classify_submission", _("Classer les demandes")),
             ("edit_submission", _("Éditer les demandes")),
-            ("view_private_submission", _("Voir les demandes restreintes")),
+            ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
         ]
@@ -904,12 +904,30 @@ class Submission(models.Model):
         )
 
     def get_submission_directives(self):
-        return [
+
+        entity = self.administrative_entity
+        entity_directives = []
+        if (
+            entity.directive
+            or entity.directive_description
+            or entity.additional_information
+        ):
+            entity_directives.append(
+                (
+                    entity.directive,
+                    entity.directive_description,
+                    entity.additional_information,
+                )
+            )
+
+        form_directives = [
             (obj.directive, obj.directive_description, obj.additional_information)
             for obj in self.forms.exclude(
                 directive="", directive_description="", additional_information=""
             )
         ]
+
+        return entity_directives + form_directives
 
     @transaction.atomic
     def set_administrative_entity(self, administrative_entity):

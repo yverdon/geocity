@@ -83,7 +83,7 @@ def submit_submission(submission, request):
 
         data = {
             "subject": "{} ({})".format(
-                _("Nouvelle demande"), submission.get_forms_names_list()
+                _("Nouvelle demande/annonce"), submission.get_forms_names_list()
             ),
             "users_to_notify": users_to_notify,
             "template": "submission_submitted.txt",
@@ -100,7 +100,7 @@ def submit_submission(submission, request):
 
         if submission.author.userprofile.notify_per_email:
             data["subject"] = "{} ({})".format(
-                _("Votre demande"), submission.get_forms_names_list()
+                _("Votre demande/annonce"), submission.get_forms_names_list()
             )
             data["users_to_notify"] = [submission.author.email]
             data["template"] = "submission_acknowledgment.txt"

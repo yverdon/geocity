@@ -142,6 +142,12 @@ class DjangoAuthUserForm(forms.ModelForm):
 
 
 class GenericUserProfileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        create = kwargs.pop("create")
+        super().__init__(*args, **kwargs)
+        if create:
+            self.fields["notify_per_email"].disabled = True
+
     required_css_class = "required"
     address = forms.CharField(
         max_length=100, label=_("Adresse"), widget=AddressWidget()

@@ -8,6 +8,9 @@
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
 {% endblock %}
+{% block scripts %}
+  <script src="{% static 'js/submissions_submit.js' %}"></script>
+{% endblock %}
 
 
 {% block content %}
@@ -16,6 +19,19 @@
   <hr>
 
   {% directives_and_legal submission %}
+
+
+  {% if submission.administrative_entity.signature_sheet and submission.administrative_entity.signature_sheet_description %}
+  <div id="legal-infos">
+    <h5>{% trans "Volet de transmission" %}</h5>
+    <div class="additional_information">{{ submission.administrative_entity.signature_sheet_description|safe }}</div>
+    <br>
+    <i class="fa fa-download" aria-hidden="true"></i>
+    <a class="directive_file" href="{{ submission.administrative_entity.signature_sheet.url }}" target="_blank"
+      rel="noreferrer">{% trans "Télécharger le volet de transmission pour impression et signature" %}
+    </a>
+  </div>
+  {% endif %}
 
   {% if incomplete_steps %}
     <p>

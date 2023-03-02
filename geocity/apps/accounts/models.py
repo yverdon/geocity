@@ -19,10 +19,20 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
-# public types: for public/restricted features
+from .fields import AdministrativeEntityFileField
+
+# Controls who can fill each Form. Anonymous forms can be filled by anyone
 PUBLIC_TYPE_CHOICES = (
-    (True, _("Visibilité grand public")),
-    (False, _("Visible uniquement par les utilisateur autorisés")),
+    (
+        True,
+        _("Permettre la saisie à n'importe quel utilisateur disposant d'un compte"),
+    ),
+    (
+        False,
+        _(
+            "Restreindre la saisie aux utilisateurs autorisés de l'entité administrative"
+        ),
+    ),
 )
 
 
@@ -284,6 +294,23 @@ class AdministrativeEntity(models.Model):
         Site,
         related_name="+",
         verbose_name=_("Détails du Site"),
+    )
+    directive = AdministrativeEntityFileField(
+        _("directive"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        blank=True,
+    )
+    directive_description = models.CharField(
+        _("description de la directive"), max_length=200, blank=True
+    )
+    additional_information = models.TextField(_("autre information"), blank=True)
+    signature_sheet = AdministrativeEntityFileField(
+        _("Volet de transmission"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        blank=True,
+    )
+    signature_sheet_description = models.TextField(
+        _("Texte explicatif relatif au volet de transmission"), blank=True
     )
     objects = AdministrativeEntityManager()
 
