@@ -1,8 +1,10 @@
 from django.contrib.staticfiles import finders
+from django.core.files import File
 from django.urls import reverse
 
 from geocity.apps.reports.models import (
     HeaderFooterDateTime,
+    HeaderFooterLogo,
     HeaderFooterPageNumber,
     HeaderFooterParagraph,
     SectionAmendProperty,
@@ -255,12 +257,6 @@ class ReportsTests(ReportsTestsBase):
             },
         }
 
-        _logo_path = finders.find("reports/report-logo.png")
-        logo = open(_logo_path, "rb")
-
-        _qr_code_path = finders.find("reports/report-qr-code.png")
-        qr_code = open(_qr_code_path, "rb")
-
         header_footers_config = {
             1: {
                 HeaderFooterPageNumber: {
@@ -296,22 +292,22 @@ Second line
                     """,
                 }
             },
-            # 5: {
-            #     HeaderFooterLogo: {
-            #         "page": 1, # Only first page
-            #         "location": "@bottom-right",
-            #         "logo": File(qr_code),
-            #         "logo_size": 80,
-            #     }
-            # },
-            # 6: {
-            #     HeaderFooterLogo: {
-            #         "page": 1, # Only first page
-            #         "location": "@top-left",
-            #         "logo": File(logo),
-            #         "logo_size": 70,
-            #     }
-            # },
+            5: {
+                HeaderFooterLogo: {
+                    "page": 1,  # Only first page
+                    "location": "@bottom-right-corner",
+                    "logo": "report-qr-code.png",
+                    "logo_size": 80,
+                }
+            },
+            6: {
+                HeaderFooterLogo: {
+                    "page": 1,  # Only first page
+                    "location": "@top-left",
+                    "logo": "report-logo.png",
+                    "logo_size": 70,
+                }
+            },
         }
 
         for key, section_config in sections_config.items():
@@ -328,10 +324,24 @@ Second line
 
         for key, header_footer_config in header_footers_config.items():
             for HeaderFooterClass, kwargs in header_footer_config.items():
-                HeaderFooterClass.objects.create(
-                    report=self.report,
-                    **kwargs,
-                )
+                if HeaderFooterClass == HeaderFooterLogo:
+                    file_name = kwargs["logo"]
+                    _logo_path = finders.find(f"reports/{file_name}")
+                    logo = open(_logo_path, "rb")
+                    kwargs.pop("logo")
+
+                    obj = HeaderFooterLogo.objects.create(
+                        report=self.report,
+                        **kwargs,
+                    )
+
+                    obj.logo.save(file_name, File(logo), save=True)
+                    obj.save()
+                else:
+                    HeaderFooterClass.objects.create(
+                        report=self.report,
+                        **kwargs,
+                    )
 
         # Get the PDF
         self.client.force_login(self.user)
