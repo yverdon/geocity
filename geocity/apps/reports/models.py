@@ -614,6 +614,7 @@ class SectionRecipient(Section):
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
 
+    # TODO: Find a way to fix this, to make padding_top at 40 by default only for SectionRecipient
     def __init__(self, *args, **kwargs):
         self._meta.get_field("padding_top").default = 40
         super().__init__(*args, **kwargs)
