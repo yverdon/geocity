@@ -1,0 +1,10 @@
+{% extends "reports/header_footers/_headerfooter.html" %}
+
+{% block content %}
+  content: '';
+  height: {{header_footer.logo_size}}%;
+  width: 100mm;
+  background-image: url("{{header_footer.logo.url}}");
+  background-size: contain;
+  background-repeat: no-repeat;
+{% endblock %}

@@ -4,10 +4,30 @@
     {{section.title}}
 {% endblock %}
 
+
 {% block content %}
-  <div class="flex_container">
-      <div class="flex_item-100">
-          {{rendered_content}}
-      </div>
-  </div>
+    <div class="flex_container">
+        {% if section.location == "content" %}
+            <div class="flex_item-100" style="text-align:{{section.text_align}}; text-justify: inter-character;">
+                {{rendered_content}}
+            </div>
+        {% endif %}
+
+        {% if section.location == "left" %}
+            <div class="flex_item-50" style="text-align:{{section.text_align}}; text-justify: inter-character;">
+                {{rendered_content}}
+            </div>
+            <div class="flex_item-50">
+            </div>
+        {% endif %}
+
+        {% if section.location == "right" %}
+            <div class="flex_item-50">
+            </div>
+            <div class="flex_item-50" style="text-align:{{section.text_align}}; text-justify: inter-character;">
+                {{rendered_content}}
+            </div>
+        {% endif %}
+
+    </div>
 {% endblock %}
