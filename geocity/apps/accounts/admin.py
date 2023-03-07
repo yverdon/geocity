@@ -725,6 +725,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "expeditor_email",
         "ofs_id",
         "get_tags",
+        "get_is_single_form",
         "get_sites",
     ]
 
@@ -745,6 +746,13 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     get_tags.short_description = _("Mots-clés")
     get_tags.admin_order_field = "tags__name"
+
+    @admin.display(boolean=True)
+    def get_is_single_form(self, obj):
+        return obj.is_single_form_submissions
+
+    get_is_single_form.short_description = _("Objet unique")
+    get_is_single_form.admin_order_field = "is_single_form_submissions"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 

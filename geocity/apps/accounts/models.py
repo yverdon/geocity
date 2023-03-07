@@ -21,10 +21,18 @@ from taggit.managers import TaggableManager
 
 from .fields import AdministrativeEntityFileField
 
-# public types: for public/restricted features
+# Controls who can fill each Form. Anonymous forms can be filled by anyone
 PUBLIC_TYPE_CHOICES = (
-    (True, _("Visibilité grand public")),
-    (False, _("Visible uniquement par les utilisateur autorisés")),
+    (
+        True,
+        _("Permettre la saisie à n'importe quel utilisateur disposant d'un compte"),
+    ),
+    (
+        False,
+        _(
+            "Restreindre la saisie aux utilisateurs autorisés de l'entité administrative"
+        ),
+    ),
 )
 
 

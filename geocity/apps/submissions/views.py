@@ -1995,7 +1995,11 @@ def genericauthorview(request, pk):
     # FIXME shouldn’t we use the user id in the url?
     # FIXME shouldn’t this be moved to the accounts app?
     instance = get_object_or_404(UserProfile, pk=pk)
-    form = GenericUserProfileForm(request.POST or None, instance=instance)
+    form = GenericUserProfileForm(
+        request.POST or None,
+        instance=instance,
+        create=False,
+    )
 
     for field in form.fields:
         form.fields[field].disabled = True

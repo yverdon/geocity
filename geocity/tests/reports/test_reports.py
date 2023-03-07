@@ -1,14 +1,22 @@
+from django.contrib.staticfiles import finders
+from django.core.files import File
 from django.urls import reverse
 
 from geocity.apps.reports.models import (
+    HeaderFooterDateTime,
+    HeaderFooterLogo,
+    HeaderFooterPageNumber,
+    HeaderFooterParagraph,
     SectionAmendProperty,
     SectionAuthor,
     SectionContact,
+    SectionCreditor,
     SectionDetail,
     SectionHorizontalRule,
     SectionMap,
     SectionParagraph,
     SectionPlanning,
+    SectionRecipient,
     SectionStatus,
     SectionValidation,
 )
@@ -89,30 +97,251 @@ class ReportsTests(ReportsTestsBase):
 
         # Add one block of each type
         sections_config = {
-            SectionMap: {},
-            SectionParagraph: {
-                "title": "A basic paragraph",
-                "content": "<p>A paragraph <u>with</u> <b style='color: red;'>basic</b> <i>styling</i></p>",
+            1: {
+                SectionMap: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section map",
+                    "title_size": "h1",
+                }
             },
-            SectionContact: {},
-            SectionAuthor: {},
-            SectionDetail: {},
-            SectionPlanning: {},
-            SectionValidation: {},
-            SectionAmendProperty: {},
-            SectionStatus: {},
+            2: {
+                SectionParagraph: {
+                    # "padding_top": int,
+                    "is_new_page": True,
+                    "title": "Section paragraph 2",
+                    "title_size": "h3",
+                    "text_align": "left",
+                    "location": "left",
+                    "content": """
+                    <p>This paragraph has a title h3, is aligned to the left and is located on the left of the page</p>
+                    <p>A paragraph <u>with</u> <b style='color: red;'>basic</b> <i>styling</i></p>
+                    """,
+                }
+            },
+            3: {
+                SectionParagraph: {
+                    "padding_top": 10,
+                    "is_new_page": False,
+                    "title": "Section paragraph 2",
+                    "title_size": "h4",
+                    "text_align": "right",
+                    "location": "right",
+                    "content": """
+                    <p>This paragraph has a title h4, has a padding top of 10px, is aligned to the right and is located on the right of the page</p>
+                    <p>A paragraph <u>with</u> <b style='color: red;'>basic</b> <i>styling</i></p>
+                    """,
+                }
+            },
+            4: {
+                SectionParagraph: {
+                    "padding_top": 20,
+                    "is_new_page": False,
+                    "title": "Section paragraph 3",
+                    "title_size": "h5",
+                    "text_align": "center",
+                    "location": "content",
+                    "content": """
+                    <p>This paragraph has a title h5, has a padding top of 20px, is aligned to the center and is located on the center (content) of the page</p>
+                    <p>A paragraph <u>with</u> <b style='color: red;'>basic</b> <i>styling</i></p>
+                    """,
+                }
+            },
+            5: {
+                SectionParagraph: {
+                    "padding_top": 30,
+                    "is_new_page": False,
+                    "title": "Section paragraph 4",
+                    "title_size": "h6",
+                    "text_align": "justify",
+                    "location": "content",
+                    "content": """
+                    <p>This paragraph has a title h6, has a padding top of 30px, text is justify and is located on the center (content) of the page</p>
+                    <p>A paragraph <u>with</u> <b style='color: red;'>basic</b> <i>styling</i></p>
+                    """,
+                }
+            },
+            5: {
+                SectionContact: {
+                    # "padding_top": int,
+                    "is_new_page": True,
+                    "title": "Section contact",
+                    "title_size": "h2",
+                }
+            },
+            6: {
+                SectionAuthor: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section author",
+                    "title_size": "h2",
+                }
+            },
+            7: {
+                SectionDetail: {
+                    "padding_top": 20,
+                    # "is_new_page": bool,
+                    "title": "Section detail style 1 with form name",
+                    "title_size": "h3",
+                    "show_form_name": True,
+                    "style": 1,
+                    "line_height": 20,
+                    # "undesired_properties": char,
+                }
+            },
+            8: {
+                SectionDetail: {
+                    "padding_top": 20,
+                    # "is_new_page": bool,
+                    "title": "Section detail style 2 without form name",
+                    "title_size": "h3",
+                    "show_form_name": False,
+                    "style": 2,
+                    "line_height": 50,
+                    # "undesired_properties": char,
+                }
+            },
+            9: {
+                SectionPlanning: {
+                    # "padding_top": int,
+                    "is_new_page": True,
+                    "title": "Section planning",
+                    "title_size": "h3",
+                }
+            },
+            10: {
+                SectionValidation: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section validation",
+                    "title_size": "h3",
+                }
+            },
+            11: {
+                SectionAmendProperty: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section amend property",
+                    "title_size": "h3",
+                }
+            },
+            12: {
+                SectionStatus: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section status",
+                    "title_size": "h3",
+                }
+            },
+            13: {
+                SectionCreditor: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section creditor",
+                    "title_size": "h3",
+                }
+            },
+            14: {
+                SectionRecipient: {
+                    "padding_top": 20,
+                    # "is_new_page": bool,
+                    "is_recommended": True,
+                }
+            },
+            15: {
+                SectionRecipient: {
+                    "padding_top": 50,
+                    # "is_new_page": bool,
+                    "is_recommended": False,
+                }
+            },
         }
 
-        for i, (SectionClass, kwargs) in enumerate(sections_config.items()):
-            SectionClass.objects.create(
-                order=i * 10,
-                report=self.report,
-                **kwargs,
-            )
+        header_footers_config = {
+            1: {
+                HeaderFooterPageNumber: {
+                    "page": 2,  # Not first page
+                    "location": "@bottom-center",
+                }
+            },
+            2: {
+                HeaderFooterDateTime: {
+                    "page": 1,  # Only first page
+                    "location": "@bottom-center",
+                }
+            },
+            3: {
+                HeaderFooterParagraph: {
+                    "page": 0,  # All pages
+                    "location": "@bottom-left",
+                    "text_align": "Left",
+                    "content": """
+                    Place Pestalozzi, CH-1401 Yverdon-les-Bains
+Second line
+                    """,
+                }
+            },
+            4: {
+                HeaderFooterParagraph: {
+                    "page": 2,  # Not first page
+                    "location": "@bottom-right",
+                    "text_align": "Right",
+                    "content": """
+                    Place Pestalozzi, CH-1401 Yverdon-les-Bains
+Second line
+                    """,
+                }
+            },
+            5: {
+                HeaderFooterLogo: {
+                    "page": 1,  # Only first page
+                    "location": "@bottom-right-corner",
+                    "logo": "report-qr-code.png",
+                    "logo_size": 80,
+                }
+            },
+            6: {
+                HeaderFooterLogo: {
+                    "page": 1,  # Only first page
+                    "location": "@top-left",
+                    "logo": "report-logo.png",
+                    "logo_size": 70,
+                }
+            },
+        }
+
+        for key, section_config in sections_config.items():
+            for SectionClass, kwargs in section_config.items():
+                SectionClass.objects.create(
+                    order=key * 10,
+                    report=self.report,
+                    **kwargs,
+                )
             SectionHorizontalRule.objects.create(
-                order=i * 10 + 1,
+                order=key * 10 + 1,
                 report=self.report,
             )
+
+        for key, header_footer_config in header_footers_config.items():
+            for HeaderFooterClass, kwargs in header_footer_config.items():
+                if HeaderFooterClass == HeaderFooterLogo:
+                    file_name = kwargs["logo"]
+                    _logo_path = finders.find(f"reports/{file_name}")
+                    logo = open(_logo_path, "rb")
+                    kwargs.pop("logo")
+
+                    obj = HeaderFooterLogo.objects.create(
+                        report=self.report,
+                        **kwargs,
+                    )
+
+                    obj.logo.save(file_name, File(logo), save=True)
+                    obj.save()
+                else:
+                    HeaderFooterClass.objects.create(
+                        report=self.report,
+                        **kwargs,
+                    )
 
         # Get the PDF
         self.client.force_login(self.user)

@@ -9,12 +9,54 @@ from geocity.apps.forms.models import Form, FormCategory
 from . import models
 
 
+def _get_administrative_entities_queryset_for_current_user(request):
+    return (
+        AdministrativeEntity.objects.filter(
+            submissions__in=models.Submission.objects.filter_for_user(request.user)
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
+def _get_form_categories_queryset_for_current_user(request):
+    return (
+        FormCategory.objects.filter(
+            forms__submissions__in=models.Submission.objects.filter_for_user(
+                request.user
+            )
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
+def _get_forms_queryset_for_current_user(request):
+    return (
+        Form.objects.filter(
+            submissions__in=models.Submission.objects.filter_for_user(request.user)
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
 class BaseSubmissionFilterSet(django_filters.FilterSet):
     id = django_filters.filters.NumberFilter(field_name="id")
+
+    forms__administrative_entities = django_filters.filters.ModelChoiceFilter(
+        queryset=_get_administrative_entities_queryset_for_current_user,
+        label=_("Entité administrative"),
+    )
     forms__category = django_filters.filters.ModelChoiceFilter(
-        queryset=models.FormCategory.objects.order_by("name"),
+        queryset=_get_form_categories_queryset_for_current_user,
         label=_("Type de demande"),
     )
+    forms = django_filters.filters.ModelChoiceFilter(
+        queryset=_get_forms_queryset_for_current_user,
+        label=_("Objet de la demande"),
+    )
+
     created_at = django_filters.DateFilter(
         field_name="created_at",
         lookup_expr="date",
@@ -60,60 +102,22 @@ class OwnSubmissionFilterSet(BaseSubmissionFilterSet):
     pass
 
 
-def _get_administrative_entities_queryset_for_current_user(request):
-    return (
-        AdministrativeEntity.objects.filter(
-            submissions__in=models.Submission.objects.filter_for_user(request.user)
-        )
-        .distinct()
-        .order_by("name")
-    )
-
-
-def _get_form_categories_queryset_for_current_user(request):
-    return (
-        FormCategory.objects.filter(
-            forms__submissions__in=models.Submission.objects.filter_for_user(
-                request.user
-            )
-        )
-        .distinct()
-        .order_by("name")
-    )
-
-
-def _get_forms_queryset_for_current_user(request):
-    return (
-        Form.objects.filter(
-            submissions__in=models.Submission.objects.filter_for_user(request.user)
-        )
-        .distinct()
-        .order_by("name")
-    )
-
-
 class DepartmentSubmissionFilterSet(BaseSubmissionFilterSet):
-    forms__administrative_entities = django_filters.filters.ModelChoiceFilter(
-        queryset=_get_administrative_entities_queryset_for_current_user,
-        label=_("Entité administrative"),
-    )
-    forms__category = django_filters.filters.ModelChoiceFilter(
-        queryset=_get_form_categories_queryset_for_current_user,
-        label=_("Type de demande"),
-    )
-    forms = django_filters.filters.ModelChoiceFilter(
-        queryset=_get_forms_queryset_for_current_user,
-        label=_("Objet de la demande"),
-    )
+
     author__last_name = django_filters.filters.CharFilter(
         lookup_expr="icontains",
         label=_("Auteur de la demande"),
+    )
+    shortname = django_filters.filters.CharFilter(
+        lookup_expr="icontains",
+        label=_("Nom court"),
     )
 
     class Meta:
         model = models.Submission
         fields = [
             "id",
+            "shortname",
             "status",
             "forms__administrative_entities",
             "forms__category",

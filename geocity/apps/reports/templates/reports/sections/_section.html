@@ -1,5 +1,10 @@
-<div class="section {{section.css_class}}">
-  <h2>{% block title %}{% endblock title %}</h2>
+{% if section.is_new_page %}
+  <div class="pagebreak"> </div>
+{% endif %}
+<div class="section {{section.css_class}}" style="padding-top: {{section.padding_top}}px;">
+  {% if section.title %}
+    <div class="title {{section.title_size}}">{% block title %}{% endblock title %}</div>
+  {% endif %}
   {% block content %}
   {% endblock content %}
 </div>
