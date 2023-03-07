@@ -37,22 +37,22 @@
     <div>
       <button type="button" class="btn btn-sm btn-outline-success mr-1 mb-2" title="Cliquer sur la carte pour ajouter des géométries"
          role="button" data-action="enableDrawing">
-         <i class="fa fa-pencil"></i> Dessiner
+         <i class="fa fa-pencil"></i><span class="buttons-text"> Dessiner</span>
       </button>
       <button type="button" class="btn btn-sm btn-outline-warning mr-1 mb-2" title="Maintenir la touche Maj (Shift) enfoncée pour une sélection multiple"
          role="button" data-action="selectFeatures">
-         <i class="fa fa-mouse-pointer"></i> Sélectionner et modifier
+         <i class="fa fa-mouse-pointer"></i><span class="buttons-text"> Sélectionner et modifier</span>
       </button>
       <button type="button" class="btn btn-sm btn-outline-danger mr-1 mb-2"
          role="button" data-action="removeSelectedFeatures">
-         <i class="fa fa-trash"></i> Effacer la sélection
+         <i class="fa fa-trash"></i><span class="buttons-text"> Effacer la sélection</span>
       </button>
       <button type="button" class="btn btn-sm btn-outline-danger mr-1 mb-2"
         role="button" data-action="removeAllFeatures">
-        <i class="fa fa-trash"></i> Tout effacer
+        <i class="fa fa-trash"></i><span class="buttons-text"> Tout effacer</span>
       </button>
       <a data-action="setPointManual" class="btn btn-sm btn-outline-secondary mr-1 mb-2" data-toggle="collapse" href="#manual-coordinates-{{ id }}" role="button" aria-expanded="false" aria-controls="manual-coordinates">
-        <i class="fa fa-map-pin"></i> Saisir des coordonnées
+        <i class="fa fa-map-pin"></i><span class="buttons-text"> Saisir des coordonnées</span>
       </a>
       <small class="custom-file mr-1 mb-2">
         <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
@@ -73,7 +73,7 @@
             <div class="col">
               <button type="button" class="btn btn-sm btn-outline-success" title="Ajouter ce point à la carte"
                  role="button" data-action="addPointFeature">
-                 <i class="fa fa-plus"></i> Ajouter à la carte
+                 <i class="fa fa-plus"></i><span class="buttons-text"> Ajouter à la carte</span>
               </button>
             </div>
           </div>

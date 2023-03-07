@@ -59,6 +59,10 @@ label.custom-file-label:after {
   margin-top: 10px;
 }
 
+.buttons-text {
+  font-size: 11px;
+}
+
 .map-buttons button {
   margin-right: 10px;
   margin-bottom: 10px;
