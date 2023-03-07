@@ -4,7 +4,7 @@ const message = document.getElementByClassName("maximum-submission-message");
 
 checkbox.addEventListener("click", () => {
     // Toggle the disable attribute based on message visible or not
-    if (!message) { 
+    if (!message) {
         button.toggleAttribute("disabled");
     }
 });
