@@ -46,6 +46,11 @@ label.custom-file-label:after {
   content: "Charger un KML...";
 }
 
+.custom-file {
+  width: 127px; /* Width of the text without the left part in white */
+  bottom: 0.5rem;
+}
+
 .map {
   background: #f1f4f8;
 }

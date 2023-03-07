@@ -50,6 +50,10 @@
       <a data-action="setPointManual" class="btn btn-sm btn-outline-secondary mr-1 mb-2" data-toggle="collapse" href="#manual-coordinates-{{ id }}" role="button" aria-expanded="false" aria-controls="manual-coordinates">
         <i class="fa fa-map-pin"></i> Saisir des coordonnées
       </a>
+      <small class="custom-file mr-1 mb-2">
+        <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
+        <label class="custom-file-label" for="selectfile"></label>
+      </small>
       <div class="collapse manual-coordinates" id="manual-coordinates-{{ id }}">
         <br>
         <div class="card card-body">
@@ -71,12 +75,6 @@
           </div>
         </div>
         <br>
-      </div>
-      <div class="import-kml" id="import-kml-{{ id }}">
-        <small class="custom-file">
-          <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
-          <label class="custom-file-label" for="selectfile"></label>
-        </small>
       </div>
       &nbsp
       <div>
