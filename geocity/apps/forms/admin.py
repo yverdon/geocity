@@ -3,6 +3,8 @@ from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+from parler.admin import TranslatableAdmin
+from parler.forms import TranslatableModelForm
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
@@ -330,7 +332,7 @@ class FormWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
         return f"{obj} ({obj.category}) - {entities}"
 
 
-class FieldAdminForm(forms.ModelForm):
+class FieldAdminForm(TranslatableModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
@@ -440,7 +442,7 @@ class PaymentSettingsAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 @admin.register(models.Field)
-class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class FieldAdmin(IntegratorFilterMixin, TranslatableAdmin):
     form = FieldAdminForm
     list_display = [
         "sortable_str",
@@ -451,12 +453,37 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "help_text",
     ]
     list_filter = [
-        "name",
+        "translations__name",
         "input_type",
     ]
     search_fields = [
-        "name",
+        "translations__name",
     ]
+    fieldsets = (
+        (
+            "Translated fields",
+            {"fields": ("name", "placeholder", "help_text", "choices")},
+        ),
+        (
+            "Other fields",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "input_type",
+                    "services_to_notify",
+                    "message_for_notified_services",
+                    "line_number_for_textarea",
+                    "regex_pattern",
+                    "file_download",
+                    "is_mandatory",
+                    "is_public_when_permitrequest_is_public",
+                    "additional_searchtext_for_address_field",
+                    "store_geometry_for_address_field",
+                    "integrator",
+                ),
+            },
+        ),
+    )
 
     def sortable_str(self, obj):
         return obj.__str__()

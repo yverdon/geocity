@@ -4,6 +4,7 @@ import django.core.validators
 import django.db.models.deletion
 import taggit.managers
 from django.db import migrations, models
+from parler.models import TranslatableModel
 
 import geocity.apps.accounts.fields
 import geocity.apps.forms.fields
@@ -156,6 +157,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "1.5 Configuration du champ",
                 "verbose_name_plural": "1.5 Configuration des champs",
             },
+            bases=(TranslatableModel,),
         ),
         migrations.CreateModel(
             name="Form",

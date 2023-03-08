@@ -161,6 +161,7 @@ INSTALLED_APPS = [
     "captcha",
     "ckeditor",
     "jazzmin",
+    "parler",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -535,6 +536,34 @@ LANGUAGES = (
     ("de", gettext("German")),
     ("it", gettext("Italian")),
 )
+PARLER_DEFAULT_LANGUAGE_CODE = "fr"
+
+PARLER_LANGUAGES = {
+    # None key can be replaced with a SITE_ID (multiple allowed)
+    None: (
+        {
+            "code": "fr",
+        },
+        {
+            "code": "en",
+        },
+        {
+            "code": "de",
+        },
+        {
+            "code": "it",
+        },
+    ),
+    "default": {
+        "fallbacks": ["fr"],  # defaults to PARLER_DEFAULT_LANGUAGE_CODE
+        "hide_untranslated": False,  # the default; let .active_translations() return fallbacks too.
+    },
+}
+
+# Fixme False for debugging only
+PARLER_ENABLE_CACHING = False
+
+# TODO Setup memcache for Parler
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 

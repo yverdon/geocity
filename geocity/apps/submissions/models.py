@@ -725,7 +725,7 @@ class Submission(models.Model):
             (
                 form,
                 props_filter(
-                    form.fields.filter(form_fields__form=form).order_by(
+                    form.fields.translated.filter(form_fields__form=form).order_by(
                         "form_fields__order", "name"
                     )
                 ),

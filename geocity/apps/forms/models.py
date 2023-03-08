@@ -1,5 +1,3 @@
-import collections
-
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -13,6 +11,7 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from parler.models import TranslatableModel, TranslatedFields
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -624,7 +623,7 @@ INPUT_TYPE_TEXT = "text"
 INPUT_TYPE_TITLE = "title"
 
 
-class Field(models.Model):
+class Field(TranslatableModel):
     INPUT_TYPE_TEXT = INPUT_TYPE_TEXT
     INPUT_TYPE_CHECKBOX = INPUT_TYPE_CHECKBOX
     INPUT_TYPE_NUMBER = INPUT_TYPE_NUMBER
@@ -651,19 +650,28 @@ class Field(models.Model):
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_TITLE, _("Titre")),
     )
+
+    translations = TranslatedFields(
+        name=models.CharField(_("nom"), max_length=255),
+        placeholder=models.CharField(
+            _("exemple de donnée à saisir"), max_length=255, blank=True
+        ),
+        help_text=models.CharField(
+            _("information complémentaire"), max_length=255, blank=True
+        ),
+        choices=models.TextField(
+            verbose_name=_("valeurs à choix"),
+            blank=True,
+            help_text=_("Entrez un choix par ligne"),
+        ),
+    )
+
     integrator = models.ForeignKey(
         Group,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
-    )
-    name = models.CharField(_("nom"), max_length=255)
-    placeholder = models.CharField(
-        _("exemple de donnée à saisir"), max_length=255, blank=True
-    )
-    help_text = models.CharField(
-        _("information complémentaire"), max_length=255, blank=True
     )
     input_type = models.CharField(
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
@@ -678,11 +686,6 @@ class Field(models.Model):
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     forms = models.ManyToManyField(
         Form, verbose_name=_("objets"), related_name="fields", through=FormField
-    )
-    choices = models.TextField(
-        verbose_name=_("valeurs à choix"),
-        blank=True,
-        help_text=_("Entrez un choix par ligne"),
     )
     regex_pattern = models.CharField(
         _("regex pattern"),
@@ -735,13 +738,13 @@ class Field(models.Model):
         verbose_name = _("1.3 Champ")
         verbose_name_plural = _("1.3 Champs")
         constraints = [
-            models.CheckConstraint(
-                check=~(
-                    Q(input_type__in=[INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE])
-                    & Q(choices="")
-                ),
-                name="field_choices_not_empty_for_lists",
-            ),
+            # models.CheckConstraint(
+            #     check=~(
+            #         Q(input_type__in=[INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE])
+            #         & Q(translations__choices="")
+            #     ),
+            #     name="field_choices_not_empty_for_lists",
+            # ),
             models.CheckConstraint(
                 check=~(Q(input_type=INPUT_TYPE_REGEX) & Q(regex_pattern="")),
                 name="field_pattern_not_empty_for_regex",
@@ -766,28 +769,28 @@ class Field(models.Model):
         ]
 
     def clean(self):
-        if self.input_type in [INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE]:
-            if not self.choices:
-                raise ValidationError({"choices": _("This field is required.")})
-            else:
-                split_choices = [
-                    choice.strip() for choice in self.choices.strip().splitlines()
-                ]
-                counter = collections.Counter(split_choices)
-                duplicates = [choice for choice, count in counter.items() if count > 1]
-
-                if duplicates:
-                    raise ValidationError(
-                        {
-                            "choices": _(
-                                "Les valeurs suivantes apparaissent plusieurs fois dans la liste : {} "
-                            ).format(", ".join(duplicates))
-                        }
-                    )
-
-                self.choices = "\n".join(split_choices)
-        else:
-            self.choices = ""
+        # if self.input_type in [INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE]:
+        #     if not self.choices:
+        #         raise ValidationError({"choices": _("This field is required.")})
+        #     else:
+        #         split_choices = [
+        #             choice.strip() for choice in self.choices.strip().splitlines()
+        #         ]
+        #         counter = collections.Counter(split_choices)
+        #         duplicates = [choice for choice, count in counter.items() if count > 1]
+        #
+        #         if duplicates:
+        #             raise ValidationError(
+        #                 {
+        #                     "choices": _(
+        #                         "Les valeurs suivantes apparaissent plusieurs fois dans la liste : {} "
+        #                     ).format(", ".join(duplicates))
+        #                 }
+        #             )
+        #
+        #         self.choices = "\n".join(split_choices)
+        # else:
+        #     self.choices = ""
 
         if self.input_type == INPUT_TYPE_REGEX:
             if not self.regex_pattern:
