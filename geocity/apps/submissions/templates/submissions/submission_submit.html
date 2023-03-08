@@ -78,9 +78,12 @@
           {% if previous_step.url %}
             <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
           {% endif %}
-          <button formaction="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" type="submit" class="btn btn-primary mr-2" {% if has_any_form_with_exceeded_submissions %}disabled{% endif %}>
-            {% trans "Payer maintenant" %}
-          </button>
+          <form method="post" action="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}">
+            {% csrf_token %}
+              <button type="submit" class="btn btn-primary mr-2" {% if has_any_form_with_exceeded_submissions %}disabled{% endif %}>
+                {% trans "Payer maintenant" %}
+              </button>
+          </form>
           {% if has_any_form_with_exceeded_submissions %}
             <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
              {{ submission.get_maximum_submissions_message }}
