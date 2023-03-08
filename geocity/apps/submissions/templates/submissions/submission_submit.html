@@ -8,9 +8,6 @@
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
 {% endblock %}
-{% block scripts %}
-  <script src="{% static 'js/submissions_submit.js' %}"></script>
-{% endblock %}
 
 
 {% block content %}
@@ -81,14 +78,11 @@
           {% if previous_step.url %}
             <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
           {% endif %}
-          <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
-           href="{% if has_any_form_with_exceeded_submissions %}#
-{% else %}{% url 'submissions:submission_payment_redirect' pk=submission.pk %}
-{% endif %}" class="mr-2">
+          <button formaction="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" type="submit" class="btn btn-primary mr-2" {% if has_any_form_with_exceeded_submissions %}disabled{% endif %}>
             {% trans "Payer maintenant" %}
-          </a>
+          </button>
           {% if has_any_form_with_exceeded_submissions %}
-            <span class="text-danger font-weight-bold mx-2">
+            <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
              {{ submission.get_maximum_submissions_message }}
             </span>
           {% endif %}
@@ -100,22 +94,24 @@
     {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
   {% if not incomplete_steps and not should_go_to_payment %}
-    <form method="post">
+    <p class="font-weight-bold">
+      <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
+      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label><br>
+    </p>
+    <form method="post" action="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}">
       {% csrf_token %}
       {% buttons %}
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
-           href="{% if has_any_form_with_exceeded_submissions %}#
-{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
-{% endif %}" class="mr-2">
-          {% trans "Envoyer" %}</a>
-          {% if has_any_form_with_exceeded_submissions %}
-            <span class="text-danger font-weight-bold mx-2">
-              {{ submission.get_maximum_submissions_message }}
-            </span>
-          {% endif %}
+        <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
+          {% trans "Envoyer" %}
+        </button>
+        {% if has_any_form_with_exceeded_submissions %}
+          <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
+            {{ submission.get_maximum_submissions_message }}
+          </span>
+        {% endif %}
       {% endbuttons %}
     </form>
   {% endif %}
@@ -124,24 +120,7 @@
       {% submission_summary submission %}
     </div>
   </div>
-  {% if not incomplete_steps and not should_go_to_payment %}
-    <form method="post">
-      {% csrf_token %}
-      {% buttons %}
-        {% if previous_step.url %}
-          <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
-        {% endif %}
-        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
-           href="{% if has_any_form_with_exceeded_submissions %}#
-{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
-{% endif %}" class="mr-2">
-          {% trans "Envoyer" %}</a>
-          {% if has_any_form_with_exceeded_submissions %}
-            <span class="text-danger font-weight-bold mx-2">
-              {{ submission.get_maximum_submissions_message }}
-            </span>
-          {% endif %}
-      {% endbuttons %}
-    </form>
-  {% endif %}
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'js/submission_submit.js' %}"></script>
 {% endblock %}

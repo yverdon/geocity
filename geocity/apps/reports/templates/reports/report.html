@@ -6,15 +6,20 @@
 
     <style>
       {% include "reports/report.css" %}
-      {% if not transaction_data %}
-        {% include "reports/_submission_info_header_footer.css" %}" %}
-      {% endif %}
+      {% comment %} meta content (see https://www.quackit.com/css/at-rules/css_top-left-corner_at-rule.cfm) {% endcomment %}
+      @page{
+        {% for rendered_header_footer in rendered_header_footers %}{{rendered_header_footer}}{% endfor %}
+      }
+      @page :first{
+        {% for rendered_header_footer_not_first_page in rendered_header_footers_not_first_page %}{{rendered_header_footer_not_first_page}}{% endfor %}
+        {% for rendered_header_footer_first_page in rendered_header_footers_first_page %}{{rendered_header_footer_first_page}}{% endfor %}
+      }
     </style>
 
-    {% if report.layout.font %}
+    {% if report.layout.font_family %}
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family={{report.layout.font|urlencode}}:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family={{report.layout.font_family|urlencode}}:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     {% endif %}
   </head>
 

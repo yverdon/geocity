@@ -1,17 +1,37 @@
 {% extends "reports/sections/_section.html" %}
 
+{% block title %}
+    {{section.title}}
+{% endblock %}
+
 {% block content %}
-    <h2>Propriété·s de la demande</h2>
     {% if request_data.properties.submission_fields %}
         <div class="flex_container">
             <div class="flex_item-100">
-                {% for form, fields in request_data.properties.submission_fields.items %}
+                {% if section.show_form_name %}
                     <h3>{{form}}</h3>
-                    {% for key, field in fields.items %}
-                        <span class="bold">{{key}} : </span>{{field}}<br>
+                {% endif %}
+                {% if section.style == 0 %}
+                    {% for form, fields in request_data.properties.submission_fields.items %}
+                        {% for key, field in fields.items %}
+                            {% if not key in section.undesired_properties %}
+                                <div style="padding-top:{{section.line_height}}px;"><span class="bold">{{key}} : </span>{{field}}<br></div>
+                            {% endif %}
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
             </div>
+                {% elif  section.style == 1 %}
+            </div>
+                    {% for form, fields in request_data.properties.submission_fields.items %}
+                        {% for key, field in fields.items %}
+                            {% if not key in section.undesired_properties %}
+                                <div class="flex_item-40"><span class="bold">{{key}}</span></div>
+                                <div class="flex_item-60">{{field}}</div>
+                                <div style="padding-top:{{section.line_height}}px;"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
         </div>
     {% else %}
         <p>Aucune propriété pour cette demande</p>

@@ -721,7 +721,17 @@
   };
 
   /*
-    Add point from manuelly edited coordinates (ch1903+)
+    Remove all features on the map
+    */
+  geometryWidget.prototype.removeAllFeatures = function () {
+    var allFeatures = this.vectorSource.getFeatures()
+    for (var i = 0; i < allFeatures.length; i++) {
+      this.vectorSource.removeFeature(allFeatures[i]);
+    }
+  };
+
+  /*
+    Add point from manually edited coordinates (ch1903+)
     */
   geometryWidget.prototype.addPointFeature = function () {
     var east = parseFloat(this.el.querySelector("[name='east_coord']").value);
@@ -778,6 +788,7 @@
       enableDrawing: e => this.enableDrawing(),
       selectFeatures: e => this.selectFeatures(),
       removeSelectedFeatures: e => this.removeSelectedFeatures(),
+      removeAllFeatures: e => this.removeAllFeatures(),
       setDrawInteraction: e => this.setDrawInteraction(e.target.dataset.interactionType),
       switchBaseLayers: e => this.switchBaseLayers(),
       addPointFeature: e => this.addPointFeature(),

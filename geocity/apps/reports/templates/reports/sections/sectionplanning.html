@@ -1,7 +1,10 @@
 {% extends "reports/sections/_section.html" %}
 
+{% block title %}
+    {{section.title}}
+{% endblock %}
+
 {% block content %}
-    <h2>Planning</h2>
     {% if request_data.properties.geotime_aggregated %}
         <div class="flex_container">
             <div class="flex_item-100">
