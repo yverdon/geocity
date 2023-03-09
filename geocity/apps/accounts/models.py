@@ -25,13 +25,11 @@ from .fields import AdministrativeEntityFileField
 PUBLIC_TYPE_CHOICES = (
     (
         True,
-        _("Permettre la saisie à n'importe quel utilisateur disposant d'un compte"),
+        _("Tout public"),
     ),
     (
         False,
-        _(
-            "Restreindre la saisie aux utilisateurs autorisés de l'entité administrative"
-        ),
+        _("Restreint aux utilisateurs autorisés"),
     ),
 )
 
