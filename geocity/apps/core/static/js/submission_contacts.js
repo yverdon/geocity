@@ -17,7 +17,6 @@ let update_form_value = function(item, userprofile) {
 // Create a label to replace "readonly hidden select" readonly
 window.addEventListener('load', function () {
   var selects = document.querySelectorAll("select[readonly][hidden]");
-  console.log(selects)
   for (select of selects) {
     let elem = document.createElement('label');
     let text = select.querySelector("option[selected]").text
