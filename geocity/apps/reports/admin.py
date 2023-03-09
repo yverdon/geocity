@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
-from geocity.apps.accounts.admin import IntegratorFilterMixin
+from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.submissions.models import ComplementaryDocumentType
 
 from .models import HeaderFooter, Report, ReportLayout, Section
@@ -190,6 +190,13 @@ class ReportAdmin(
                     )
                 )
         return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "layout":
+            kwargs["queryset"] = filter_for_user(
+                request.user, ReportLayout.objects.all()
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
