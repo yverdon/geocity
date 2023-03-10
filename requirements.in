@@ -46,4 +46,4 @@ Jinja2
 docker
 django-polymorphic
 postfinancecheckout
-django_admin_json_editor
+django-jsoneditor

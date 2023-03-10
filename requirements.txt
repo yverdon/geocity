@@ -32,7 +32,6 @@ deprecated==1.2.13
 django==4.1.7
     # via
     #   -r requirements.in
-    #   django-admin-json-editor
     #   django-admin-sortable2
     #   django-allauth
     #   django-axes
@@ -58,8 +57,6 @@ django==4.1.7
     #   django-taggit
     #   django-two-factor-auth
     #   djangorestframework
-django-admin-json-editor==0.2.3
-    # via -r requirements.in
 django-admin-sortable2==2.1.4
     # via -r requirements.in
 django-allauth==0.51.0
@@ -90,6 +87,8 @@ django-jazzmin==2.6.0
     # via -r requirements.in
 django-js-asset==2.0.0
     # via django-ckeditor
+django-jsoneditor==0.2.4
+    # via -r requirements.in
 django-oauth-toolkit==2.2.0
     # via -r requirements.in
 django-otp==1.1.4
@@ -154,7 +153,9 @@ oauthlib==3.2.2
 openpyxl==3.0.10
     # via tablib
 packaging==21.3
-    # via docker
+    # via
+    #   django-jsoneditor
+    #   docker
 pdf2image==1.16.0
     # via -r requirements.in
 phonenumbers==8.13.1
