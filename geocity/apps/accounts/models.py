@@ -268,6 +268,7 @@ class AdministrativeEntity(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Configuration de la carte avancée"),
+        related_name="map_widget_configuration_administrative_entity",
     )
     tags = TaggableManager(
         blank=True,

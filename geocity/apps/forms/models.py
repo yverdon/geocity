@@ -470,6 +470,7 @@ class Form(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
+        related_name="map_widget_configuration_form",
         verbose_name=_("Configuration de la carte avancée"),
     )
     # All objects
