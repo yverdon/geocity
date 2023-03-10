@@ -296,6 +296,18 @@ class FormPrice(models.Model):
         ordering = ("order", "price")
 
 
+class MapWidgetConfiguration(models.Model):
+    name = models.CharField(_("Nom de la configuration"), max_length=255)
+    configuration = models.JSONField("Configuration du Widget cartographique")
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+
+
 class Form(models.Model):
     """
     Represents a Form configuration object.
@@ -440,6 +452,12 @@ class Form(models.Model):
         ),
         null=True,
         blank=True,
+    )
+    map_widget_configuration = models.ForeignKey(
+        MapWidgetConfiguration,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Configuration de la carte avancée"),
     )
     # All objects
     objects = FormQuerySet().as_manager()

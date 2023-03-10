@@ -263,6 +263,12 @@ class AdministrativeEntity(models.Model):
         ),
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
+    map_widget_configuration = models.ForeignKey(
+        "forms.MapWidgetConfiguration",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Configuration de la carte avancée"),
+    )
     tags = TaggableManager(
         blank=True,
         verbose_name=_("Mots-clés"),
