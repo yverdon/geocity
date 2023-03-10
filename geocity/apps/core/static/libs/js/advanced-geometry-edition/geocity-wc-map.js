@@ -255,10 +255,10 @@ dn.finalized = !0, dn.elementProperties = /* @__PURE__ */ new Map(), dn.elementS
  * SPDX-License-Identifier: BSD-3-Clause
  */
 var No;
-const Pr = window, Ln = Pr.trustedTypes, ih = Ln ? Ln.createPolicy("lit-html", { createHTML: (i) => i }) : void 0, je = `lit$${(Math.random() + "").slice(9)}$`, Ua = "?" + je, Hf = `<${Ua}>`, Tn = document, gs = (i = "") => Tn.createComment(i), ms = (i) => i === null || typeof i != "object" && typeof i != "function", ru = Array.isArray, ou = (i) => ru(i) || typeof (i == null ? void 0 : i[Symbol.iterator]) == "function", Jn = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, nh = /-->/g, sh = />/g, Ri = RegExp(`>|[ 	
-\f\r](?:([^\\s"'>=/]+)([ 	
-\f\r]*=[ 	
-\f\r]*(?:[^ 	
+const Pr = window, Ln = Pr.trustedTypes, ih = Ln ? Ln.createPolicy("lit-html", { createHTML: (i) => i }) : void 0, je = `lit$${(Math.random() + "").slice(9)}$`, Ua = "?" + je, Hf = `<${Ua}>`, Tn = document, gs = (i = "") => Tn.createComment(i), ms = (i) => i === null || typeof i != "object" && typeof i != "function", ru = Array.isArray, ou = (i) => ru(i) || typeof (i == null ? void 0 : i[Symbol.iterator]) == "function", Jn = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, nh = /-->/g, sh = />/g, Ri = RegExp(`>|[
+\f\r](?:([^\\s"'>=/]+)([
+\f\r]*=[
+\f\r]*(?:[^
 \f\r"'\`<>=]|("|')|))|$)`, "g"), rh = /'/g, oh = /"/g, au = /^(?:script|style|textarea|title)$/i, Xf = (i) => (t, ...e) => ({ _$litType$: i, strings: t, values: e }), Lt = Xf(1), yi = Symbol.for("lit-noChange"), bt = Symbol.for("lit-nothing"), ah = /* @__PURE__ */ new WeakMap(), wn = Tn.createTreeWalker(Tn, 129, null, !1), lu = (i, t) => {
   const e = i.length - 1, n = [];
   let s, r = t === 2 ? "<svg>" : "", o = Jn;
@@ -14551,7 +14551,7 @@ class Kd {
 class ot {
   static zoomInLabel() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                       <g class="Plus" clip-path="url(#a)">
                         <g class="icon">
                           <path d="M5 16H27M16 5V27" class="Vector"/>
@@ -14566,7 +14566,7 @@ class ot {
   }
   static zoomOutLabel() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                       <g class="Minus" clip-path="url(#a)">
                       <g class="icon">
                         <path d="M5 16H27" class="Vector"/>
@@ -14581,7 +14581,7 @@ class ot {
   }
   static fullScreenLabel() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                       <g class="ArrowsOut" clip-path="url(#a)">
                         <g class="icon">
                           <path d="M21 6H26V11M19 13 26 6M11 26H6V21M13 19 6 26M26 21V26H21M19 19 26 26M6 11V6H11M13 13 6 6" class="Vector"/>
@@ -14596,7 +14596,7 @@ class ot {
   }
   static fullScreenLabelActive() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                         <g class="ArrowsIn" clip-path="url(#a)">
                         <g class="icon">
                           <path d="M24 13H19V8M26 6 19 13M8 19H13V24M6 26 13 19M19 24V19H24M26 26 19 19M13 8V13H8M6 6 13 13" class="Vector"/>
@@ -14832,7 +14832,7 @@ ot.cross = `
           <path fill="#fff" d="M0 0H32V32H0z"/>
         </clipPath>
       </defs>
-    </svg>  
+    </svg>
   `;
 ot.stack = `
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -17753,7 +17753,7 @@ let Wi = class extends At {
             ${Fe(this.icon)}
           </div>
           <div class="notification-title-text">${this.message}</div>
-        </div>  
+        </div>
       </div>
     `;
   }
@@ -18548,7 +18548,7 @@ let kc = class extends At {
                         <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_244_6943" result="shape"/>
                     </filter>
                 </defs>
-            </svg>        
+            </svg>
         </div>
         `;
   }
@@ -20014,9 +20014,9 @@ function If(i) {
     c += 2e6;
   var u = t - r;
   if (u % 2 !== 0)
-    throw `MGRSPoint has to have an even number 
-of digits after the zone letter and two 100km letters - front 
-half for easting meters, second half for 
+    throw `MGRSPoint has to have an even number
+of digits after the zone letter and two 100km letters - front
+half for easting meters, second half for
 northing meters` + i;
   var d = u / 2, f = 0, g = 0, m, _, y, p, v;
   return d > 0 && (m = 1e5 / Math.pow(10, d), _ = i.substring(r, r + d), f = parseFloat(_) * m, y = i.substring(r + d), g = parseFloat(y) * m), p = f + h, v = g + c, {
@@ -21901,7 +21901,7 @@ let zn = class extends At {
   render() {
     return Lt`
     <div id="map" class="${w().getTargetBoxSize()} ${w().getTheme()}">
-    </div>   
+    </div>
     `;
   }
 };
