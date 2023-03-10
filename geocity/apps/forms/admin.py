@@ -2,7 +2,9 @@ import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
+from django.db.models.fields.json import JSONField
 from django.utils.translation import gettext_lazy as _
+from jsoneditor.forms import JSONEditor
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
@@ -237,6 +239,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             _("Planning et localisation"),
             {
                 "fields": (
+                    "map_widget_configuration",  # TODO: hide below field if a config is selected here + filter for integrator
                     "can_have_multiple_ranges",
                     "needs_date",
                     "start_delay",
@@ -509,3 +512,33 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return list(obj.tags.all())
 
     get__tags.short_description = _("Mots-clés")
+
+
+"""
+TODO:
+ - Define initial values
+ - Validate JSON: https://github.com/nnseva/django-jsoneditor#jsonschema
+
+"""
+
+
+@admin.register(models.MapWidgetConfiguration)
+class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_display = [
+        "name",
+        "configuration",
+        "integrator",
+    ]
+    formfield_overrides = {
+        JSONField: {
+            "widget": JSONEditor(
+                init_options={"mode": "view", "modes": ["view", "code", "tree"]},
+                ace_options={"readOnly": True},
+                attrs={"style": "height: 1000px;"},
+            ),
+        },
+    }
+
+    class Meta:
+        model = models.MapWidgetConfiguration
+        fields = "__all__"

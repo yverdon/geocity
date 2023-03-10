@@ -21,10 +21,16 @@ from taggit.managers import TaggableManager
 
 from .fields import AdministrativeEntityFileField
 
-# public types: for public/restricted features
+# Controls who can fill each Form. Anonymous forms can be filled by anyone
 PUBLIC_TYPE_CHOICES = (
-    (True, _("Visibilité grand public")),
-    (False, _("Visible uniquement par les utilisateur autorisés")),
+    (
+        True,
+        _("Tout public"),
+    ),
+    (
+        False,
+        _("Restreint aux utilisateurs autorisés"),
+    ),
 )
 
 
@@ -257,6 +263,12 @@ class AdministrativeEntity(models.Model):
         ),
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
+    map_widget_configuration = models.ForeignKey(
+        "forms.MapWidgetConfiguration",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Configuration de la carte avancée"),
+    )
     tags = TaggableManager(
         blank=True,
         verbose_name=_("Mots-clés"),

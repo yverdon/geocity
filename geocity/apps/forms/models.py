@@ -91,7 +91,7 @@ class FormQuerySet(models.QuerySet):
         """
         forms = self.filter(administrative_entities=administrative_entity)
 
-        if not user.has_perm("submissions.view_private_submission"):
+        if not user.has_perm("submissions.view_private_form"):
             forms = forms.filter(is_public=True)
 
         if limit_to_categories:
@@ -103,6 +103,7 @@ class FormQuerySet(models.QuerySet):
         return forms
 
     def get_administrative_entities_with_forms(self, user, site=None):
+        """Default queryset, for integrator, can fill all forms except anonymous ones"""
         queryset = (
             AdministrativeEntity.objects.filter(
                 pk__in=self.values_list("administrative_entities", flat=True),
@@ -115,8 +116,46 @@ class FormQuerySet(models.QuerySet):
         if site:
             queryset = queryset.filter(sites=site)
 
-        if not user.has_perm("submissions.view_private_submission"):
-            queryset = queryset.filter(forms__is_public=True)
+        integrator_admin = user.groups.filter(
+            permit_department__is_integrator_admin=True
+        ).first()
+
+        user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
+            user
+        )
+
+        user_can_view_private_form = user.has_perm("submissions.view_private_form")
+
+        if not user.is_superuser:
+            if integrator_admin:
+                """An integrator can fill all forms he owns + public ones"""
+                queryset = queryset.filter(
+                    Q(integrator=integrator_admin) | Q(forms__is_public=True)
+                )
+            elif user_administrative_entities and user_can_view_private_form:
+                """User is trusted and associated to administrative entities,
+                he can fill private forms for those administrative entities
+                if granted permission 'view_private_form'"""
+                queryset = queryset.filter(
+                    Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
+                )
+            elif not user_can_view_private_form or not user_administrative_entities:
+                """Untrusted users or user not granted with view_private_form can only fill public forms"""
+                queryset = queryset.filter(
+                    Q(integrator=integrator_admin) | Q(forms__is_public=True)
+                )
+            elif user_administrative_entities and user.has_perm(
+                "submissions.view_private_form"
+            ):
+                """User is trusted and associated to administrative entities,
+                he can fill private forms for those administrative entities
+                if granted permission 'view_private_form'"""
+                queryset = queryset.filter(
+                    Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
+                )
+            elif not user_can_view_private_form or not user_administrative_entities:
+                """Untrusted users or user not granted with view_private_form can only fill public forms"""
+                queryset = queryset.filter(forms__is_public=True)
 
         return queryset
 
@@ -257,9 +296,21 @@ class FormPrice(models.Model):
         ordering = ("order", "price")
 
 
+class MapWidgetConfiguration(models.Model):
+    name = models.CharField(_("Nom de la configuration"), max_length=255)
+    configuration = models.JSONField("Configuration du Widget cartographique")
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+
+
 class Form(models.Model):
     """
-    Represents a works object for a specific works type.
+    Represents a Form configuration object.
     """
 
     integrator = models.ForeignKey(
@@ -335,7 +386,7 @@ class Form(models.Model):
         _("Document de validation obligatoire"), default=True
     )
     # TODO: sphinx documentation, to explain is used to make visible/hidden in the list of forms
-    is_public = models.BooleanField(_("Visibilité "), default=False)
+    is_public = models.BooleanField(_("Formulaire public"), default=False)
     is_anonymous = models.BooleanField(
         _("Demandes anonymes uniquement"),
         default=False,
@@ -401,6 +452,12 @@ class Form(models.Model):
         ),
         null=True,
         blank=True,
+    )
+    map_widget_configuration = models.ForeignKey(
+        MapWidgetConfiguration,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Configuration de la carte avancée"),
     )
     # All objects
     objects = FormQuerySet().as_manager()

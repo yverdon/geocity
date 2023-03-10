@@ -1,0 +1,7 @@
+{% extends "reports/header_footers/_headerfooter.html" %}
+
+{% block content %}
+  content: "{{rendered_content}}";
+  white-space: pre;
+  text-align: {{header_footer.text_align}};
+{% endblock %}

@@ -161,6 +161,7 @@ INSTALLED_APPS = [
     "captcha",
     "ckeditor",
     "jazzmin",
+    "jsoneditor",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
