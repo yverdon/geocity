@@ -44,6 +44,10 @@
     </p>
   {% endif %}
 
+  <p class="font-weight-bold">
+    <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
+    <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label><br>
+  </p>
   {% if not incomplete_steps and should_go_to_payment %}
     {% if not submission.get_submission_price %}
       <div class="alert alert-danger mb-4">
@@ -78,10 +82,10 @@
           {% if previous_step.url %}
             <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
           {% endif %}
-          <a class="btn btn-primary
-          {% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
-          href="{% if has_any_form_with_exceeded_submissions %}#{% else %}{% url 'submissions:submission_payment_redirect' pk=submission.pk %}{% endif %}" class="mr-2">
-            {% trans "Payer maintenant" %}
+          <a href="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" style="text-decoration:none">
+            <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
+              {% trans "Payer maintenant" %}
+            </button>
           </a>
           {% if has_any_form_with_exceeded_submissions %}
             <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
@@ -96,10 +100,6 @@
     {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
   {% if not incomplete_steps and not should_go_to_payment %}
-    <p class="font-weight-bold">
-      <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
-      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label><br>
-    </p>
     <form method="post" action="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}">
       {% csrf_token %}
       {% buttons %}
