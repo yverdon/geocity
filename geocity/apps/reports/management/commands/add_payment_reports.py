@@ -28,6 +28,7 @@ class Command(BaseCommand):
 Date :&nbsp;{{ transaction_data.creation_date }}<br />
 <strong>Ann&eacute;e :&nbsp;{{ transaction_data.creation_date_year }}</strong><br />
 Page : 1/1</p>""",
+            text_align="right",
             location="right",
         )
         section_paragraph_1.save()
@@ -41,6 +42,7 @@ Page : 1/1</p>""",
 <p>{{request_data.properties.author.first_name}}&nbsp;{{request_data.properties.author.last_name}}<br />
 {{request_data.properties.author.address}}<br />
 {{request_data.properties.author.zipcode}}&nbsp;{{request_data.properties.author.city}}</p>""",
+            text_align="right",
             location="right",
         )
         section_paragraph_2.save()
@@ -110,6 +112,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 Date :&nbsp;{{ transaction_data.creation_date }}<br />
 <strong>Ann&eacute;e :&nbsp;{{ transaction_data.creation_date_year }}</strong><br />
 Page : 1/1</p>""",
+            text_align="right",
             location="right",
         )
         section_paragraph_1.save()
@@ -123,6 +126,7 @@ Page : 1/1</p>""",
 <p>{{request_data.properties.author.first_name}}&nbsp;{{request_data.properties.author.last_name}}<br />
 {{request_data.properties.author.address}}<br />
 {{request_data.properties.author.zipcode}}&nbsp;{{request_data.properties.author.city}}</p>""",
+            text_align="right",
             location="right",
         )
         section_paragraph_2.save()
