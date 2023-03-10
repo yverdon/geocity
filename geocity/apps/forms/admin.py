@@ -329,7 +329,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         if db_field.name == "category":
             qs = models.FormCategory.objects.all()
             kwargs["queryset"] = filter_for_user(user, qs)
-        
+
         if db_field.name == "map_widget_configuration":
             kwargs["queryset"] = filter_for_user(
                 request.user, models.MapWidgetConfiguration.objects.all()

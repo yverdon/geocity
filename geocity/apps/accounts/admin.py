@@ -14,12 +14,12 @@ from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
+from geocity.apps.forms.models import MapWidgetConfiguration
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
-from geocity.apps.forms.models import MapWidgetConfiguration
 from .users import get_integrator_permissions, get_users_list_for_integrator_admin
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
@@ -768,7 +768,6 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 request.user, MapWidgetConfiguration.objects.all()
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
 
     def save_model(self, request, obj, form, change):
 
