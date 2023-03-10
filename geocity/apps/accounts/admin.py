@@ -19,6 +19,7 @@ from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
+from geocity.apps.forms.models import MapWidgetConfiguration
 from .users import get_integrator_permissions, get_users_list_for_integrator_admin
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
@@ -577,7 +578,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "signature_sheet",
             "signature_sheet_description",
             "additional_searchtext_for_address_field",
-            "map_widget_configuration",  # TODO: filter for integrator
+            "map_widget_configuration",
             "geom",
             "integrator",
         ]
@@ -762,7 +763,12 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             kwargs["queryset"] = Group.objects.filter(
                 permit_department__is_integrator_admin=True,
             )
+        if db_field.name == "map_widget_configuration":
+            kwargs["queryset"] = filter_for_user(
+                request.user, MapWidgetConfiguration.objects.all()
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
     def save_model(self, request, obj, form, change):
 

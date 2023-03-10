@@ -239,7 +239,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             _("Planning et localisation"),
             {
                 "fields": (
-                    "map_widget_configuration",  # TODO: hide below field if a config is selected here + filter for integrator
+                    "map_widget_configuration",  # TODO: hide below field if a config is selected here
                     "can_have_multiple_ranges",
                     "needs_date",
                     "start_delay",
@@ -321,6 +321,11 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         if db_field.name == "category":
             qs = models.FormCategory.objects.all()
             kwargs["queryset"] = filter_for_user(user, qs)
+        
+        if db_field.name == "map_widget_configuration":
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.MapWidgetConfiguration.objects.all()
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
