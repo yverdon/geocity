@@ -60,6 +60,13 @@ class FormAdminForm(forms.ModelForm):
         label=_("Types de géométrie autorisés"),
         required=False,
     )
+    geo_widget_option = forms.ChoiceField(
+        choices=models.Form.GEO_WIDGET_CHOICES,
+        widget=forms.Select,
+        label=_("Choix de l'interface de saisie cartographique"),
+        required=False,
+        # default=models.Form.GEO_WIDGET_GENERIC,
+    )
 
     class Meta:
         model = models.Form
@@ -239,13 +246,14 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             _("Planning et localisation"),
             {
                 "fields": (
-                    "map_widget_configuration",  # TODO: hide below field if a config is selected here
                     "can_have_multiple_ranges",
                     "needs_date",
                     "start_delay",
                     "permit_duration",
                     "expiration_reminder",
                     "days_before_reminder",
+                    "geo_widget_option",
+                    "map_widget_configuration",  # TODO: hide below field if a config is selected here
                     "geometry_types",
                     "wms_layers",
                     "wms_layers_order",

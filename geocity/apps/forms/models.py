@@ -9,6 +9,7 @@ from django.core.validators import (
     MinValueValidator,
 )
 from django.db import models
+from django import forms
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
@@ -453,9 +454,20 @@ class Form(models.Model):
         null=True,
         blank=True,
     )
+    GEO_WIDGET_GENERIC = 1
+    GEO_WIDGET_ADVANCED = 2
+    GEO_WIDGET_CHOICES = (
+        (GEO_WIDGET_GENERIC, _("Générique")),
+        (GEO_WIDGET_ADVANCED, _("Avancée")),
+    )
+    # TODO: show/hide depending fields depending on admin choice
+    geo_widget_option = models.IntegerField(
+        _("Choix de l'interface de saisie cartographique"), choices=GEO_WIDGET_CHOICES, default=GEO_WIDGET_GENERIC
+    )
     map_widget_configuration = models.ForeignKey(
         MapWidgetConfiguration,
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Configuration de la carte avancée"),
     )
