@@ -1,0 +1,99 @@
+{% load static %}
+
+{% block scripts %}
+<script type="module" src="{% static 'libs/js/advanced-geometry-edition/geocity-wc-map.js' %}"></script>
+{% endblock %}
+
+<div style="width: 100%; height: 80vh;margin-left: auto;margin-right: auto">
+  <openlayers-element  options='{
+    "information": { "duration": 5000, "title": "Signaler un banc cassé", "content": "Positionner le centre de la cible à l’emplacement du banc cassé dans l’espace public" },
+    "enableGeolocation": true,
+    "enableCenterButton": true,
+    "enableRotation": true,
+    "mode": {
+        "type": "select"
+    },
+    "geolocationInformation": {
+        "displayBox": true,
+        "reverseLocation": true,
+        "currentLocation": false
+    },
+    "notifications": [
+    {
+        "type": "warning",
+        "message": "Veuillez zoomer davantage avant de pouvoir sélectionner un emplacement.",
+        "rule": {
+            "type": "ZOOM_CONSTRAINT",
+            "minZoom": 16
+        }
+    },
+    {
+      "type": "warning",
+      "message": "Le maximum de sélection est limité à {x}.",
+      "rule": {
+          "type": "MAX_SELECTION",
+          "maxElement": 1
+      }
+    },
+    {
+        "type": "info",
+        "message": "Déplacez la carte pour que l’endroit désiré soit au centre de la cible.",
+            "rule": {
+            "type": "MOVE_TARGET"
+        }
+    }
+    ],
+    "wfs": {
+        "url": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
+    },
+    "wmts": [{
+        "capability": "https://wmts.asit-asso.ch/wmts?&Service=WMTS&Version=1.0.0&Request=GetCapabilities",
+        "layer": "asitvd.fond_cadastral",
+        "projection": "EPSG:2056",
+        "name": "Carte de base",
+        "thumbnail": "{% static 'images/base.svg'%}"
+    },
+    {
+        "capability": "https://wmts.geo.admin.ch/EPSG/2056/1.0.0/WMTSCapabilities.xml",
+        "layer": "ch.swisstopo.swissimage",
+        "projection": "EPSG:2056",
+        "name": "Photo aérienne",
+        "thumbnail": "{% static 'images/aerial.svg'%}"
+    }],
+    "inclusionArea": {
+        "url": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeName=MO_bf_bien_fonds",
+        "filter": "GeometryOperands=urn:ogc:def:crs:EPSG::2056&FILTER=<Filter><And><PropertyIsEqualTo><ValueReference>commune</ValueReference><Literal>Yverdon-les-Bains</Literal></PropertyIsEqualTo><PropertyIsNotEqualTo><ValueReference>genre</ValueReference><Literal>Parcelle privée</Literal></PropertyIsNotEqualTo><BBOX></And></Filter>"
+    },
+    "selectionTargetBoxMessage": "Emplacement du banc"
+}'
+/>
+</div>
+<div style="width: 100%; display: flex; margin-top: 1vh">
+    <div id="validate" style="margin-left: auto;margin-right: auto; width: 229px; height: 36px; background-color: #008C6F; border: 10px solid #008C6F ;color: white; text-align: center;">Valider</div>
+</div>
+<div style="width: 100%; display: flex; margin-top: 1vh; justify-content: center;">
+    <span id="coordinate"></span>
+</div>
+<script>
+    const toSendEvent = '';
+    const button = document.getElementById('validate');
+    button.disabled = true;
+    button.style.opacity = 0.5;
+
+    button.addEventListener('click', (e) => {
+        document.getElementById('coordinate').innerHTML = JSON.stringify(this.toSendEvent);
+    })
+
+    window.addEventListener('position-selected', (event) => {
+        const button = document.getElementById('validate');
+        if (event.detail) {
+            button.disabled = false;
+            button.style.opacity = 1;
+            this.toSendEvent = event.detail;
+        } else {
+
+            button.disabled = true;
+            button.style.opacity = 0.5;
+        }
+    })
+</script>

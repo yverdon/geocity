@@ -30,7 +30,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.fields import AddressWidget
+from geocity.fields import AddressWidget, AdvancedGeometryWidget
 
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
@@ -1196,7 +1196,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            "geom": GeometryWidget(),
+            "geom": AdvancedGeometryWidget(),
             "comment": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -1229,13 +1229,13 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         ):
             del self.fields["geom"]
 
-        else:
-            self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
-                self.submission
-            )
-            self.fields["geom"].widget.attrs["options"][
-                "edit_geom"
-            ] = not disable_fields
+        # else:
+        #     self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
+        #         self.submission
+        #     )
+        #     self.fields["geom"].widget.attrs["options"][
+        #         "edit_geom"
+        #     ] = not disable_fields
         if (
             not config.ENABLE_GEOCALENDAR
             or self.instance.comes_from_automatic_geocoding

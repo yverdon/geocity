@@ -75,3 +75,7 @@ class AddressWidget(forms.TextInput):
                 "data_remote_autocomplete": json.dumps(autocomplete_options),
             }
         )
+
+
+class AdvancedGeometryWidget(forms.TextInput):
+    template_name = "advancedgeometrywidget/advancedgeometrywidget.html"
