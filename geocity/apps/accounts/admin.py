@@ -577,6 +577,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "signature_sheet",
             "signature_sheet_description",
             "additional_searchtext_for_address_field",
+            "map_widget_configuration",  # TODO: filter for integrator
             "geom",
             "integrator",
         ]
@@ -662,6 +663,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "general_informations",
                     "phone",
                     "additional_searchtext_for_address_field",
+                    "map_widget_configuration",
                     "geom",
                     "integrator",
                 )
