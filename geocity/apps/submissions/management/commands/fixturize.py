@@ -16,6 +16,7 @@ from geocity.apps.accounts.models import *
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
+from geocity.apps.submissions.contact_type_choices import *
 from geocity.apps.submissions.models import *
 
 # import fixturize file
