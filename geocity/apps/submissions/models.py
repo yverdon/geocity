@@ -537,7 +537,11 @@ class Submission(models.Model):
                 # include additional documents
                 for document in self.complementary_documents.all():
                     zip_file.write(document.path, document.name)
-
+                # include user uploaded documents
+                for document in self.get_appendices_values():
+                    filename = document.value["val"].split("/")[-1]
+                    path = f"{settings.PRIVATE_MEDIA_ROOT}/{document.value['val']}"
+                    zip_file.write(path, filename)
             # Reset file pointer
             tmp_file.seek(0)
             archived_request = ArchivedSubmission(
