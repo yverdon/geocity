@@ -19,6 +19,7 @@ from polymorphic.models import PolymorphicModel
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.submissions.contact_type_choices import *
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -632,10 +633,9 @@ class SectionRecipient(Section):
     def _get_dynamic_recipient(self, request, base_context):
         contacts = base_context["request_data"]["properties"]["contacts"]
         contact_type_requestor = None
-        if "Requérant (si différent de l'auteur de la demande)" in contacts:
-            contact_type_requestor = contacts[
-                "Requérant (si différent de l'auteur de la demande)"
-            ]
+        requestor = dict(CONTACT_TYPE_CHOICES)[CONTACT_TYPE_REQUESTOR]
+        if requestor in contacts:
+            contact_type_requestor = contacts[requestor]
 
         author = base_context["request_data"]["properties"]["author"]
         dynamic_recipient = contact_type_requestor if contact_type_requestor else author
