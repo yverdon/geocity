@@ -613,6 +613,13 @@ class SectionRecipient(Section):
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
+    uses_dynamic_recipient = models.BooleanField(
+        _("Destinataire dynamique"),
+        default=True,
+        help_text=_(
+            "Si le demande est saisie au nom d'une autre personne (requérant) celui-ci sera utilisé"
+        ),
+    )
 
     # TODO: Find a way to fix this, to make padding_top at 40 by default only for SectionRecipient
     def __init__(self, *args, **kwargs):
@@ -621,6 +628,25 @@ class SectionRecipient(Section):
 
     class Meta:
         verbose_name = _("Destinataire")
+
+    def _get_dynamic_recipient(self, request, base_context):
+        contacts = base_context["request_data"]["properties"]["contacts"]
+        contact_type_requestor = None
+        if "Requérant (si différent de l'auteur de la demande)" in contacts:
+            contact_type_requestor = contacts[
+                "Requérant (si différent de l'auteur de la demande)"
+            ]
+
+        author = base_context["request_data"]["properties"]["author"]
+        dynamic_recipient = contact_type_requestor if contact_type_requestor else author
+        return dynamic_recipient
+
+    def prepare_context(self, request, base_context):
+        # Return updated context
+        return {
+            **super().prepare_context(request, base_context),
+            "dynamic_recipient": self._get_dynamic_recipient(request, base_context),
+        }
 
 
 class HeaderFooter(PolymorphicModel):

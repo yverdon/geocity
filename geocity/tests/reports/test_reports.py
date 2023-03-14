@@ -246,6 +246,7 @@ class ReportsTests(ReportsTestsBase):
                     "padding_top": 20,
                     # "is_new_page": bool,
                     "is_recommended": True,
+                    "uses_dynamic_recipient": True,
                 }
             },
             15: {
@@ -253,6 +254,7 @@ class ReportsTests(ReportsTestsBase):
                     "padding_top": 50,
                     # "is_new_page": bool,
                     "is_recommended": False,
+                    "uses_dynamic_recipient": False,
                 }
             },
         }
