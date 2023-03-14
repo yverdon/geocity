@@ -1,4 +1,5 @@
-FROM sitdocker/geocity-base:v1.3.2.2021
+#FROM sitdocker/geocity-base:v1.3.2.2021
+FROM geocity-base:latest
 
 ARG ENV
 
@@ -6,8 +7,7 @@ ARG ENV
 # These files are only used during build process and by entrypoint.sh for dev
 
 WORKDIR /code
-COPY requirements_dev.txt requirements_dev.txt
-COPY requirements.txt requirements.txt
+COPY requirements_dev.txt requirements.txt /code/
 
 RUN if [ "$ENV" = "DEV" ] ; \
     then \
