@@ -42,16 +42,16 @@
   width: 120px;
 }
 
-label.custom-file-label:after {
-  content: "Charger un KML...";
-}
-
 .map {
   background: #f1f4f8;
 }
 
 .map-buttons a {
   margin-top: 10px;
+}
+
+.buttons-text {
+  font-size: 12.7px;
 }
 
 .map-buttons button {

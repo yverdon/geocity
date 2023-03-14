@@ -147,6 +147,7 @@ class UserAdmin(BaseUserAdmin):
             return [
                 "is_superuser",
                 "is_sociallogin",
+                "user_permissions",
             ]
         else:
             return [
@@ -215,6 +216,8 @@ class UserAdmin(BaseUserAdmin):
 
             # Edit cleaned_data to save the groups
             form.cleaned_data["groups"] = groups_to_keep
+
+        super().save_model(req, obj, form, change)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -359,7 +362,7 @@ class GroupAdminForm(forms.ModelForm):
         fields = "__all__"
         help_texts = {
             "permissions": _(
-                "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
+                "Pour un rôle intégrateur, les permissions sont configurées automatiquement quelles que soient les valeurs saisies"
             ),
         }
 
@@ -368,23 +371,54 @@ class GroupAdminForm(forms.ModelForm):
         css = {"all": ("css/admin/admin.css",)}
 
     def clean_permissions(self):
-        permissions = self.cleaned_data["permissions"]
-        integrator_permissions = get_integrator_permissions()
 
+        permissions = self.cleaned_data["permissions"]
+        permissions_for_trusted_users = Permission.objects.filter(
+            codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+        )
+        default_permissions_for_pilot = Permission.objects.filter(
+            codename__in=permissions_groups.DEFAULT_PILOT_PERMISSION_CODENAMES
+        )
+        default_permissions_for_validator = Permission.objects.filter(
+            codename__in=permissions_groups.DEFAULT_VALIDATOR_PERMISSION_CODENAMES
+        )
         if "permit_department-0-is_integrator_admin" in self.data.keys():
-            permissions = permissions.union(integrator_permissions)
-        else:
-            permissions = permissions.difference(
-                integrator_permissions.exclude(
-                    codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
-                )
+            # Group in integrator. Permission for this type are defined in model
+            return get_integrator_permissions()
+        elif (
+            "permit_department-0-is_backoffice" in self.data.keys()
+        ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
+            # Group is pilot but not integrator
+            return (
+                permissions_for_trusted_users & permissions
+                | default_permissions_for_pilot
             )
-        return permissions
+        elif (
+            "permit_department-0-is_validator" in self.data.keys()
+        ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
+            # Group is validator but not integrator
+            return (
+                permissions_for_trusted_users & permissions
+                | default_permissions_for_validator
+            )
+        elif (
+            "permit_department-0-is_backoffice" in self.data.keys()
+            or "permit_department-0-is_validator" in self.data.keys()
+        ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
+            # Group is validator or pilot but not integrator
+            return (
+                permissions_for_trusted_users & permissions
+                | default_permissions_for_validator
+                | default_permissions_for_pilot
+            )
+        else:
+            # Group has no specific permission defined by checkbox (not pilot or validator or integrator)
+            return permissions_for_trusted_users & permissions
 
 
 class UserInline(admin.TabularInline):
     model = Group.user_set.through
-    can_delete = False
+    can_delete = True
     extra = 0
     verbose_name = _("Utilisateur membre du groupe")
     verbose_name_plural = _("Utilisateurs membres du groupe")
@@ -481,6 +515,7 @@ class GroupAdmin(admin.ModelAdmin):
                     permit_department__is_integrator_admin=True
                 ).pk
             ):
+
                 integrator_permissions = Permission.objects.filter(
                     codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )
@@ -536,6 +571,11 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "archive_link",
             "general_informations",
             "phone",
+            "directive",
+            "directive_description",
+            "additional_information",
+            "signature_sheet",
+            "signature_sheet_description",
             "additional_searchtext_for_address_field",
             "geom",
             "integrator",
@@ -576,6 +616,23 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             )
         }
 
+    def clean(self):
+        signature_sheet = self.cleaned_data["signature_sheet"]
+        signature_sheet_description = self.cleaned_data["signature_sheet_description"]
+
+        if (
+            signature_sheet
+            and not signature_sheet_description
+            or signature_sheet_description
+            and not signature_sheet
+        ):
+            raise forms.ValidationError(
+                _(
+                    "Les champs Volet de transmission et Texte explicatif relatif au volet de transmission doivent être remplis ou tous deux vides."
+                )
+            )
+        return self.cleaned_data
+
 
 class SubmissionWorkflowStatusInline(admin.TabularInline):
     model = SubmissionWorkflowStatus
@@ -586,6 +643,60 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
 
 @admin.register(models.AdministrativeEntityForAdminSite)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "tags",
+                    "ofs_id",
+                    "is_single_form_submissions",
+                    "sites",
+                    "expeditor_email",
+                    "expeditor_name",
+                    "custom_signature",
+                    "link",
+                    "archive_link",
+                    "general_informations",
+                    "phone",
+                    "additional_searchtext_for_address_field",
+                    "geom",
+                    "integrator",
+                )
+            },
+        ),
+        (
+            _("Directives - Données personnelles"),
+            {
+                "fields": (
+                    "directive",
+                    "directive_description",
+                    "additional_information",
+                ),
+                "description": _(
+                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
+                    ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires"""
+                ),
+            },
+        ),
+        (
+            _("Volet de transmission"),
+            {
+                "fields": (
+                    "signature_sheet",
+                    "signature_sheet_description",
+                ),
+                "description": _(
+                    """Le volet de transmission permet au requérant de télécharger un fichier et de le signer pour envoi par poste, avant
+                    l'envoi définitif de sa demande.
+                    La loi exige la forme papier pour certaines thématiques (par exemple la loi cantonale vaudoise sur l'aménagement du territoire).
+                    Les deux champs doivent obligatoirement être remplis pour que ces informations s'affichent."""
+                ),
+            },
+        ),
+    )
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
         Form = super().get_form(request, obj, **kwargs)
@@ -614,6 +725,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "expeditor_email",
         "ofs_id",
         "get_tags",
+        "get_is_single_form",
         "get_sites",
     ]
 
@@ -634,6 +746,13 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     get_tags.short_description = _("Mots-clés")
     get_tags.admin_order_field = "tags__name"
+
+    @admin.display(boolean=True)
+    def get_is_single_form(self, obj):
+        return obj.is_single_form_submissions
+
+    get_is_single_form.short_description = _("Objet unique")
+    get_is_single_form.admin_order_field = "is_single_form_submissions"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 

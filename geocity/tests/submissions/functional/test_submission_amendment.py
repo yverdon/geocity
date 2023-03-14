@@ -337,12 +337,12 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(
             mail.outbox[0].subject,
             "{} ({})".format(
-                "Votre annonce a été prise en compte et classée",
+                "Votre demande/annonce a été prise en compte et classée",
                 form_name,
             ),
         )
         self.assertIn(
-            "Nous vous informons que votre annonce a été prise en compte et classée.",
+            "Nous vous informons que votre demande/annonce a été prise en compte et classée.",
             mail.outbox[0].message().as_string(),
         )
 
@@ -380,9 +380,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(len(mail.outbox), 3)
 
         services_message_subject = (
-            "Une annonce a été prise en compte et classée par le secrétariat"
+            "Une demande/annonce a été prise en compte et classée par le secrétariat"
         )
-        services_message_content = "Nous vous informons qu'une annonce a été prise en compte et classée par le secrétariat."
+        services_message_content = "Nous vous informons qu'une demande/annonce a été prise en compte et classée par le secrétariat."
         valid_services_emails = [
             "service-1@geocity.ch",
             "service-2@geocity.ch",
@@ -574,12 +574,12 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(
             mail.outbox[0].subject,
             "{} ({})".format(
-                "Votre demande a changé de statut",
+                "Votre demande/annonce a changé de statut",
                 form_name,
             ),
         )
         self.assertIn(
-            "Nous vous informons que votre demande a changé de statut.",
+            "Nous vous informons que votre demande/annonce a changé de statut.",
             mail.outbox[0].message().as_string(),
         )
         self.assertIn(

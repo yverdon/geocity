@@ -133,7 +133,7 @@ def get_forms_step(
         .filter(category__in=selectable_categories)
         .distinct()
     )
-    if not user.has_perm("submissions.view_private_submission"):
+    if not user.has_perm("submissions.view_private_form"):
         candidate_forms = candidate_forms.filter(is_public=True)
 
     if candidate_forms.count() <= 1:

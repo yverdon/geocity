@@ -92,6 +92,21 @@
         </div>
 
         {% endif %}
+        {% if submission.administrative_entity.signature_sheet and submission.administrative_entity.signature_sheet_description %}
+          <div id="validation_pdf">
+            <dl>
+              <dd>
+                <h4>{% trans "Volet de transmission" %}</h4>
+              </dd>
+              <dd>
+                <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
+                <a href="{{ submission.administrative_entity.signature_sheet.url }}" target="_blank" rel="noreferrer">
+                  {% trans "Télécharger à nouveau le document à signer" %}
+                </a>
+              </dd>
+            </dl>
+          </div>
+        {% endif %}
 
         {% if history %}
 
@@ -253,6 +268,7 @@
 {% endblock %}
 {% block scripts %}
   <script src="{% static 'js/submissions_complementary_documents.js' %}"></script>
+  <script src="{% static 'js/submissions_submit.js' %}"></script>
   <script src="{% static 'js/submission_amending.js' %}"></script>
   <script src="{% static 'js/submission_transactions.js' %}"></script>
 {% endblock %}

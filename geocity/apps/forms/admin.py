@@ -97,6 +97,15 @@ class FormAdminForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+    # TODO: remove this once M2M relation is removed in model
+    def clean_administrative_entities(self):
+        administrative_entities = self.cleaned_data["administrative_entities"]
+        if len(administrative_entities) > 1:
+            raise forms.ValidationError(
+                _("Une seule entité administrative peut être sélectionnée")
+            )
+        return administrative_entities
+
     def clean_days_before_reminder(self):
         if (
             self.cleaned_data["expiration_reminder"]
@@ -217,7 +226,11 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "directive",
                     "directive_description",
                     "additional_information",
-                )
+                ),
+                "description": _(
+                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles.
+                    Note: si ces informations ont une portée globale pour toute l'entité, cette information peut être saisie à l'étape 1.1 Entité administrative"""
+                ),
             },
         ),
         (
@@ -402,8 +415,26 @@ class PriceAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form_names.short_description = _("Form(s)")
 
 
+class PaymentSettingsForm(forms.ModelForm):
+    class Meta:
+        model = models.PaymentSettings
+        fields = [
+            "name",
+            "prices_label",
+            "payment_confirmation_report",
+            "payment_refund_report",
+            "internal_account",
+            "payment_processor",
+            "space_id",
+            "user_id",
+            "api_key",
+            "integrator",
+        ]
+
+
 @admin.register(models.PaymentSettings)
 class PaymentSettingsAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = PaymentSettingsForm
     list_display = ["name", "prices_label", "payment_processor"]
     list_filter = ["name", "internal_account", "payment_processor"]
 

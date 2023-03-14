@@ -27,7 +27,7 @@ defusedxml==0.7.1
     # via python3-openid
 deprecated==1.2.13
     # via jwcrypto
-django==4.1.4
+django==4.1.7
     # via
     #   -r requirements.in
     #   django-admin-sortable2
@@ -159,7 +159,7 @@ pillow==9.3.0
     #   -r requirements.in
     #   django-simple-captcha
     #   pdf2image
-postfinancecheckout==3.2.2
+postfinancecheckout==3.4.0
     # via -r requirements.in
 psycopg2-binary==2.9.5
     # via -r requirements.in

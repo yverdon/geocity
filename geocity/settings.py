@@ -406,7 +406,7 @@ CONSTANCE_CONFIG = {
     ),
     "NETWORK_WHITELIST": (
         "172.16.0.0/12,192.168.0.0/16",
-        "Réseaux autorisés pour l'utilisation de l'API complète (/rest/submissions), séparés par des ','",
+        "Réseaux autorisés pour l'utilisation de l'API complète (/rest/submissions), séparés par des ','. ATTENTION: cette valeur est aussi utilisée pour les impressions de documents, il faut donc aussi inclure le réseau utilisé par Docker.",
         str,
     ),
     "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (

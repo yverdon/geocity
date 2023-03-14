@@ -173,7 +173,7 @@ class SubmissionClassifyTestCase(TestCase):
             submission__administrative_entity=self.administrative_entity,
             validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
         )
-        user = factories.UserFactory(actor=validation.submission.author)
+        user = factories.UserFactory()
         self.client.login(username=user.username, password="password")
 
         approve_url = reverse(
