@@ -24,7 +24,7 @@ djangorestframework
 djangorestframework-gis
 django-cors-headers
 django-constance[database]
-django-two-factor-auth[phonenumbers]
+django-two-factor-auth[phonenumbers]==1.14.0
 django-taggit
 filetype
 django-jazzmin
