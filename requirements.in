@@ -7,7 +7,7 @@ django-tables2
 django-tables2-column-shifter
 # Base docker image must be update when GDAL is updated
 # https://github.com/yverdon/docker-geocity/
-gdal==3.3.2
+gdal==3.6.3
 gunicorn
 html5lib
 jdcal
@@ -46,3 +46,4 @@ Jinja2
 docker
 django-polymorphic
 postfinancecheckout
+tzdata
