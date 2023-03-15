@@ -41,7 +41,6 @@ if ENABLE_SSL:
 # https://stackoverflow.com/a/71194288/6630397
 if ENABLE_SSL:
     CSRF_TRUSTED_ORIGINS = [
-        f"https://*.{os.getenv('BASE_URL')}",
         "https://*.127.0.0.1",
     ]
 
