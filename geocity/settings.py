@@ -26,7 +26,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
 
-ENABLE_SSL = os.getenv('ENABLE_SSL', False) == 'True'
+ENABLE_SSL = os.getenv('ENABLE_SSL', "True").lower() == "true"
 if ENABLE_SSL:
     SECURE_PROXY_SSL_HEADER = (
         tuple(os.getenv("SECURE_PROXY_SSL_HEADER").split(","))
@@ -263,8 +263,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "FORMS_SINGLE_STEP",
         "PROPERTIES_STEP",
         "GEO_TIME_STEP",
-        "TIME_STEP",
         "GEO_STEP",
+        "TIME_STEP",
         "APPENDICES_STEP",
         "ACTORS_STEP",
         "SUBMIT_STEP",
@@ -344,8 +344,8 @@ CONSTANCE_CONFIG = {
     "FORMS_SINGLE_STEP": ("Sélectionnez l'objet", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
-    "TIME_STEP": ("Renseignez le planning", "", str),
     "GEO_STEP": ("Renseignez la localisation", "", str),
+    "TIME_STEP": ("Renseignez le planning", "", str),
     "APPENDICES_STEP": ("Ajoutez les documents", "", str),
     "ACTORS_STEP": ("Renseignez les contacts", "", str),
     "SUBMIT_STEP": ("Résumé et envoi", "", str),
