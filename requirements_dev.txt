@@ -355,6 +355,8 @@ traitlets==5.2.2.post1
     # via
     #   ipython
     #   matplotlib-inline
+tzdata==2022.7
+    # via -r requirements.txt
 uritemplate==4.1.1
     # via -r requirements.txt
 urllib3==1.26.13
