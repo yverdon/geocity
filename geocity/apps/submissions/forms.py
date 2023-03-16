@@ -30,7 +30,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.fields import AddressWidget, AdvancedGeometryWidget
+from geocity.fields import AddressWidget
 
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
@@ -1152,6 +1152,14 @@ class GeometryWidget(geoforms.OSMWidget):
         )
 
 
+class GeometryWidgetAdvanced(geoforms.OpenLayersWidget):
+    template_name = "advancedgeometrywidget/geometrywidget.html"
+    map_srid = 2056
+
+    @property
+    def media(self):
+        return forms.Media()
+
 class SubmissionGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
@@ -1196,7 +1204,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            "geom": AdvancedGeometryWidget(),
+            "geom": GeometryWidgetAdvanced(),
             "comment": forms.Textarea(attrs={"rows": 2}),
         }
 

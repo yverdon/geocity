@@ -1,0 +1,90 @@
+{% if id != 'id_form-__prefix__-geom' %}
+{# Adapted from django gis contrib #}
+
+{% load i18n l10n %}
+{% load static %}
+{% load submissions_extras %}
+
+{% block scripts %}
+<script type="module" src="{% static 'libs/js/advanced-geometry-edition/geocity-wc-map.js' %}"></script>
+{% endblock %}
+
+<div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
+  <div style="width: 100%; height: 80vh;margin-left: auto;margin-right: auto">
+    <openlayers-element  options='{
+      "information": { "duration": 5000, "title": "Signaler un banc cassé", "content": "Positionner le centre de la cible à l’emplacement du banc cassé dans l’espace public" },
+      "enableGeolocation": true,
+      "enableCenterButton": true,
+      "enableRotation": true,
+      "mode": {
+          "type": "select"
+      },
+      "geolocationInformation": {
+          "displayBox": true,
+          "reverseLocation": true,
+          "currentLocation": false
+      },
+      "notifications": [
+      {
+          "type": "warning",
+          "message": "Veuillez zoomer davantage avant de pouvoir sélectionner un emplacement.",
+          "rule": {
+              "type": "ZOOM_CONSTRAINT",
+              "minZoom": 16
+          }
+      },
+      {
+        "type": "warning",
+        "message": "Le maximum de sélection est limité à {x}.",
+        "rule": {
+            "type": "MAX_SELECTION",
+            "maxElement": 1
+        }
+      },
+      {
+          "type": "info",
+          "message": "Déplacez la carte pour que l’endroit désiré soit au centre de la cible.",
+              "rule": {
+              "type": "MOVE_TARGET"
+          }
+      }
+      ],
+      "wfs": {
+          "url": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
+      },
+      "wmts": [{
+          "capability": "https://wmts.asit-asso.ch/wmts?&Service=WMTS&Version=1.0.0&Request=GetCapabilities",
+          "layer": "asitvd.fond_cadastral",
+          "projection": "EPSG:2056",
+          "name": "Carte de base",
+          "thumbnail": "{% static 'images/base.svg'%}"
+      },
+      {
+          "capability": "https://wmts.geo.admin.ch/EPSG/2056/1.0.0/WMTSCapabilities.xml",
+          "layer": "ch.swisstopo.swissimage",
+          "projection": "EPSG:2056",
+          "name": "Photo aérienne",
+          "thumbnail": "{% static 'images/aerial.svg'%}"
+      }],
+      "inclusionArea": {
+          "url": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeName=MO_bf_bien_fonds",
+          "filter": "GeometryOperands=urn:ogc:def:crs:EPSG::2056&FILTER=<Filter><And><PropertyIsEqualTo><ValueReference>commune</ValueReference><Literal>Yverdon-les-Bains</Literal></PropertyIsEqualTo><PropertyIsNotEqualTo><ValueReference>genre</ValueReference><Literal>Parcelle privée</Literal></PropertyIsNotEqualTo><BBOX></And></Filter>"
+      },
+      "selectionTargetBoxMessage": "Emplacement du banc"
+  }'
+  />
+  </div>
+  <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
+</div>
+
+<script>
+  window.addEventListener('position-selected', (event) => {
+        const serialized = document.querySelector("[data-role='serialized']");
+        if (event.detail && serialized) {
+            serialized.value = event.detail;
+        } else {
+          serialized.value = '';
+        }
+    })
+</script>
+{% endif %}
