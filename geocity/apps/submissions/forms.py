@@ -1196,7 +1196,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            "geom": GeometryWidgetAdvanced(),
+            "geom": GeometryWidget(),
             "comment": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -1230,9 +1230,12 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             del self.fields["geom"]
 
         else:
-            self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
+            options = self.get_widget_options(
                 self.submission
             )
+            if options["geo_widget_option"][0] == 2:
+                self.fields["geom"].widget = GeometryWidgetAdvanced();
+            self.fields["geom"].widget.attrs["options"] = options
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
@@ -1278,6 +1281,10 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             form.map_widget_configuration.configuration for form in forms if form.map_widget_configuration != None
         ]
 
+        geo_widget_option = [
+            form.geo_widget_option for form in forms if form.geo_widget_option != None
+        ]
+
         ftsearch_additional_searchtext_for_address_field = (
             submission.administrative_entity.additional_searchtext_for_address_field
             if submission
@@ -1300,6 +1307,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "map_height": 400,
             "default_center": [2539057, 1181111],
             "map_widget_configuration": map_widget_configuration,
+            "geo_widget_option": geo_widget_option,
             "default_zoom": 10,
             "display_raw": False,
             "edit_geom": has_geom,
