@@ -3,6 +3,7 @@
   "extends": [
     "config:base"
   ],
+  "ignorePaths": ["/geocity/services"],
   "baseBranches": ["develop"],
   "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
