@@ -20,14 +20,13 @@
   "packageRules": [
     {
       "matchManagers": ["pip-compile"],
-      "matchPackagePatterns": [
+      "excludeDepNames": [
         "gdal",
         "django-bootstrap-datepicker-plus",
         "django-bootstrap4",
         "django-two-factor-auth",
         "django-crispy-forms"
-      ],
-      "enabled": false
+      ]
     }
   ]
 }
