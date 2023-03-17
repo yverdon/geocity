@@ -4,6 +4,9 @@
     "config:base",
     "docker:disable"
   ],
+  "constraints": {
+    "python": "==3.10"
+  },
   "automerge": false,
   "baseBranches": ["develop"],
   "pip-compile": {
@@ -16,5 +19,14 @@
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
     "commitMessageAction": "Refresh pip-compile outputs"
-  }
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["pip-compile"],
+      "excludeDepNames": [
+        "gdal",
+        "django-bootstrap-datepicker-plus"
+      ]
+    }
+  ]
 }
