@@ -1,4 +1,4 @@
-FROM sitdocker/geocity-base:v1.3.2.2021
+FROM sitdocker/geocity-base:v2.1.5
 
 ARG ENV
 

@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 
 from geocity.apps.accounts.models import PermitDepartment
 from geocity.apps.submissions import forms, models, permissions
+from geocity.apps.submissions.contact_type_choices import *
 
 register = template.Library()
 
@@ -33,7 +34,7 @@ def basename(value):
 
 
 def get_contacts_summary(submission):
-    contact_types = dict(models.CONTACT_TYPE_CHOICES)
+    contact_types = dict(CONTACT_TYPE_CHOICES)
 
     contacts = [
         (

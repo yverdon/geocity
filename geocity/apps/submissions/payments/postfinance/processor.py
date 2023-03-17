@@ -58,12 +58,12 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
         - Name: The submission's price's text (description of the price)
         - Unique ID: The submission's ID
         - SKU: The submission's original price instance's ID
-        - Attribute "Compte interne": the internal_accoutn value specified in PaymentSettings
+        - Attribute "Compte interne": the internal_account value specified in PaymentSettings
 
         Returns a dict with the following entries:
         {
             "merchant_reference": <str, PostFinance's transaction identifier>,
-            "authorization_timeout_on": <datetime, when the transaction times out, if not paid/cancelld>,
+            "authorization_timeout_on": <datetime, when the transaction times out, if not paid/cancelled>,
             "payment_page_url": <str, the URL when payment is done on PostFinance>,
         }
         """

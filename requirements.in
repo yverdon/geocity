@@ -7,7 +7,7 @@ django-tables2
 django-tables2-column-shifter
 # Base docker image must be update when GDAL is updated
 # https://github.com/yverdon/docker-geocity/
-gdal==3.3.2
+gdal==3.6.3
 gunicorn
 html5lib
 jdcal
@@ -24,7 +24,7 @@ djangorestframework
 djangorestframework-gis
 django-cors-headers
 django-constance[database]
-django-two-factor-auth[phonenumbers]
+django-two-factor-auth[phonenumbers]==1.14.0
 django-taggit
 filetype
 django-jazzmin
@@ -35,7 +35,7 @@ django-allauth
 # django_wfs3 -> djangorestframework (optional for openapi schema generation, see https://www.django-rest-framework.org/api-guide/schemas/#install-dependencies)
 pyyaml
 uritemplate
-django-crispy-forms
+django-crispy-forms<2
 django-cron
 django-axes
 pdf2image
@@ -46,3 +46,4 @@ Jinja2
 docker
 django-polymorphic
 postfinancecheckout
+tzdata

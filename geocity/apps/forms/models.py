@@ -255,7 +255,13 @@ class PaymentSettings(models.Model):
 
 class Price(models.Model):
     text = models.CharField(_("Texte"), max_length=255)
-    amount = models.DecimalField(_("Montant"), max_digits=6, decimal_places=2)
+    amount = models.DecimalField(
+        _("Montant"),
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_("Un montant de 0 peut être utilisé pour avoir un tarif gratuit"),
+    )
     currency = models.CharField(_("Devise"), max_length=20, default=default_currency)
     integrator = models.ForeignKey(
         Group,
