@@ -7,7 +7,7 @@
   "automerge": false,
   "baseBranches": ["develop"],
   "pip-compile": {
-    "fileMatch": ["requirements.in", "requirements_dev.in", "services/pdf/requirements.in"]
+    "fileMatch": ["requirements.in", "requirements_dev.in"]
   },
   "pip_requirements": {
     "enabled": false
@@ -16,17 +16,5 @@
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
     "commitMessageAction": "Refresh pip-compile outputs"
-  },
-  "packageRules": [
-    {
-      "matchManagers": ["pip-compile"],
-      "excludeDepNames": [
-        "gdal",
-        "django-bootstrap-datepicker-plus",
-        "django-bootstrap4",
-        "django-two-factor-auth",
-        "django-crispy-forms"
-      ]
-    }
-  ]
+  }
 }
