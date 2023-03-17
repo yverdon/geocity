@@ -19,7 +19,13 @@
   },
   "packageRules": [
     {
-      "matchPackagePatterns": ["gdal", "django-bootstrap-datepicker-plus", "django-bootstrap4", "django-two-factor-auth[phonenumbers]", "django-crispy-forms"],
+      "matchPackagePatterns": [
+        "gdal",
+        "django-bootstrap-datepicker-plus",
+        "django-bootstrap4",
+        "django-two-factor-auth",
+        "django-crispy-forms"
+      ],
       "matchManagers": ["pip-compile"],
       "enabled": false
     }
