@@ -7,7 +7,7 @@
   "automerge": false,
   "baseBranches": ["develop"],
   "pip-compile": {
-    "fileMatch": ["(^|/)requirements\\.in$"]
+    "fileMatch": ["requirements.in", "requirements_dev.in"]
   },
   "pip_requirements": {
     "enabled": false
