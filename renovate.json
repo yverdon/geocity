@@ -4,6 +4,7 @@
     "config:base",
     "docker:disable"
   ],
+  "updatePinnedDependencies": false,
   "constraints": {
     "python": "==3.10"
   },
@@ -19,11 +20,5 @@
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
     "commitMessageAction": "Refresh pip-compile outputs"
-  },
-  "packageRules": [
-    {
-      "matchPackageNames": ["django-bootstrap4"],
-      "enabled": false
-    }
-  ]
+  }
 }
