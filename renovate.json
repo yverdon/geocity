@@ -9,12 +9,11 @@
   },
   "automerge": false,
   "baseBranches": ["develop"],
-  "pip-compile": {
-    "updatePinnedDependencies": false,
-    "fileMatch": ["requirements.in", "requirements_dev.in"]
-  },
   "pip_requirements": {
     "enabled": false
+  },
+  "pip-compile": {
+    "fileMatch": ["requirements.in", "requirements_dev.in"]
   },
   "lockFileMaintenance": {
     "enabled": true,
