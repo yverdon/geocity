@@ -545,8 +545,8 @@ class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     formfield_overrides = {
         JSONField: {
             "widget": JSONEditor(
-                init_options={"mode": "view", "modes": ["view", "code", "tree"]},
-                ace_options={"readOnly": True},
+                init_options={"mode": "view", "modes": ["view", "code", "tree", "form"]},
+                ace_options={"readOnly": False},
                 attrs={"style": "height: 1000px;"},
             ),
         },

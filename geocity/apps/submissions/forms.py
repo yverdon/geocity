@@ -30,7 +30,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.fields import AddressWidget
+from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
@@ -1152,14 +1152,6 @@ class GeometryWidget(geoforms.OSMWidget):
         )
 
 
-class GeometryWidgetAdvanced(geoforms.OpenLayersWidget):
-    template_name = "advancedgeometrywidget/geometrywidget.html"
-    map_srid = 2056
-
-    @property
-    def media(self):
-        return forms.Media()
-
 class SubmissionGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
@@ -1237,13 +1229,13 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         ):
             del self.fields["geom"]
 
-        # else:
-        #     self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
-        #         self.submission
-        #     )
-        #     self.fields["geom"].widget.attrs["options"][
-        #         "edit_geom"
-        #     ] = not disable_fields
+        else:
+            self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
+                self.submission
+            )
+            self.fields["geom"].widget.attrs["options"][
+                "edit_geom"
+            ] = not disable_fields
         if (
             not config.ENABLE_GEOCALENDAR
             or self.instance.comes_from_automatic_geocoding
@@ -1282,6 +1274,10 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         has_geom_line = any(form.has_geometry_line for form in forms_set)
         has_geom_polygon = any(form.has_geometry_polygon for form in forms_set)
 
+        map_widget_configuration = [
+            form.map_widget_configuration.configuration for form in forms if form.map_widget_configuration != None
+        ]
+
         ftsearch_additional_searchtext_for_address_field = (
             submission.administrative_entity.additional_searchtext_for_address_field
             if submission
@@ -1303,6 +1299,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "map_width": "100%",
             "map_height": 400,
             "default_center": [2539057, 1181111],
+            "map_widget_configuration": map_widget_configuration,
             "default_zoom": 10,
             "display_raw": False,
             "edit_geom": has_geom,

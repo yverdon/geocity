@@ -40,6 +40,14 @@ class GeometryWidget(geoforms.OSMWidget):
             ),
         )
 
+class GeometryWidgetAdvanced(geoforms.OpenLayersWidget):
+    template_name = "advancedgeometrywidget/geometrywidget.html"
+    map_srid = 2056
+
+    @property
+    def media(self):
+        return forms.Media()
+
 
 class AddressWidget(forms.TextInput):
     @property
