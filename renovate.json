@@ -4,13 +4,13 @@
     "config:base",
     "docker:disable"
   ],
-  "updatePinnedDependencies": false,
   "constraints": {
     "python": "==3.10"
   },
   "automerge": false,
   "baseBranches": ["develop"],
   "pip-compile": {
+    "updatePinnedDependencies": false,
     "fileMatch": ["requirements.in", "requirements_dev.in"]
   },
   "pip_requirements": {
