@@ -1,13 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:base",
+    "docker:disable"
   ],
-  "ignorePaths": ["/geocity/services"],
+  "automerge": false,
   "baseBranches": ["develop"],
   "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
+  
   "lockFileMaintenance": {
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
