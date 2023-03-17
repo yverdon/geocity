@@ -9,7 +9,6 @@
   "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
-  // Disable pip_requirements as we use pip-compile
   "pip_requirements": {
     "enabled": false
   },
