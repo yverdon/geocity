@@ -9,7 +9,7 @@
   "pip-compile": {
     "fileMatch": ["(^|/)requirements\\.in$"]
   },
-
+  "ignoreDeps": ["gdal", "jango-bootstrap-datepicker-plus", "django-bootstrap4", "django-two-factor-auth[phonenumbers]"],
   "lockFileMaintenance": {
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
