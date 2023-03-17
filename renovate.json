@@ -7,7 +7,7 @@
   "automerge": false,
   "baseBranches": ["develop"],
   "pip-compile": {
-    "fileMatch": ["requirements.in", "requirements_dev.in"]
+    "fileMatch": ["requirements.in", "requirements_dev.in", "services/pdf/requirements.in"]
   },
   "pip_requirements": {
     "enabled": false
@@ -19,6 +19,7 @@
   },
   "packageRules": [
     {
+      "matchManagers": ["pip-compile"],
       "matchPackagePatterns": [
         "gdal",
         "django-bootstrap-datepicker-plus",
@@ -26,7 +27,6 @@
         "django-two-factor-auth",
         "django-crispy-forms"
       ],
-      "matchManagers": ["pip-compile"],
       "enabled": false
     }
   ]
