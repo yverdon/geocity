@@ -16,5 +16,12 @@
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
     "commitMessageAction": "Refresh pip-compile outputs"
-  }
+  },
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["gdal", "django-bootstrap-datepicker-plus", "django-bootstrap4", "django-two-factor-auth[phonenumbers]", "django-crispy-forms"],
+      "matchManagers": ["pip-compile"],
+      "enabled": false
+    }
+  ]
 }
