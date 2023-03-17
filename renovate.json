@@ -3,6 +3,9 @@
   "extends": [
     "config:base"
   ],
+  "pip-compile": {
+    "fileMatch": ["(^|/)requirements\\.in$"]
+  },
   "lockFileMaintenance": {
     "enabled": true,
     "branchTopic": "pip-compile-refresh",
