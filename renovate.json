@@ -22,11 +22,8 @@
   },
   "packageRules": [
     {
-      "matchManagers": ["pip-compile"],
-      "excludeDepNames": [
-        "gdal",
-        "django-bootstrap-datepicker-plus"
-      ]
+      "matchPackageNames": ["django-bootstrap4"],
+      "enabled": false
     }
   ]
 }
