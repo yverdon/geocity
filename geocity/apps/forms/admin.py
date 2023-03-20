@@ -101,8 +101,11 @@ class FormAdminForm(forms.ModelForm):
             "wms_layers_order": "Ordre de(s) la(les) couche(s) dans la carte. 1: au-dessus",
         }
 
-    class Media:
-        js = ("js/admin/form.js",)
+    @property
+    def media(self):
+        return forms.Media( css={'all': ('css/admin/display.css',)},
+                            js=('js/admin/form.js', 'js/admin/display.js'))
+
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
