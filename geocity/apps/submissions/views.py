@@ -562,7 +562,6 @@ class SubmissionDetailView(View):
             )
 
         messages.success(self.request, success_message)
-        # TODO: Try to fix mail from here, send_email_notification instead of
         if (
             form.instance.status == models.Submission.STATUS_RECEIVED
             and form.instance.status is not initial_status
