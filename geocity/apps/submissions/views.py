@@ -1147,8 +1147,14 @@ def submission_select_administrative_entity(request, submission_id=None):
             limit_to_categories=selectable_categories,
         )
 
-        # If filter combinations return only one form object, this combination must be set on submission object
-        if len(candidate_forms) == 1:
+        # If filter combinations return only one form object that is not exceeded,
+        # this combination must be set on submission object
+        if len(candidate_forms) == 1 and all(
+            [
+                not candidate_form.has_exceeded_maximum_submissions()
+                for candidate_form in candidate_forms
+            ]
+        ):
             submission.forms.set(candidate_forms)
 
         steps = get_progress_bar_steps(request=request, submission=submission)
