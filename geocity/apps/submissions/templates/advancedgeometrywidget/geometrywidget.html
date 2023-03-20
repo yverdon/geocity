@@ -9,33 +9,241 @@
 <script type="module" src="{% static 'libs/js/advanced-geometry-edition/geocity-wc-map.js' %}"></script>
 {% endblock %}
 
+<style>
+#map-ro-result {
+  max-width: 816px;
+  width: 100%;
+  height: 38px;
+  margin-bottom: 10px;
+  border: 1px solid #CED4DA;
+  color: #4B4B4B;
+  background-color: rgba(233, 236, 239, 0.5);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#map-custom-modal-button {
+  border: 1px solid #008C6F;
+  color: #008C6F;
+  width: 222px;
+  height: 38px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#map-custom-modal-button > i {
+  padding-right: 7px;
+}
+
+@media only screen and (max-width: 767px) {
+  #map-custom-modal {
+    top: 0vh;
+    left: 0vw;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #web-component-advanced {
+    width: calc(100% - 40px);
+    height: calc(100vh - 96px);
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  #map-custom-modal {
+    top: 10vh;
+    left: 10vw;
+    width: 80vw;
+    height: 80vh;
+  }
+
+  #web-component-advanced {
+    width: calc(100% - 40px);
+    height: calc(80vh - 96px);
+  }
+}
+
+  #map-custom-modal {
+    position: fixed;
+    z-index: 1022;
+    background-color: white;
+  }
+
+  #web-component-advanced {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #map-custom-modal-overlay {
+    position: fixed;
+    z-index: 1021;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    opacity: 0.4;
+  }
+
+  .map-modal-header {
+    width: calc(100% - 40px);
+    margin-left: 20px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+  }
+
+  .map-modal-header > p {
+    width: 80%;
+    margin: 0;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 19px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .map-modal-header > i {
+    width: 20%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .validate-layout {
+    width: 100%;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #modal-validation-button {
+    width: 229px;
+    height: 36px;
+    color: white;
+    background-color: #008C6F;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .cursor {
+    cursor: pointer;
+  }
+</style>
+
 <div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
-  <div style="width: 100%; height: 80vh;margin-left: auto;margin-right: auto" id="web-component-advanced">
+  <div id="map-ro-result"></div>
+  <div id="map-custom-modal-button" class="cursor">
+    <i class="fa fa-map"></i> Localiser sur une carte
   </div>
   <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
 </div>
 
+<div id="map-custom-modal-overlay" style="display: none">
+</div>
+
+<div id="map-custom-modal" style="display: none">
+  <div class="map-modal-header">
+    <p>Sélection de la localisation</p>
+    <i id="modal-close-button" class="fa fa-times cursor"></i>
+  </div>
+  <div id="web-component-advanced">
+  </div>
+  <div class="validate-layout">
+    <div id="modal-validation-button" class="cursor">
+      Valider
+    </div>
+  </div>
+
+</div>
+
 <script>
-  const optionsDiv = document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")
-  if (optionsDiv && optionsDiv[0] && optionsDiv[0].dataset && optionsDiv[0].dataset.options) {
-    const options = JSON.parse(optionsDiv[0].dataset.options);
-    if (options && options.map_widget_configuration) {
-      const componentDiv = document.getElementById('web-component-advanced');
-        if (componentDiv) {
-          const wc = document.createElement('openlayers-element');
-          wc.options = options.map_widget_configuration[0];
-          componentDiv.appendChild(wc);
+  const roResult = document.getElementById('map-ro-result');
+  const serialized = document.querySelector("[data-role='serialized']");
+  const buttonModal = document.getElementById('map-custom-modal-button');
+  const crossButton = document.getElementById('modal-close-button');
+  const validationButton = document.getElementById('modal-validation-button');
+  validationButton.style.opacity = 0.5;
+  const map = document.getElementById('map-custom-modal')
+  const overlay =  document.getElementById('map-custom-modal-overlay');
+  let isModalOpen = false;
+  let mapIsCreated = false;
+
+  createMap = () => {
+    if (!mapIsCreated) {
+      const optionsDiv = document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")
+      if (optionsDiv && optionsDiv[0] && optionsDiv[0].dataset && optionsDiv[0].dataset.options) {
+        const options = JSON.parse(optionsDiv[0].dataset.options);
+        if (options && options.map_widget_configuration) {
+          const componentDiv = document.getElementById('web-component-advanced');
+          if (componentDiv) {
+            const wc = document.createElement('openlayers-element');
+            wc.options = options.map_widget_configuration[0];
+            componentDiv.appendChild(wc);
+            mapIsCreated = true;
+          }
         }
+      }
     }
   }
 
+  toogleModal = (state) => {
+    map.style.display = state;
+    overlay.style.display = state;
+    if (state == 'block')
+      document.body.style.overflow = "hidden";
+    else
+      document.body.style.overflow = "visible";
+  }
+
+  buttonModal.addEventListener('click', () => {
+    if (isModalOpen) {
+      toogleModal('none');
+    }
+    else {
+      toogleModal('block');
+      createMap();
+    }
+  })
+
+  closeModal = () => {
+    toogleModal('none');
+    if (serialized)
+      serialized.value = '';
+  }
+
+  crossButton.addEventListener('click', () => {
+    closeModal();
+  })
+
+  overlay.addEventListener('click', () => {
+    closeModal();
+  })
+
+  validationButton.addEventListener('click', () => {
+    if (serialized.value != '')
+      toogleModal('none');
+  })
+
   window.addEventListener('position-selected', (event) => {
-        const serialized = document.querySelector("[data-role='serialized']");
-        if (event.detail && serialized) {
-            serialized.value = event.detail;
-        } else {
-          serialized.value = '';
-        }
-    })
+    if (event.detail) {
+      validationButton.style.opacity = 1;
+      roResult.innerHTML = event.detail;
+      serialized.value = event.detail;
+    } else {
+      validationButton.style.opacity = 0.5;
+      roResult.innerHTML = '';
+      serialized.value = '';
+    }
+  })
 </script>
 {% endif %}
