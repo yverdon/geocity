@@ -562,7 +562,6 @@ class SubmissionDetailView(View):
             )
 
         messages.success(self.request, success_message)
-
         if (
             form.instance.status == models.Submission.STATUS_RECEIVED
             and form.instance.status is not initial_status

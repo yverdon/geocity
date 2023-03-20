@@ -219,6 +219,16 @@ class Heading(models.TextChoices):
     H6 = "h6", _("Titre 6")
 
 
+def padding_top_field(default=0):
+    return models.PositiveIntegerField(
+        _("Espace vide au dessus"),
+        default=default,
+        help_text=_(
+            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
+        ),
+    )
+
+
 class Section(PolymorphicModel):
     class Meta:
         verbose_name = _("Paragraphe")
@@ -229,13 +239,6 @@ class Section(PolymorphicModel):
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
     order = models.PositiveIntegerField(_("Ordre du paragraphe"), null=True, blank=True)
-    padding_top = models.PositiveIntegerField(
-        _("Espace vide au dessus"),
-        default=0,
-        help_text=_(
-            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
-        ),
-    )
     is_new_page = models.BooleanField(
         _("Nouvelle page"),
         default=False,
@@ -259,6 +262,7 @@ class Section(PolymorphicModel):
 
 
 class SectionMap(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Localisation·s", blank=True, max_length=2000
     )
@@ -361,6 +365,7 @@ class SectionParagraph(Section):
         LEFT = "left", _("Gauche")
         RIGHT = "right", _("Droite")
 
+    padding_top = padding_top_field()
     title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
     title_size = models.CharField(
         _("Taille des titres"),
@@ -419,6 +424,7 @@ class SectionParagraph(Section):
 
 
 class SectionContact(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Contact·s", blank=True, max_length=2000
     )
@@ -437,6 +443,7 @@ class SectionContact(Section):
 
 
 class SectionAuthor(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Auteur·e de la demande", blank=True, max_length=2000
     )
@@ -463,6 +470,7 @@ class SectionDetail(Section):
         (STYLE_1, _("champ (tab) valeur")),
     )
 
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Propriété·s de la demande", blank=True, max_length=2000
     )
@@ -514,6 +522,7 @@ class SectionDetail(Section):
 
 
 class SectionPlanning(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Planning", blank=True, max_length=2000
     )
@@ -537,6 +546,7 @@ class SectionHorizontalRule(Section):
 
 
 class SectionValidation(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Commentaire·s des services", blank=True, max_length=2000
     )
@@ -555,6 +565,7 @@ class SectionValidation(Section):
 
 
 class SectionAmendProperty(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Commentaire·s du secrétariat", blank=True, max_length=2000
     )
@@ -573,6 +584,7 @@ class SectionAmendProperty(Section):
 
 
 class SectionStatus(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Statut de la demande", blank=True, max_length=2000
     )
@@ -591,6 +603,7 @@ class SectionStatus(Section):
 
 
 class SectionCreditor(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Adresse de facturation", blank=True, max_length=2000
     )
@@ -609,6 +622,7 @@ class SectionCreditor(Section):
 
 
 class SectionRecipient(Section):
+    padding_top = padding_top_field(default=40)
     is_recommended = models.BooleanField(
         _("Recommandée"),
         default=False,
@@ -621,11 +635,6 @@ class SectionRecipient(Section):
             "Si le demande est saisie au nom d'une autre personne (requérant) celui-ci sera utilisé"
         ),
     )
-
-    # TODO: Find a way to fix this, to make padding_top at 40 by default only for SectionRecipient
-    def __init__(self, *args, **kwargs):
-        self._meta.get_field("padding_top").default = 40
-        super().__init__(*args, **kwargs)
 
     class Meta:
         verbose_name = _("Destinataire")

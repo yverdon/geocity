@@ -476,7 +476,34 @@ class Submission(models.Model):
             if settings.SITE_DOMAIN == "localhost"
             else ""
         )
-        return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
+
+        if settings.SITE_DOMAIN:
+            site_domain = settings.SITE_DOMAIN
+        else:
+            id = relative_url.split("/")[-2]
+            submission = Submission.objects.get(id=id)
+            site_domain = submission.get_site(use_default=False)
+
+        return f"{protocol}://{site_domain}{port}{relative_url}"
+
+    def get_site(self, use_default=False):
+        """Get a site for the submission submission given"""
+        sites = self.administrative_entity.sites.all()
+        default_site = settings.DEFAULT_SITE
+
+        site_not_excluded = sites.exclude(domain=default_site)
+        default_site_exists = sites.filter(domain=default_site).exists()
+
+        default_site = default_site if default_site_exists else sites.first()
+        other_site = (
+            site_not_excluded.first() if site_not_excluded.exists() else default_site
+        )
+
+        if use_default:
+            site = default_site
+        else:
+            site = other_site
+        return site
 
     def start_inquiry(self):
         if self.status == self.STATUS_INQUIRY_IN_PROGRESS:

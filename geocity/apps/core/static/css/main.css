@@ -239,6 +239,10 @@ h5 {
   font-size: 1.1em;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 .progress-nav {
   display: flex;
   justify-content: center;
