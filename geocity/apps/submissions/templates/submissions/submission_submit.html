@@ -44,77 +44,80 @@
     </p>
   {% endif %}
 
-  {% if not incomplete_steps and should_go_to_payment %}
-    {% if not submission.get_submission_price %}
-      <div class="alert alert-danger mb-4">
-        <div class="mb-4">
-          {% blocktrans trimmed %}
-            Vous devez choisir un tarif à l'étape "Détails"
-          {% endblocktrans %}
-          <hr/>
+  {% if not incomplete_steps %}
+    <p class="font-weight-bold">
+      <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
+      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label><br>
+    </p>
+    {% if should_go_to_payment %}
+      {% if not submission.get_submission_price %}
+        <div class="alert alert-danger mb-4">
+          <div class="mb-4">
+            {% blocktrans trimmed %}
+              Vous devez choisir un tarif à l'étape "Détails"
+            {% endblocktrans %}
+            <hr/>
+          </div>
+          <div class="mb-4">
+            <a href="{% url 'submissions:submission_fields' submission_id=submission.pk %}"
+              class="btn btn-primary">{% trans "Retour" %}</a>
+          </div>
         </div>
-        <div class="mb-4">
-          <a href="{% url 'submissions:submission_fields' submission_id=submission.pk %}"
-             class="btn btn-primary">{% trans "Retour" %}</a>
+      {% else %}
+        <div class="alert alert-info mb-4">
+          <div class="mb-4">
+            {% blocktrans trimmed %}
+              Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
+              Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton "Payer maintenant" pour être redirigé vers l'interface de paiement sécurisée.
+            {% endblocktrans %}
+            <hr/>
+          </div>
+          <div class="mb-4">
+            {% blocktrans trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
+              <p>Vous avez sélectionné <strong>{{ text }}</strong> au prix de
+                <strong>{{ amount }} {{ currency }}</strong>
+              </p>
+            {% endblocktrans %}
+          </div>
+          <div class="mb-4">
+            {% if previous_step.url %}
+              <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+            {% endif %}
+            <a href="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" style="text-decoration:none">
+              <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
+                {% trans "Payer maintenant" %}
+              </button>
+            </a>
+            {% if has_any_form_with_exceeded_submissions %}
+              <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
+                {{ submission.get_maximum_submissions_message }}
+              </span>
+            {% endif %}
+          </div>
         </div>
-      </div>
+      {% endif %}
     {% else %}
-      <div class="alert alert-info mb-4">
-        <div class="mb-4">
-          {% blocktrans trimmed %}
-            Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
-            Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton Payer maintenant pour être redirigé vers l’interface de paiement sécurisée.
-          {% endblocktrans %}
-          <hr/>
-        </div>
-        <div class="mb-4">
-          {% blocktrans trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
-            <p>Vous avez sélectionné <strong>{{ text }}</strong> au prix de
-              <strong>{{ amount }} {{ currency }}</strong>
-            </p>
-          {% endblocktrans %}
-        </div>
-        <div class="mb-4">
+      <form method="post" action="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}">
+        {% csrf_token %}
+        {% buttons %}
           {% if previous_step.url %}
             <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
           {% endif %}
-          <button formaction="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" type="submit" class="btn btn-primary mr-2" {% if has_any_form_with_exceeded_submissions %}disabled{% endif %}>
-            {% trans "Payer maintenant" %}
+          <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
+            {% trans "Envoyer" %}
           </button>
           {% if has_any_form_with_exceeded_submissions %}
             <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
-             {{ submission.get_maximum_submissions_message }}
+              {{ submission.get_maximum_submissions_message }}
             </span>
           {% endif %}
-        </div>
-      </div>
+        {% endbuttons %}
+      </form>
     {% endif %}
   {% endif %}
   <p>
     {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
-  {% if not incomplete_steps and not should_go_to_payment %}
-    <p class="font-weight-bold">
-      <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
-      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label><br>
-    </p>
-    <form method="post" action="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}">
-      {% csrf_token %}
-      {% buttons %}
-        {% if previous_step.url %}
-          <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
-        {% endif %}
-        <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
-          {% trans "Envoyer" %}
-        </button>
-        {% if has_any_form_with_exceeded_submissions %}
-          <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
-            {{ submission.get_maximum_submissions_message }}
-          </span>
-        {% endif %}
-      {% endbuttons %}
-    </form>
-  {% endif %}
   <div class="row">
     <div class="col">
       {% submission_summary submission %}

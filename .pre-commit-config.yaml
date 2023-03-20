@@ -33,3 +33,8 @@ repos:
     rev: "22.3.0"
     hooks:
       - id: black
+  # Renovate configuration
+  - repo: https://github.com/renovatebot/pre-commit-hooks
+    rev: 35.10.0
+    hooks:
+      - id: renovate-config-validator

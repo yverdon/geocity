@@ -823,7 +823,7 @@ class SubmissionContactForm(forms.ModelForm):
         fields = ["contact_type"]
         widgets = {
             "contact_type": forms.Select(
-                attrs={"readonly": "readonly", "class": "hide-arrow"}
+                attrs={"readonly": True, "hidden": True, "class": "hide-arrow"}
             ),
         }
 
