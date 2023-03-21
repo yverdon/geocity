@@ -188,6 +188,18 @@
           if (componentDiv) {
             const wc = document.createElement('openlayers-element');
             wc.options = options.map_widget_configuration[0];
+            if (serialized.value) {
+              const data = JSON.parse(serialized.value)
+              const selections = [];
+              data.geometries.forEach(geometry => {
+                selections.push(geometry.coordinates[0])
+              });
+              const states = {
+                readonly: !options.edit_geom,
+                currentSelections: selections
+              }
+              wc.states = states;
+            }
             componentDiv.appendChild(wc);
             mapIsCreated = true;
           }
