@@ -7,34 +7,31 @@
 {% block content %}
     {% if request_data.properties.submission_fields %}
         <div class="flex_container">
-            <div class="flex_item-100">
-                {% if section.style == 0 %}
-                    {% for form, fields in request_data.properties.submission_fields.items %}
-                        {% if section.show_form_name %}
-                            <h3>{{form}}</h3>
+            {% if section.style == 0 %}
+                {% for form, fields in request_data.properties.submission_fields.items %}
+                    {% if section.show_form_name %}
+                        <div class="flex_item-100"><h3>{{form}}</h3></div>
+                    {% endif %}
+                    {% for key, field in fields.items %}
+                        {% if not key in section.undesired_properties %}
+                            <div style="padding-top:{{section.line_height}}px;"><span class="bold">{{key}} : </span>{{field}}<br></div>
                         {% endif %}
-                        {% for key, field in fields.items %}
-                            {% if not key in section.undesired_properties %}
-                                <div style="padding-top:{{section.line_height}}px;"><span class="bold">{{key}} : </span>{{field}}<br></div>
-                            {% endif %}
-                        {% endfor %}
                     {% endfor %}
-            </div>
-                {% elif  section.style == 1 %}
-            </div>
-                    {% for form, fields in request_data.properties.submission_fields.items %}
-                        {% if section.show_form_name %}
-                            <h3>{{form}}</h3>
+                {% endfor %}
+            {% elif  section.style == 1 %}
+                {% for form, fields in request_data.properties.submission_fields.items %}
+                    {% if section.show_form_name %}
+                        <div class="flex_item-100"><h3>{{form}}</h3></div>
+                    {% endif %}
+                    {% for key, field in fields.items %}
+                        {% if not key in section.undesired_properties %}
+                            <div class="flex_item-40"><span class="bold">{{key}}</span></div>
+                            <div class="flex_item-60">{{field}}</div>
+                            <div style="padding-top:{{section.line_height}}px;"></div>
                         {% endif %}
-                        {% for key, field in fields.items %}
-                            {% if not key in section.undesired_properties %}
-                                <div class="flex_item-40"><span class="bold">{{key}}</span></div>
-                                <div class="flex_item-60">{{field}}</div>
-                                <div style="padding-top:{{section.line_height}}px;"></div>
-                            {% endif %}
-                        {% endfor %}
                     {% endfor %}
-                {% endif %}
+                {% endfor %}
+            {% endif %}
         </div>
     {% else %}
         <p>Aucune propriété pour cette demande</p>
