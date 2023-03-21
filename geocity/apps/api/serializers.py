@@ -61,7 +61,7 @@ def get_form_fields(
     last_wot = ""
 
     if wot_props:
-        # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
+        # Flat view is used in the api for geocalendar, the WOT shows only the works_object__name and not the type
         if value_with_type:
             wot_properties = list()
             key_for_form = _("Formulaire")
@@ -454,7 +454,7 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
     and external links will be retrieved and grouped from it.
 
     Note: The extract_geom parameter specifies the aggregation function used to represent
-    the geometries. If not specified, it will return a boudning box. If specified, it
+    the geometries. If not specified, it will return a bounding box. If specified, it
     will return a multigeometry of the given type (1 for point, 2 for lines, 3 for polys).
     """
 
@@ -540,7 +540,7 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
             return result
 
 
-# Override of real ListSerialier from django-rest-framework-gis
+# Override of real ListSerializer from django-rest-framework-gis
 # If you want to add a new structure with dynamic values, just add it to OrderedDict and give him a new function like "super().prefix_to_representation(data)"
 # Then in SubmissionPrintSerializer write this class like the existant "to_representation"
 class SubmissionPrintListSerialier(gis_serializers.ListSerializer):
