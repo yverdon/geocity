@@ -239,6 +239,10 @@ h5 {
   font-size: 1.1em;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 .progress-nav {
   display: flex;
   justify-content: center;
@@ -556,7 +560,7 @@ th.actions {
   }
 
   .global-search-form-container {
-    width: 600px;
+    width: 400px;
     min-width: 0;
   }
 

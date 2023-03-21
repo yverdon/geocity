@@ -34,29 +34,8 @@ from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
+from .contact_type_choices import *
 from .payments.models import SubmissionPrice
-
-# Contact types
-CONTACT_TYPE_OTHER = 0
-CONTACT_TYPE_REQUESTOR = 1
-CONTACT_TYPE_OWNER = 2
-CONTACT_TYPE_COMPANY = 3
-CONTACT_TYPE_CLIENT = 4
-CONTACT_TYPE_SECURITY = 5
-CONTACT_TYPE_ASSOCIATION = 6
-CONTACT_TYPE_ENGINEER = 7
-CONTACT_TYPE_WORKDIRECTOR = 8
-CONTACT_TYPE_CHOICES = (
-    (CONTACT_TYPE_ENGINEER, _("Architecte/Ingénieur")),
-    (CONTACT_TYPE_ASSOCIATION, _("Association")),
-    (CONTACT_TYPE_OTHER, _("Autres")),
-    (CONTACT_TYPE_WORKDIRECTOR, _("Direction des travaux")),
-    (CONTACT_TYPE_COMPANY, _("Entreprise")),
-    (CONTACT_TYPE_CLIENT, _("Maître d'ouvrage")),
-    (CONTACT_TYPE_OWNER, _("Propriétaire")),
-    (CONTACT_TYPE_REQUESTOR, _("Requérant (si différent de l'auteur de la demande)")),
-    (CONTACT_TYPE_SECURITY, _("Sécurité")),
-)
 
 # Actions
 ACTION_AMEND = "amend"
@@ -497,7 +476,34 @@ class Submission(models.Model):
             if settings.SITE_DOMAIN == "localhost"
             else ""
         )
-        return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
+
+        if settings.SITE_DOMAIN:
+            site_domain = settings.SITE_DOMAIN
+        else:
+            id = relative_url.split("/")[-2]
+            submission = Submission.objects.get(id=id)
+            site_domain = submission.get_site(use_default=False)
+
+        return f"{protocol}://{site_domain}{port}{relative_url}"
+
+    def get_site(self, use_default=False):
+        """Get a site for the submission submission given"""
+        sites = self.administrative_entity.sites.all()
+        default_site = settings.DEFAULT_SITE
+
+        site_not_excluded = sites.exclude(domain=default_site)
+        default_site_exists = sites.filter(domain=default_site).exists()
+
+        default_site = default_site if default_site_exists else sites.first()
+        other_site = (
+            site_not_excluded.first() if site_not_excluded.exists() else default_site
+        )
+
+        if use_default:
+            site = default_site
+        else:
+            site = other_site
+        return site
 
     def start_inquiry(self):
         if self.status == self.STATUS_INQUIRY_IN_PROGRESS:
@@ -537,7 +543,11 @@ class Submission(models.Model):
                 # include additional documents
                 for document in self.complementary_documents.all():
                     zip_file.write(document.path, document.name)
-
+                # include user uploaded documents
+                for document in self.get_appendices_values():
+                    filename = document.value["val"].split("/")[-1]
+                    path = f"{settings.PRIVATE_MEDIA_ROOT}/{document.value['val']}"
+                    zip_file.write(path, filename)
             # Reset file pointer
             tmp_file.seek(0)
             archived_request = ArchivedSubmission(
