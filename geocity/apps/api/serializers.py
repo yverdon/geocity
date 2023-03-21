@@ -280,12 +280,18 @@ class PostFinanceTransactionPrintSerializer(serializers.ModelSerializer):
         )
 
 
+class SentDateSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        return value.strftime("%d.%m.%Y %H:%M")
+
+
 class SubmissionSerializer(serializers.ModelSerializer):
     administrative_entity = AdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="forms", read_only=True)
     forms_names = FormsNames(source="forms", read_only=True)
     current_inquiry = SubmissionInquirySerializer(read_only=True)
     submission_price = SubmissionPriceSerializer(read_only=True)
+    sent_date = SentDateSerializer(read_only=True)
 
     class Meta:
         model = Submission
@@ -299,6 +305,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "forms_names",
             "current_inquiry",
             "submission_price",
+            "sent_date",
         )
 
 
