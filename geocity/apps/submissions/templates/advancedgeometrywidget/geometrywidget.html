@@ -40,6 +40,14 @@
   padding-right: 7px;
 }
 
+#geo-invalid-content {
+  color: #DC3545;
+  display: none;
+  width: 100%;
+  font-weight: bold;
+  font-size: 80%;
+}
+
 @media only screen and (max-width: 767px) {
   #map-custom-modal {
     top: 0vh;
@@ -146,6 +154,7 @@
     <i class="fa fa-map"></i> Localiser sur une carte
   </div>
   <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
+  <div id="geo-invalid-content">No geometry value provided.</div>
 </div>
 
 <div id="map-custom-modal-overlay" style="display: none">
@@ -172,15 +181,16 @@
   const buttonModal = document.getElementById('map-custom-modal-button');
   const crossButton = document.getElementById('modal-close-button');
   const validationButton = document.getElementById('modal-validation-button');
+  const optionsDiv = document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")
   validationButton.style.opacity = 0.5;
   const map = document.getElementById('map-custom-modal')
   const overlay =  document.getElementById('map-custom-modal-overlay');
   let isModalOpen = false;
   let mapIsCreated = false;
+  let selectedValues = '';
 
   createMap = () => {
     if (!mapIsCreated) {
-      const optionsDiv = document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")
       if (optionsDiv && optionsDiv[0] && optionsDiv[0].dataset && optionsDiv[0].dataset.options) {
         const options = JSON.parse(optionsDiv[0].dataset.options);
         if (options && options.map_widget_configuration) {
@@ -229,8 +239,6 @@
 
   closeModal = () => {
     toogleModal('none');
-    if (serialized)
-      serialized.value = '';
   }
 
   crossButton.addEventListener('click', () => {
@@ -242,20 +250,26 @@
   })
 
   validationButton.addEventListener('click', () => {
-    if (serialized.value != '')
+    if (selectedValues != '')
       toogleModal('none');
+      serialized.value = selectedValues
   })
 
   window.addEventListener('position-selected', (event) => {
     if (event.detail) {
       validationButton.style.opacity = 1;
       roResult.innerHTML = event.detail;
-      serialized.value = event.detail;
+      selectedValues = event.detail;
     } else {
       validationButton.style.opacity = 0.5;
       roResult.innerHTML = '';
-      serialized.value = '';
+      selectedValues = '';
     }
   })
+
+  const isInvalid = document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")[0]?.parentNode?.parentNode?.classList.contains('is-invalid')
+  if (isInvalid) {
+    document.getElementById('geo-invalid-content').style.display = 'block';
+  }
 </script>
 {% endif %}
