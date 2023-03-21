@@ -1,22 +1,22 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="fr">
-<head>
-  {% load static %}
-  {% load i18n %}
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Geocity</title>
-{% block stylesheets%}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
-{% endblock %}
-</head>
-<body>
-  <div class="error-page">
-    <p>
+  <head>
+    {% load static %}
+    {% load i18n %}
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Geocity</title>
+    {% block stylesheets%}
+      <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    {% endblock %}
+  </head>
+  <body>
+    <div class="error-page">
+      <p>
         <h1>Geocity</h1>
         <h2>{% trans "Trop de tentatives de connexion!" %}</h2>
         <h3>{% trans "Votre compte a été vérouillé par mesure de sécurité. Merci de contacter l'administrateur pour résoudre le problème" %}</h3>
-    </p>
-    <img src="{% static 'images/errors/lockout.svg'%}" type="image/gif">
+      </p>
+      <img src="{% static 'images/errors/lockout.svg'%}" type="image/gif">
     </div>
-</body>
+  </body>
 </html>
