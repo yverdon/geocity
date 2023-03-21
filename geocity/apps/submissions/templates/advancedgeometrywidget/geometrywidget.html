@@ -271,5 +271,8 @@
   if (isInvalid) {
     document.getElementById('geo-invalid-content').style.display = 'block';
   }
+  if (serialized.value) {
+    roResult.innerHTML = serialized.value;
+  }
 </script>
 {% endif %}
