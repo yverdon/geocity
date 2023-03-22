@@ -14,7 +14,7 @@
                     {% endif %}
                     {% for key, field in fields.items %}
                         {% if not key in section.undesired_properties %}
-                            <div style="padding-top:{{section.line_height}}px;"><span class="bold">{{key}} : </span>{{field}}<br></div>
+                            <div class="flex_item-100" style="padding-top:{{section.line_height}}px;"><span class="bold">{{key}} : </span>{{field}}<br></div>
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
