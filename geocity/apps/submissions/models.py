@@ -1154,7 +1154,7 @@ class Submission(models.Model):
             if archive.status == Submission.STATUS_SUBMITTED_FOR_VALIDATION:
                 sent_date = archive.history_date
 
-                # Since the history is reverse sorted, when only want the first entry
+                # Since the history is reverse sorted, we only want the first entry
                 # with status = STATUS_SUBMITTED_FOR_VALIDATION
                 break
 
