@@ -1406,15 +1406,11 @@ class SubmissionValidationForm(forms.ModelForm):
         model = models.SubmissionValidation
         fields = [
             "validation_status",
-            "comment_before",
-            "comment_during",
-            "comment_after",
+            "comment",
         ]
         widgets = {
             "validation_status": forms.RadioSelect(),
-            "comment_before": forms.Textarea(attrs={"rows": 3}),
-            "comment_during": forms.Textarea(attrs={"rows": 3}),
-            "comment_after": forms.Textarea(attrs={"rows": 3}),
+            "comment": forms.Textarea(attrs={"rows": 3}),
         }
 
     def __init__(self, *args, **kwargs):

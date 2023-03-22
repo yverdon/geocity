@@ -422,11 +422,7 @@ class SubmissionValidationSerializer(serializers.Serializer):
             values = {}
             for field in validation._meta.fields:
                 values["validation_status"] = validation.get_validation_status_display()
-                if field.name in [
-                    "comment_before",
-                    "comment_during",
-                    "comment_after",
-                ]:
+                if field.name == "comment":
                     values[field.name] = getattr(validation, field.name)
 
             rep[validation.department.description] = values

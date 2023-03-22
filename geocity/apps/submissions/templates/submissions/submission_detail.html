@@ -193,14 +193,8 @@
                     {% endif %}
                   {% endif %}
                 </dd>
-                {% if validation.comment_before %}
-                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before|linebreaksbr }} </dd>
-                {% endif %}
-                {% if validation.comment_during %}
-                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during|linebreaksbr }} </dd>
-                {% endif %}
-                {% if validation.comment_after %}
-                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after|linebreaksbr }} </dd>
+                {% if validation.comment %}
+                  <dt>{% trans "Commentaire" %}:</dt> <dd> {{ validation.comment|linebreaksbr }} </dd>
                 {% endif %}
               </dl>
             </div>
