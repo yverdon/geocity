@@ -3,6 +3,25 @@
 from django.db import migrations, models
 
 
+def migrate_comments(apps, schema_editor):
+    """
+    Put comment_before, comment_during and comment_after in 1 comment
+    """
+    SubmissionValidation = apps.get_model("submission", "SubmissionValidation")
+
+    SubmissionValidation.objects.all()
+
+    # For each SubmissionValidation, squash comment_before comment_during comment_after in 1 comment
+    for validation in SubmissionValidation:
+        comment = f"""{validation.comment_before}
+        {validation.comment_during}
+        {validation.comment_after}"""
+
+        # save it in SubmissionValidation.comment
+        validation.comment = comment
+        validation.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -28,4 +47,5 @@ class Migration(migrations.Migration):
                 verbose_name="Commentaire",
             ),
         ),
+        migrations.RunPython(migrate_comments),
     ]
