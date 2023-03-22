@@ -2211,3 +2211,52 @@ class SubmissionPaymentRedirect(View):
             return redirect(payment_url)
 
         return redirect(reverse_lazy("submissions:submissions_list"))
+
+
+# TODO: SET PERMISSIONS
+@login_required
+@check_mandatory_2FA
+def submission_validations_edit(request, submission_id):
+
+    # TODO: CHECK PERMISSIONS
+    # submission = models.Submission.objects.get(pk=submission_id)
+    # can_pilot_edit_submission = permissions.can_edit_submission(request.user, submission)
+
+    # if not can_pilot_edit_submission:
+    #     return None
+
+    submissionValidationFormset = modelformset_factory(
+        models.SubmissionValidation,
+        fields=("department", "comment_before"),
+        edit_only=True,
+        extra=0,
+    )
+    if request.method == "POST":
+        if request.method == "POST":
+            formset = submissionValidationFormset(request.POST)
+            if formset.is_valid():
+                formset.save()
+                if "save_continue" in request.POST:
+                    return redirect(
+                        "submissions:submission_validations_edit",
+                        submission_id=submission_id,
+                    )
+                else:
+                    return redirect(
+                        "submissions:submission_detail",
+                        submission_id=submission_id,
+                    )
+
+    else:
+        formset = submissionValidationFormset(
+            queryset=models.SubmissionValidation.objects.filter(
+                submission=submission_id
+            )
+        )
+    return render(
+        request,
+        "submissions/submission_validations_edit.html",
+        {
+            "formset": formset,
+        },
+    )
