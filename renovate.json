@@ -4,6 +4,9 @@
     "config:base",
     "docker:disable"
   ],
+  "constraints": {
+    "python": "==3.10.6"
+  },
   "automerge": false,
   "baseBranches": ["develop"],
   "pip_requirements": {
