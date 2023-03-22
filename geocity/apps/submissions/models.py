@@ -1147,13 +1147,16 @@ class Submission(models.Model):
         history = self.get_history()
         sent_date = None
 
-        for date, archive in history:
-            if archive.status == Submission.STATUS_SUBMITTED_FOR_VALIDATION:
-                sent_date = archive.history_date
-
-                # Since the history is reverse sorted, we only want the first entry
-                # with status = STATUS_SUBMITTED_FOR_VALIDATION
-                break
+        # Since the history is reverse sorted, we only want the first entry
+        # with status = STATUS_SUBMITTED_FOR_VALIDATION
+        filtered_history = list(
+            filter(
+                lambda x: x[1].status == Submission.STATUS_SUBMITTED_FOR_VALIDATION,
+                history,
+            )
+        )
+        if filtered_history:
+            sent_date = filtered_history[0][1].history_date
 
         return sent_date
 
