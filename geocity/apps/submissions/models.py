@@ -1778,6 +1778,11 @@ class SubmissionValidation(models.Model):
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
+    comment = models.TextField(
+        _("Commentaire"),
+        blank=True,
+        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    )
     comment_before = models.TextField(
         _("Commentaire (avant)"),
         blank=True,

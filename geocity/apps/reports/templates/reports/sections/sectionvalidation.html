@@ -11,9 +11,7 @@
                 {% for service, validation in request_data.properties.validations.items %}
                 <h3>Validation: {{service}}</h3>
                 <span class="bold">Statut : </span>{{validation.validation_status}}<br>
-                <span class="bold">Commentaire (avant) : </span>{{validation.comment_before}}<br>
-                <span class="bold">Commentaire (pendant) : </span>{{validation.comment_during}}<br>
-                <span class="bold">Commentaire (après) : </span>{{validation.comment_after}}<br>
+                <span class="bold">Commentaire : </span>{{validation.comment}}<br>
                 {% endfor %}
             </div>
         </div>
