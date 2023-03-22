@@ -7,7 +7,7 @@ def migrate_comments(apps, schema_editor):
     """
     Put comment_before, comment_during and comment_after in 1 comment
     """
-    SubmissionValidation = apps.get_model("submission", "SubmissionValidation")
+    SubmissionValidation = apps.get_model("submissions", "SubmissionValidation")
 
     SubmissionValidation.objects.all()
 
