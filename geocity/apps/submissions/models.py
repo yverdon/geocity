@@ -1144,9 +1144,6 @@ class Submission(models.Model):
 
     @property
     def sent_date(self):
-        return self.get_sent_date()
-
-    def get_sent_date(self):
         history = self.get_history()
         sent_date = None
 
