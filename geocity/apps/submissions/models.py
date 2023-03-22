@@ -1783,21 +1783,6 @@ class SubmissionValidation(models.Model):
         blank=True,
         help_text=_("Information supplémentaire facultative transmise au requérant"),
     )
-    comment_before = models.TextField(
-        _("Commentaire (avant)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
-    )
-    comment_during = models.TextField(
-        _("Commentaire (pendant)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
-    )
-    comment_after = models.TextField(
-        _("Commentaire (après)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
-    )
     validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
