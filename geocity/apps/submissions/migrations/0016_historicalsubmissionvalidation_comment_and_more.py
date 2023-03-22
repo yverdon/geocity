@@ -9,10 +9,10 @@ def migrate_comments(apps, schema_editor):
     """
     SubmissionValidation = apps.get_model("submissions", "SubmissionValidation")
 
-    SubmissionValidation.objects.all()
+    validations = SubmissionValidation.objects.all()
 
     # For each SubmissionValidation, squash comment_before comment_during comment_after in 1 comment
-    for validation in SubmissionValidation:
+    for validation in validations:
         comment = f"""{validation.comment_before}
         {validation.comment_during}
         {validation.comment_after}"""
