@@ -91,6 +91,8 @@
                 <h4>{% trans "Informations générales" %}</h4>
                 <form method="post">
                     {% csrf_token %}
+                      <a href="{% url 'submissions:submission_validations_edit' submission_id=submission.pk %}" class="btn btn-primary">{% trans "Modifier les validations" %}</a>
+
                     {% for field in forms.amend.get_base_fields %}
                         {% bootstrap_field field layout='horizontal'%}
                     {% endfor %}
