@@ -1788,6 +1788,9 @@ class SubmissionValidation(models.Model):
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
+    is_visible_by_author = models.BooleanField(
+        _("Visible par l'auteur de la demande"), default=True
+    )
     comment = models.TextField(
         _("Commentaire"),
         blank=True,

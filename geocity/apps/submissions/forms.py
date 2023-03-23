@@ -1406,10 +1406,12 @@ class SubmissionValidationForm(forms.ModelForm):
         model = models.SubmissionValidation
         fields = [
             "validation_status",
+            "is_visible_by_author",
             "comment",
         ]
         widgets = {
             "validation_status": forms.RadioSelect(),
+            "is_visible_by_author": forms.CheckboxInput(),
             "comment": forms.Textarea(attrs={"rows": 3}),
         }
 

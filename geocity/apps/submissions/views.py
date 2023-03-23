@@ -293,6 +293,7 @@ class SubmissionDetailView(View):
                 == self.submission.forms.count(),
                 "inquiry_in_progress": self.submission.status
                 == models.Submission.STATUS_INQUIRY_IN_PROGRESS,
+                "current_user": self.request.user,
             },
         }
 
