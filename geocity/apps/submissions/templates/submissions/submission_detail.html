@@ -172,32 +172,43 @@
       <div class="col">
         <h2>{% trans "Validation" %}</h2>
           {% for validation in validations %}
-            <div class="container">
-              <dl>
-                <dt> {{ validation.department.group.name }} </dt>
-                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-                  {% if 'Approuvé' in validation.get_validation_status_display %}
-                    <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
-                  {% elif 'attente' in validation.get_validation_status_display %}
-                    <i class="fa fa-clock-o" aria-hidden="true"></i>&#x202F;
-                  {% else %}
-                    <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
-                  {% endif %}
-                  {% if has_permission_to_classify or can_validate_submission%}
-                    {{ validation.get_validation_status_display }} par
-                    {% if validation.validated_by %}
-                      {{ validation.validated_by.userprofile.first_name }}
-                      {{ validation.validated_by.userprofile.last_name }}
-                      le
-                      {{ validation.validated_at }}
+            {% if validation.is_visible_by_author or current_user != submission.author %}
+              <div class="container">
+                <dl>
+                  <dt> {{ validation.department.group.name }} </dt>
+                  <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+                    {% if 'Approuvé' in validation.get_validation_status_display %}
+                      <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
+                    {% elif 'attente' in validation.get_validation_status_display %}
+                      <i class="fa fa-clock-o" aria-hidden="true"></i>&#x202F;
+                    {% else %}
+                      <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
                     {% endif %}
+                    {% if has_permission_to_classify or can_validate_submission%}
+                      {{ validation.get_validation_status_display }} par
+                      {% if validation.validated_by %}
+                        {{ validation.validated_by.userprofile.first_name }}
+                        {{ validation.validated_by.userprofile.last_name }}
+                        le
+                        {{ validation.validated_at }}
+                      {% endif %}
+                    {% endif %}
+                  </dd>
+                  <dt>{% trans "Visible par l'auteur de la demande" %}:</dt>
+                  <dd>
+                  {% if validation.is_visible_by_author %}
+                    <i class="fa fa-check-circle" aria-hidden="true"></i>
+                  {% else %}
+                    <i class="fa fa-times-circle" aria-hidden="true"></i>
                   {% endif %}
-                </dd>
-                {% if validation.comment %}
-                  <dt>{% trans "Commentaire" %}:</dt> <dd> {{ validation.comment|linebreaksbr }} </dd>
-                {% endif %}
-              </dl>
-            </div>
+                  </dd>
+                  {% if validation.comment %}
+                    <dt>{% trans "Commentaire" %}:</dt> <dd> {{ validation.comment|linebreaksbr }} </dd>
+                  {% endif %}
+                </dl>
+              </div>
+              <hr>
+            {% endif %}
           {% endfor %}
       </div>
     </div>
