@@ -271,7 +271,7 @@ class Submission(models.Model):
         permissions = [
             ("read_submission", _("Consulter les demandes")),
             ("amend_submission", _("Traiter les demandes")),
-            ("edit_submission_validations", _("Éditer les validations")),
+            ("edit_submission_validations", _("Modifier les validations")),
             ("validate_submission", _("Valider les demandes")),
             ("classify_submission", _("Classer les demandes")),
             ("edit_submission", _("Modifier les demandes")),
