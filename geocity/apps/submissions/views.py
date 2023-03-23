@@ -2235,7 +2235,7 @@ def submission_validations_edit(request, submission_id):
 
     submissionValidationFormset = modelformset_factory(
         models.SubmissionValidation,
-        fields=("department", "comment_before"),
+        form=forms.SubmissionValidationsForm,
         edit_only=True,
         extra=0,
     )

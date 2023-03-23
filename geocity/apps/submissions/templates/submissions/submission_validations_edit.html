@@ -1,5 +1,5 @@
 {% extends "base_generic.html" %}
-
+{% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
 
@@ -20,4 +20,8 @@
       <button class="btn btn-primary" name="save_continue">{% trans "Enregistrer et continuer les modifications" %}</button>
   </div>
   </form>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/submission_validations_edit.js' %}"></script>
 {% endblock %}
