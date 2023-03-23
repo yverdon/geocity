@@ -10,6 +10,8 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q
+
+from django_jsonform.models.fields import JSONField
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -297,8 +299,28 @@ class FormPrice(models.Model):
 
 
 class MapWidgetConfiguration(models.Model):
+    ITEMS_SCHEMA = {
+                        "type": "object",
+                        "keys": {
+                            "mode": {
+                                "type": "object",
+                                "keys": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "create",
+                                            "select",
+                                            "target",
+                                            "mix"
+                                        ],
+                                        'widget': 'radio'
+                                    }
+                                }
+                            },
+                        }
+                    }
     name = models.CharField(_("Nom de la configuration"), max_length=255)
-    configuration = models.JSONField("Configuration du Widget cartographique")
+    configuration = JSONField(schema=ITEMS_SCHEMA)
     integrator = models.ForeignKey(
         Group,
         null=True,

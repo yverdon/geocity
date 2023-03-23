@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models.fields.json import JSONField
 from django.utils.translation import gettext_lazy as _
-from jsoneditor.forms import JSONEditor
+from django_jsonform.widgets import JSONFormWidget
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, MapCustomChoiceField, filter_for_user
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
@@ -552,21 +552,22 @@ TODO:
 
 @admin.register(models.MapWidgetConfiguration)
 class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     list_display = [
         "name",
         "configuration",
         "integrator",
     ]
-    formfield_overrides = {
-        JSONField: {
-            "widget": JSONEditor(
-                init_options={"mode": "view", "modes": ["view", "code", "tree", "form"]},
-                ace_options={"readOnly": False},
-                attrs={"style": "height: 1000px;"},
-            ),
-        },
-    }
 
     class Meta:
         model = models.MapWidgetConfiguration
         fields = "__all__"
+
+    class Media:
+        css = {
+            'all': ('css/admin/map_widget_configurator.css',)
+        }
+        js = ('js/admin/map_widget_configurator.js',)

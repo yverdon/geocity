@@ -162,6 +162,7 @@ INSTALLED_APPS = [
     "ckeditor",
     "jazzmin",
     "jsoneditor",
+    "django_jsonform",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",

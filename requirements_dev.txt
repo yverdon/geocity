@@ -127,6 +127,8 @@ django-ipware==4.0.2
     # via
     #   -r requirements.txt
     #   django-axes
+django-jsonform
+    # via -r requirements.txt
 django-jazzmin==2.6.0
     # via -r requirements.txt
 django-js-asset==2.0.0

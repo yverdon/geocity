@@ -1,0 +1,7 @@
+.rjf-form-wrapper > .module > .rjf-form-group {
+  max-width: none;
+}
+
+.rjf-form-wrapper > .module > .rjf-form-group > .rjf-form-group-inner > .rjf-form-group {
+  max-width: none;
+}
