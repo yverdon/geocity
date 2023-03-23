@@ -448,8 +448,8 @@ class Command(BaseCommand):
             group__name=f"{entity}-validator"
         )
         comment = """Avant : Ce projet n'est pas admissible, veuillez l'améliorer.
-            Pendant : Les améliorations ont été prise en compte.
-            Après : Excellent projet qui bénéficiera à la communauté."""
+        Pendant : Les améliorations ont été prise en compte.
+        Après : Excellent projet qui bénéficiera à la communauté."""
 
         for user_iteration in range(user_iterations):
             username = f"{entity}-user-{user_iteration}"
