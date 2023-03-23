@@ -1899,14 +1899,10 @@ def get_submission_forms(submission):
 class SubmissionValidationsForm(forms.ModelForm):
     class Meta:
         model = models.SubmissionValidation
-        fields = ["department", "validated_by", "validated_at", "comment_before"]
+        fields = ["department", "is_visible_by_author", "comment"]
 
     def __init__(self, *args, **kwargs):
         super(SubmissionValidationsForm, self).__init__(*args, **kwargs)
         if self.instance.id:
             self.fields["department"].widget.attrs["readonly"] = True
             self.fields["department"].widget.attrs["hidden"] = True
-            self.fields["validated_by"].widget.attrs["readonly"] = True
-            self.fields["validated_by"].widget.attrs["hidden"] = True
-            self.fields["validated_at"].widget.attrs["readonly"] = True
-            self.fields["validated_at"].widget.attrs["hidden"] = True

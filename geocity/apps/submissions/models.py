@@ -81,14 +81,15 @@ class SubmissionQuerySet(models.QuerySet):
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
             permit_duration_max=Max("forms__permit_duration"),
-            remaining_validations=Count("validations")
+            remaining_validations=Count("validations__department", distinct=True)
             - Count(
-                "validations",
+                "validations__department",
+                distinct=True,
                 filter=~Q(
                     validations__validation_status=SubmissionValidation.STATUS_REQUESTED
                 ),
             ),
-            required_validations=Count("validations"),
+            required_validations=Count("validations__department", distinct=True),
             author_fullname=Concat(
                 F("author__first_name"),
                 Value(" "),
@@ -1783,6 +1784,7 @@ class SubmissionValidation(models.Model):
     )
     department = models.ForeignKey(
         PermitDepartment,
+        verbose_name=_("Département"),
         on_delete=models.CASCADE,
         related_name="submission_validations",
     )
@@ -1797,7 +1799,9 @@ class SubmissionValidation(models.Model):
         blank=True,
         help_text=_("Information supplémentaire facultative transmise au requérant"),
     )
-    validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    validated_by = models.ForeignKey(
+        User, verbose_name=_("Validé par"), null=True, on_delete=models.SET_NULL
+    )
     validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
 

@@ -192,8 +192,8 @@
                     {% if has_permission_to_classify or can_validate_submission%}
                       {{ validation.get_validation_status_display }} par
                       {% if validation.validated_by %}
-                        {{ validation.validated_by.userprofile.first_name }}
-                        {{ validation.validated_by.userprofile.last_name }}
+                        {{ validation.validated_by.first_name }}
+                        {{ validation.validated_by.last_name }}
                         le
                         {{ validation.validated_at }}
                       {% endif %}
