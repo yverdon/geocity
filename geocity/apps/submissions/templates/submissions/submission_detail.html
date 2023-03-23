@@ -171,6 +171,11 @@
     <div class="row sub-row">
       <div class="col">
         <h2>{% trans "Validation" %}</h2>
+        {% if has_permission_to_edit_submission_validations %}
+          <p>
+            <a href="{% url 'submissions:submission_validations_edit' submission_id=submission.pk %}" class="btn btn-primary">{% trans "Modifier les validations" %}&nbsp;<i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+          </p>
+        {% endif %}
           {% for validation in validations %}
             {% if validation.is_visible_by_author or current_user != submission.author %}
               <div class="container">

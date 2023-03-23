@@ -16,6 +16,14 @@ def has_permission_to_amend_submission(user, submission):
     )
 
 
+def has_permission_to_edit_submission_validations(user, submission):
+    return user.has_perm(
+        "submissions.edit_submission_validations"
+    ) and submission.administrative_entity in AdministrativeEntity.objects.associated_to_user(
+        user
+    )
+
+
 def can_amend_submission(user, submission):
     return submission.can_be_amended() and has_permission_to_amend_submission(
         user, submission

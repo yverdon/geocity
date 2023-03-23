@@ -817,6 +817,7 @@ class Command(BaseCommand):
         secretariat_permissions = Permission.objects.filter(
             codename__in=[
                 "amend_submission",
+                "edit_submission_validations",
                 "classify_submission",
             ],
             content_type=self.submission_ct,

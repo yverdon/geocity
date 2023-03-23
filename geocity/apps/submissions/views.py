@@ -282,6 +282,9 @@ class SubmissionDetailView(View):
                     self.request.user, self.submission
                 ),
                 "can_validate_submission": can_validate_submission,
+                "has_permission_to_edit_submission_validations": permissions.has_permission_to_edit_submission_validations(
+                    self.request.user, self.submission
+                ),
                 "directives": self.submission.get_submission_directives(),
                 "prolongation_enabled": prolongation_enabled,
                 "document_enabled": self.submission.has_document_enabled(),
@@ -2218,12 +2221,17 @@ class SubmissionPaymentRedirect(View):
 @check_mandatory_2FA
 def submission_validations_edit(request, submission_id):
 
-    # TODO: CHECK PERMISSIONS
-    # submission = models.Submission.objects.get(pk=submission_id)
-    # can_pilot_edit_submission = permissions.can_edit_submission(request.user, submission)
+    # Check that user is authorize to see submission
+    submission = get_object_or_404(
+        models.Submission.objects.filter_for_user(request.user), pk=submission_id
+    )
 
-    # if not can_pilot_edit_submission:
-    #     return None
+    # Check that user is authorized to edit submission validations
+    if not permissions.has_permission_to_edit_submission_validations(
+        request.user, submission
+    ):
+        # TODO: be nicer whith user
+        raise PermissionDenied
 
     submissionValidationFormset = modelformset_factory(
         models.SubmissionValidation,
