@@ -1143,22 +1143,14 @@ class Submission(models.Model):
         return history
 
     @property
-    def sent_date(self):
-        history = self.get_history()
-        sent_date = None
-
-        # Since the history is reverse sorted, we only want the first entry
-        # with status = STATUS_SUBMITTED_FOR_VALIDATION
-        filtered_history = list(
-            filter(
-                lambda x: x[1].status == Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-                history,
-            )
+    def first_sent_date(self):
+        first_sent_date = (
+            self.history.filter(status=Submission.STATUS_SUBMITTED_FOR_VALIDATION)
+            .order_by("history_date")
+            .first()
+            .history_date
         )
-        if filtered_history:
-            sent_date = filtered_history[0][1].history_date
-
-        return sent_date
+        return first_sent_date
 
     def get_last_transaction(self):
         if self.get_transactions() is None:

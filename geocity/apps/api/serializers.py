@@ -291,7 +291,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
     forms_names = FormsNames(source="forms", read_only=True)
     current_inquiry = SubmissionInquirySerializer(read_only=True)
     submission_price = SubmissionPriceSerializer(read_only=True)
-    sent_date = SentDateSerializer(read_only=True)
+    first_sent_date = SentDateSerializer(read_only=True)
 
     class Meta:
         model = Submission
@@ -305,7 +305,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "forms_names",
             "current_inquiry",
             "submission_price",
-            "sent_date",
+            "first_sent_date",
         )
 
 
