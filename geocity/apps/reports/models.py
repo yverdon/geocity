@@ -541,6 +541,8 @@ class SectionPlanning(Section):
 
 
 class SectionHorizontalRule(Section):
+    padding_top = padding_top_field()
+
     class Meta:
         verbose_name = _("Ligne horizontale")
 
