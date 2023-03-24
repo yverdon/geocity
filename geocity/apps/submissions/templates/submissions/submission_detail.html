@@ -151,7 +151,7 @@
 
     {% if validations %}
 
-      <div class="row sub-row">
+      <div class="row sub-row py-2">
         <div class="col">
           <h2>{% trans "Informations générales" %}</h2>
           <div class="container">
@@ -168,7 +168,7 @@
     {% endif %}
 
     {% if validations %}
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
         <div class="container">
           <div class="row">
@@ -224,7 +224,7 @@
                 {% endif %}
               </dl>
             </div>
-            <hr>
+            {% if not forloop.last %}<hr>{% endif %}
           {% endfor %}
       </div>
     </div>
@@ -233,7 +233,7 @@
 
     {% if submission.can_be_prolonged and submission.prolongation_date %}
 
-      <div class="row sub-row">
+      <div class="row sub-row py-2">
         <div class="col">
           <h2>{% trans "Prolongation" %}</h2>
           <div class="container">
@@ -253,7 +253,7 @@
 
     {% endif %}
 
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
         <h2>{% trans "Résumé" %}</h2>
           {% submission_summary submission %}
@@ -261,7 +261,7 @@
     </div>
 
     {% if submission.additional_decision_information %}
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
         <h2>{% trans "Informations complémentaires" %}</h2>
         <dl>
