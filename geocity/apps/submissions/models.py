@@ -1142,6 +1142,16 @@ class Submission(models.Model):
         history.sort(reverse=True)
         return history
 
+    @property
+    def sent_date(self):
+        # Return the last sent date because the submission can be resent if it was incomplete
+        last_sent_history = (
+            self.history.filter(status=Submission.STATUS_SUBMITTED_FOR_VALIDATION)
+            .order_by("history_date")
+            .last()
+        )
+        return last_sent_history.history_date if last_sent_history is not None else None
+
     def get_last_transaction(self):
         if self.get_transactions() is None:
             return None
