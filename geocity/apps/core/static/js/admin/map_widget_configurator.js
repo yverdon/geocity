@@ -8,6 +8,7 @@ const baseSchema = {
           "keys": {
               "type": {
                   "type": "string",
+                  "title": "Modes d’interaction avec la carte",
                   "enum": [
                       "create",
                       "select",
@@ -18,55 +19,97 @@ const baseSchema = {
               }
           }
       },
+      "zoom": {
+        "type": "integer",
+        "title": "Niveau de zoom par défaut à l’ouverture de la carte",
+        "default": 15
+      },
+      "minZoom": {
+        "type": "integer",
+        "title": "Niveau de zoom minimum possible",
+        "default": 1
+      },
+      "maxZoom": {
+        "type": "integer",
+        "title": "Niveau de zoom maximum possible",
+        "default": 20
+      },
+      "defaultCenter": {
+        "type": "array",
+        "title": "Position centrale de départ: (x, y au format EPSG:2056)",
+        "minItems": 2,
+        "maxItems": 2,
+        'items': {
+          'type': "integer",
+        }
+      },
       "information": {
           "type": "object",
           "keys": {
               "duration": {
                   "type": "integer",
+                  "title": "Durée d’apparition de la boite d’information",
                   "default": 5000
               },
               "title": {
                   "type": "string",
+                  "title": "Titre la boite d’information",
                   "default": "Signaler ..."
               },
               "content": {
+                  "title": "Texte de la boite d’information ",
                   "type": "string"
               }
           }
       },
+      "displayZoom": {
+        "type": "boolean",
+        "title": "Voulez-vous afficher les boutons de zoom?",
+        "default": true
+      },
+      "displayScaleLine": {
+        "type": "boolean",
+        "title": "Voulez-vous afficher la barre d’échelle?",
+        "default": true
+      },
+      "fullscreen": {
+        "type": "boolean",
+        "title": "Voulez-vous permettre le mode pleine écran?",
+        "default": true
+      },
       "enableGeolocation": {
           "type": "boolean",
-          "title": " Voulez-vous activer la géolocalisation du composant?",
+          "title": "Voulez-vous activer la géolocalisation du composant?",
           "default": true
       },
       "enableCenterButton": {
           "type": "boolean",
-          "title": " Voulez-vous activer le bouton de recentrage?",
+          "title": "Voulez-vous activer le bouton de recentrage?",
           "default": true
       },
       "enableRotation": {
           "type": "boolean",
-          "title": " Voulez-vous permettre la rotation de la carte?",
+          "title": "Voulez-vous permettre la rotation de la carte?",
           "default": true
       },
       "selectionTargetBoxMessage": {
           "type": "string",
-          "title": " Message pour la boite informative de position"
+          "title": "Message pour la boite informative de position"
       },
-
       "wmts": {
           "type": "array",
+          "title": "WMTS",
           "items": {
                       "type": "object",
                       "keys": {
                           "capability": {
                               "type": "string",
-                              "title": "URL capability",
+                              "title": "Lien vers la capability",
                               "placeholder": "https://wmts.asit-asso.ch/wmts?&Service=WMTS&Version=1.0.0&Request=GetCapabilities"
                           },
                           "layer": {
                               "type": "string",
-                              "title": "Nom du layer",
+                              "title": "Nom de la couche",
                               "placeholder": "asitvd.fond_cadastral"
                           },
                           "projection": {
@@ -75,25 +118,28 @@ const baseSchema = {
                           },
                           "name": {
                               "type": "string",
-                              "title": "URL capability",
+                              "title": "Nom affiché lors de la sélection de la couche",
                               "placeholder": "Carte de base"
                           },
                           "thumbnail": {
                               "type": "string",
-                              "title": "URL capability"
+                              "title": "Lien vers l'image qui sera affiché lors de la sélection de la couche"
                           }
                       }
           }
       },
       "border": {
           "type": "object",
+          "title": "Frontière",
           "keys": {
               "url": {
                   "type": "string",
+                  "title": "Lien vers un GeoJSON contenant les informations sur la frontière",
                   "placeholder": " http://localhost:9095/submissions/adminentitiesgeojson/1/"
               },
               "notification": {
                   "type": "string",
+                  "title": "Message expliquant pourquoi on ne peut effectuer une action hors des frontières",
                   "default": "Veuillez placer votre élément dans les limites autorisées",
                   "placeholder": "Veuillez placer votre élément dans les limites autorisées"
               }
@@ -101,28 +147,32 @@ const baseSchema = {
       },
       "inclusionArea": {
           "type": "object",
+          "title": "Zone d’inclusion",
           "keys": {
               "url": {
                   "type": "string",
+                  "title": "Lien vers un WFS contenant les informations sur la zone d’inclusion",
                   "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeName=MO_bf_bien_fonds"
               },
               "filter": {
                   "type": "string",
+                  "title": "Filtre d’URL pour WFS permettant de filtrer les données de la zone d’inclusion",
                   "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeName=MO_bf_bien_fonds"
               }
           }
       },
       "geolocationInformation": {
           "type": "object",
+          "title": "Infomration concernant la géolocalisation des éléments créés/sélectionnés",
           "keys": {
               "displayBox": {
                   "type": "boolean",
-                  "title": "Afficher le boite d'information sur la géolocalisation des objets créés/sélectionnés",
+                  "title": "Afficher le boite d'information sur la géolocalisation des éléments créés/sélectionnés",
                   "default": true
               },
               "reverseLocation": {
                   "type": "boolean",
-                  "title": "Trouver l'adresse la plus proche",
+                  "title": "Rechercher et afficher l'adresse la plus proche",
                   "default": true
               },
               "currentLocation": {
@@ -138,7 +188,8 @@ const baseSchema = {
           "type": "object",
           "keys": {
             "type": {
-              "type": "string"
+              "type": "string",
+              "readonly": true
             },
             "message": {
               "type": "string"
@@ -150,13 +201,16 @@ const baseSchema = {
                   "type": "string"
                 },
                 "minZoom": {
-                  "type": "integer"
+                  "type": "integer",
+                  "minimum": 1
                 },
                 "couldBypass": {
                   "type": "boolean"
                 },
                 "maxElement": {
-                  "type": "integer"
+                  "type": "integer",
+                  "title": "Maximum d’éléments pouvant être créés/sélectionnés (-1 pour autant que l'on souhaite)",
+                  "minimum": -1
                 }
               }
             },
@@ -165,20 +219,6 @@ const baseSchema = {
       }
   }
 }
-
-const createSchema = baseSchema;
-const targetSchema = baseSchema;
-const selectSchema = baseSchema;
-selectSchema.keys["wfs"] = {
-  "type": "object",
-  "keys": {
-      "url": {
-          "type": "string",
-          "title": "URL de la couche WFS",
-          "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
-      }
-  }
-};
 
 const zoomConstraintNotification = {
   "type": "warning",
@@ -207,52 +247,117 @@ const areaConstraintNotification = {
   }
 };
 
-const infoNotification  = {
+const infoNotification = {
   "type": "info",
   "message": "",
   "rule": {
     "type": "MOVE_TARGET"
   }
 };
+
+const searchFeature = {
+  "type": "object",
+  "keys": {
+    "displaySearch": {
+        "type": "boolean",
+        "title": "Afficher la boite permettant de faire une recherche",
+        "default": true
+    },
+    "requestWithoutCustomValue": {
+        "type": "string",
+        "title": "URL pour exécuter la recherche",
+        "default": "https://api3.geo.admin.ch/rest/services/api/SearchServer?limit=5&&type=locations&sr=2056&lang=fr&origins=address%2Cparcel",
+        "placeholder": "https://api3.geo.admin.ch/rest/services/api/SearchServer?limit=5&&type=locations&sr=2056&lang=fr&origins=address%2Cparcel"
+    },
+    "bboxRestiction": {
+        "type": "string",
+        "title": "Restriction de la zone de recherche basé sur la bbox",
+        "placeholder": "2523099.818000,1167985.282000,2549752.141000,1192697.773000"
+    }
+  }
+}
+
+const wfsOption = {
+  "type": "object",
+  "keys": {
+      "url": {
+          "type": "string",
+          "title": "URL de la couche WFS",
+          "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
+      }
+  }
+};
+
+const clusterOption = {
+  "type": "object",
+  "keys": {
+    "distance": {
+        "type": "integer",
+        "title": "",
+        "default": 40,
+    },
+    "minDistance": {
+        "type": "integer",
+        "title": "",
+        "default": 35,
+    }
+  }
+}
+
+const targetSchema = JSON.parse(JSON.stringify(baseSchema));
+const createSchema = JSON.parse(JSON.stringify(baseSchema));;
+createSchema.keys["search"] = searchFeature;
+const selectSchema = JSON.parse(JSON.stringify(baseSchema));;
+selectSchema.keys["search"] = searchFeature;
+selectSchema.keys["wfs"] = wfsOption;
+selectSchema.keys["cluster"] = clusterOption;
 // ------------------ CODE PART ----------------------------
 
 let form;
 let schema = '';
 
-function setupTargetMode(data) {
+function setupTargetMode(data, isSchemaChanged) {
   schema = targetSchema;
   if (!data.notifications || data.notifications.length == 0) {
+    data.notifications = [zoomConstraintNotification,infoNotification];
+  } else if (isSchemaChanged) {
     data.notifications = [zoomConstraintNotification,infoNotification];
   }
 }
 
-function setupSelectionMode(data) {
+function setupSelectionMode(data, isSchemaChanged) {
   schema = selectSchema;
   if (!data.notifications || data.notifications.length == 0) {
+    data.notifications = [zoomConstraintNotification,maximumSelectionNotification,infoNotification];
+  } else if (isSchemaChanged) {
     data.notifications = [zoomConstraintNotification,maximumSelectionNotification,infoNotification];
   }
 }
 
-function setupCreateMode(data) {
+function setupCreateMode(data, isSchemaChanged) {
   schema = createSchema;
   if (!data.notifications || data.notifications.length == 0) {
     data.notifications = [zoomConstraintNotification,maximumSelectionNotification,infoNotification];
-  }
-}
-
-function setupMixMode(data) {
-  schema = selectSchema;
-  if (!data.notifications || data.notifications.length == 0) {
+  } else if (isSchemaChanged) {
     data.notifications = [zoomConstraintNotification,maximumSelectionNotification,infoNotification];
   }
 }
 
-function changeSchema(data) {
+function setupMixMode(data, isSchemaChanged) {
+  schema = selectSchema;
+  if (!data.notifications || data.notifications.length == 0) {
+    data.notifications = [zoomConstraintNotification,maximumSelectionNotification,infoNotification];
+  } else if (isSchemaChanged) {
+    data.notifications = [zoomConstraintNotification,maximumSelectionNotification,infoNotification];
+  }
+}
+
+function changeSchema(data, isSchemaChange) {
   switch(data.mode.type) {
-    case "target": setupTargetMode(data); break;
-    case "create": setupCreateMode(data); break;
-    case "select": setupSelectionMode(data); break;
-    case "mix": setupMixMode(data); break;
+    case "target": setupTargetMode(data, isSchemaChange); break;
+    case "create": setupCreateMode(data, isSchemaChange); break;
+    case "select": setupSelectionMode(data, isSchemaChange); break;
+    case "mix": setupMixMode(data, isSchemaChange); break;
   }
   form.update({
     schema: schema,
@@ -260,44 +365,7 @@ function changeSchema(data) {
   })
 }
 
-window.addEventListener('load', function() {
-  if (window.reactJsonForm) {
-      form = reactJsonForm.getFormInstance('id_configuration_jsonform');
-      if (form.data.mode.type != '')
-        changeSchema(form.data)
-      form.addEventListener('change', onJsonFormChange);
-  }
-});
-
-
-function onJsonFormChange(e) {
-  const data = e.data;
-  const prevData = e.prevData;
-
-  if (prevData.inclusionArea && data.inclusionArea) {
-    if (prevData.inclusionArea.url == '' && data.inclusionArea.url != '') {
-      data.notifications.push(areaConstraintNotification)
-      form.update({
-        schema: schema,
-        data: data
-      })
-    } else if (prevData.inclusionArea.url != '' && data.inclusionArea.url == '') {
-      const index = data.notifications.findIndex((notification) => notification.rule.type == "AREA_CONSTRAINT");
-      if (index != -1) {
-        data.notifications.splice(index, -1);
-        form.update({
-          schema: schema,
-          data: data
-        })
-      }
-    }
-  }
-
-
-  if (data.mode.type != prevData.mode.type) {
-    changeSchema(data)
-  }
-
+function setupDisplay(data) {
   if (data.notifications && data.notifications.length > 0) {
     for (let i = 0; i < data.notifications.length; i++) {
       const ruleType = document.getElementsByName(`rjf§notifications§${i}§rule§type`)
@@ -324,3 +392,45 @@ function onJsonFormChange(e) {
     }
   }
 }
+
+function onJsonFormChange(e) {
+  const data = e.data;
+  const prevData = e.prevData;
+
+  if (prevData.inclusionArea && data.inclusionArea) {
+    if (prevData.inclusionArea.url == '' && data.inclusionArea.url != '') {
+      data.notifications.push(areaConstraintNotification)
+      form.update({
+        schema: schema,
+        data: data
+      })
+    } else if (prevData.inclusionArea.url != '' && data.inclusionArea.url == '') {
+      const index = data.notifications.findIndex((notification) => notification.rule.type == "AREA_CONSTRAINT");
+      if (index != -1) {
+        data.notifications.splice(index, -1);
+        form.update({
+          schema: schema,
+          data: data
+        })
+      }
+    }
+  }
+
+
+  if (data.mode.type != prevData.mode.type) {
+    changeSchema(data, true)
+  }
+
+  setupDisplay(data)
+}
+
+window.addEventListener('load', function() {
+  if (window.reactJsonForm) {
+      form = reactJsonForm.getFormInstance('id_configuration_jsonform');
+      if (form.data.mode.type != '') {
+        changeSchema(form.data, false)
+        setupDisplay(form.data)
+      }
+      form.addEventListener('change', onJsonFormChange);
+  }
+});

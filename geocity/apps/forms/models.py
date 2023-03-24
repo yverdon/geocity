@@ -307,6 +307,7 @@ class MapWidgetConfiguration(models.Model):
                                 "keys": {
                                     "type": {
                                         "type": "string",
+                                        "title": "Modes d’interaction avec la carte",
                                         "enum": [
                                             "create",
                                             "select",

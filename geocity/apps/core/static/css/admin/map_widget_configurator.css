@@ -1,7 +1,44 @@
+.rjf-form-row > .rjf-form-row-controls + .rjf-form-row-inner  {
+  padding-right: 0px;
+}
+
+.rjf-form-row > .rjf-form-row-controls + .rjf-form-row-inner > div > label {
+  width: 100%;
+}
+
+.rjf-form-row > .rjf-form-row-inner > div > .rjf-input-group {
+  width: 100%;
+}
+
+.rjf-form-row > .rjf-form-row-inner > div > .rjf-input-group > input {
+  max-width: none;
+}
+
+.rjf-form-group-inner > .rjf-form-group-wrapper {
+  max-width: none;
+}
+
 .rjf-form-wrapper > .module > .rjf-form-group {
   max-width: none;
 }
 
 .rjf-form-wrapper > .module > .rjf-form-group > .rjf-form-group-inner > .rjf-form-group {
   max-width: none;
+}
+
+.rjf-form-group-inner > .rjf-form-group-wrapper > .rjf-form-group > .rjf-form-group-inner > .rjf-form-group-wrapper > .rjf-form-group > .rjf-form-group-inner > .rjf-form-group  {
+  max-width: none;
+}
+
+.rjf-check-input > label > input[name="rjf§mode§type"] {
+  max-width: 12px;
+  margin: 10px;
+}
+
+.rjf-form-row > .rjf-form-row-controls {
+  display: none;
+}
+
+.rjf-form-row label input[type="checkbox"] {
+  margin-right: 8px;
 }
