@@ -11,8 +11,8 @@
                 {% for service, validation in request_data.properties.validations.items %}
                 <h3>Validation: {{service}}</h3>
                 <span class="bold">Statut : </span>{{validation.validation_status}}<br>
-                <span class="bold">Visible par l'auteur de la demande : </span>{{validation.is_visible_by_author}}<br>
                 <span class="bold">Commentaire : </span>{{validation.comment}}<br>
+                <span class="bold">Commentaire visible par l'auteur de la demande : </span>{{validation.comment_is_visible_by_author}}<br>
                 {% endfor %}
             </div>
         </div>

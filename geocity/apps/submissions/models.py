@@ -1791,13 +1791,12 @@ class SubmissionValidation(models.Model):
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
-    is_visible_by_author = models.BooleanField(
-        _("Visible par l'auteur de la demande"), default=True
-    )
     comment = models.TextField(
         _("Commentaire"),
         blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    )
+    comment_is_visible_by_author = models.BooleanField(
+        _("Commentaire visible par l'auteur de la demande"), default=True
     )
     validated_by = models.ForeignKey(
         User, verbose_name=_("Validé par"), null=True, on_delete=models.SET_NULL

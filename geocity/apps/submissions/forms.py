@@ -1406,13 +1406,13 @@ class SubmissionValidationForm(forms.ModelForm):
         model = models.SubmissionValidation
         fields = [
             "validation_status",
-            "is_visible_by_author",
             "comment",
+            "comment_is_visible_by_author",
         ]
         widgets = {
             "validation_status": forms.RadioSelect(),
-            "is_visible_by_author": forms.CheckboxInput(),
             "comment": forms.Textarea(attrs={"rows": 3}),
+            "comment_is_visible_by_author": forms.CheckboxInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1899,7 +1899,7 @@ def get_submission_forms(submission):
 class SubmissionValidationsForm(forms.ModelForm):
     class Meta:
         model = models.SubmissionValidation
-        fields = ["department", "is_visible_by_author", "comment"]
+        fields = ["department", "comment", "comment_is_visible_by_author"]
 
     def __init__(self, *args, **kwargs):
         super(SubmissionValidationsForm, self).__init__(*args, **kwargs)

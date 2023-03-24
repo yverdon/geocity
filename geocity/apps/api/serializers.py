@@ -416,7 +416,7 @@ class CurrentUserSerializer(serializers.Serializer):
 
 
 class SubmissionValidationSerializer(serializers.Serializer):
-    # TODO: Add is_visible_by_author
+    # TODO: Add comment_is_visible_by_author
     def to_representation(self, value):
         rep = {}
         for validation in value.validations.all().select_related("department"):

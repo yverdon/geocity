@@ -186,7 +186,7 @@
         </div>
 
           {% for validation in validations %}
-            {% if validation.is_visible_by_author or current_user != submission.author %}
+            {% if validation.comment_is_visible_by_author or current_user != submission.author %}
               <div class="container">
                 <dl>
                   <dt> {{ validation.department.group.name }} </dt>
@@ -210,7 +210,7 @@
                   </dd>
                   <dt>{% trans "Visible par l'auteur de la demande" %}:</dt>
                   <dd>
-                  {% if validation.is_visible_by_author %}
+                  {% if validation.comment_is_visible_by_author %}
                     <i class="fa fa-check-circle" aria-hidden="true"></i>
                   {% else %}
                     <i class="fa fa-times-circle" aria-hidden="true"></i>
