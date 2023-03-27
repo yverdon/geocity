@@ -1,3 +1,5 @@
+@media (min-width: 768px) {
+
 .rjf-form-row > .rjf-form-row-controls + .rjf-form-row-inner  {
   padding-right: 0px;
 }
@@ -28,6 +30,8 @@
 
 .rjf-form-group-inner > .rjf-form-group-wrapper > .rjf-form-group > .rjf-form-group-inner > .rjf-form-group-wrapper > .rjf-form-group > .rjf-form-group-inner > .rjf-form-group  {
   max-width: none;
+}
+
 }
 
 .rjf-check-input > label > input[name="rjf§mode§type"],

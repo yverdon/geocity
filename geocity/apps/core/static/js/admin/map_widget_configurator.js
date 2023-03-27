@@ -91,13 +91,15 @@ const baseSchema = {
               },
               "content": {
                   "title": "Texte de la boite d’information ",
-                  "type": "string"
+                  "type": "string",
+                  "placeholder": "Sélectionnez un ou plusieurs lampadaire(s) défectueux présent(s) dans l’espace public de la ville."
               }
           }
       },
       "selectionTargetBoxMessage": {
           "type": "string",
-          "title": "Message pour la boite informative de position"
+          "title": "Message pour la boite informative de position",
+          "placeholder": "Éclairage signalé"
       },
       "border": {
           "type": "object",
@@ -335,12 +337,12 @@ const clusterOption = {
   "keys": {
     "distance": {
         "type": "integer",
-        "title": "",
+        "title": "Distance en pixels à l'intérieur de laquelle les caractéristiques seront regroupées",
         "default": 40,
     },
     "minDistance": {
         "type": "integer",
-        "title": "",
+        "title": "Distance minimale en pixels entre les clusters.",
         "default": 35,
     }
   }
