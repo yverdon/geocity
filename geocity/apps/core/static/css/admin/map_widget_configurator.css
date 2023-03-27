@@ -30,7 +30,8 @@
   max-width: none;
 }
 
-.rjf-check-input > label > input[name="rjf§mode§type"] {
+.rjf-check-input > label > input[name="rjf§mode§type"],
+.rjf-check-input > label > input[name="rjf§outputFormat"] {
   max-width: 12px;
   margin: 10px;
 }
@@ -41,4 +42,8 @@
 
 .rjf-form-row label input[type="checkbox"] {
   margin-right: 8px;
+}
+
+input[type="text"]::placeholder {
+  color: lightgray;
 }
