@@ -322,13 +322,13 @@ class SubmissionValidationTestcase(TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def author_can_only_see_visible_validation_comment(self):
+    def test_author_can_only_see_visible_validation_comment(self):
         # Button should not appear
         # Check comment is_visible_by_author=True appears
         # Check comment is_visible_by_author=False dont appears
         pass
 
-    def pilot_can_edit_validation_only_with_perms(self):
+    def test_pilot_can_edit_validation_only_with_perms(self):
         # Button should not appear
         # Add perms
         # See green check
@@ -340,7 +340,7 @@ class SubmissionValidationTestcase(TestCase):
         # See red cross
         pass
 
-    def validator_cant_edit_validation_even_with_perms(self):
+    def test_validator_cant_edit_validation_even_with_perms(self):
         # Add perms
         # Button should not appear
         pass
