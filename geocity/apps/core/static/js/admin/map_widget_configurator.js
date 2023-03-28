@@ -9,13 +9,25 @@ const baseSchema = {
               "type": {
                   "type": "string",
                   "title": "Modes d’interaction avec la carte",
-                  "enum": [
-                      "create",
-                      "select",
-                      "target",
-                      "mix"
+                  "choices": [
+                    {
+                      "title": "Création",
+                      "value": "create",
+                    },
+                    {
+                      "title": "Sélection",
+                      "value": "select"
+                    },
+                    {
+                      "title": "Cible",
+                      "value": "target"
+                    },
+                    {
+                      "title": "Mixte",
+                      "value": "mix"
+                    }
                   ],
-                  'widget': 'radio'
+                  "widget": "radio"
               }
           }
       },
@@ -70,11 +82,12 @@ const baseSchema = {
       "defaultCenter": {
         "type": "array",
         "title": "Position centrale de départ: (x, y au format EPSG:2056)",
+        "items": {
+          "type": "integer"
+        },
         "minItems": 2,
         "maxItems": 2,
-        'items': {
-          'type': "integer",
-        }
+        "default": [1111, 22222]
       },
       "information": {
           "type": "object",
@@ -108,6 +121,7 @@ const baseSchema = {
               "url": {
                   "type": "string",
                   "title": "Lien vers un GeoJSON contenant les informations sur la frontière",
+                  "helpText": "La création ou sélection d’éléments ne sera autorisée que dans la géométrie indiquée",
                   "placeholder": " http://localhost:9095/submissions/adminentitiesgeojson/1/"
               },
               "notification": {
@@ -130,7 +144,7 @@ const baseSchema = {
               "filter": {
                   "type": "string",
                   "title": "Filtre d’URL pour WFS permettant de filtrer les données de la zone d’inclusion",
-                  "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeName=MO_bf_bien_fonds"
+                  "placeholder": "GeometryOperands=urn:ogc:def:crs:EPSG::2056&FILTER=<Filter><And><PropertyIsEqualTo><ValueReference>commune</ValueReference><Literal>Yverdon-les-Bains</Literal></PropertyIsEqualTo><PropertyIsNotEqualTo><ValueReference>genre</ValueReference><Literal>Parcelle privée</Literal></PropertyIsNotEqualTo><BBOX></And></Filter>"
               }
           }
       },
@@ -172,11 +186,17 @@ const baseSchema = {
       "outputFormat": {
         "type": "string",
         "title": "Format des données en sortie du composant web",
-        "enum": [
-            "GeometryCollection",
-            "FeatureCollection",
+        "choices": [
+          {
+            "title": "Collection de géométrie (GeometryCollection)",
+            "value": "GeometryCollection",
+          },
+          {
+            "title": "Collection d’éléments (FeatureCollection)",
+            "value": "FeatureCollection"
+          }
         ],
-        'widget': 'radio',
+        "widget": "radio",
         "default": "GeometryCollection"
       },
       "interaction": {
@@ -348,13 +368,27 @@ const clusterOption = {
   }
 }
 
+const defaultCenter = {
+  "type": "array",
+  "title": "Position centrale de départ: (x, y au format EPSG:2056)",
+  "items": {
+    "type": "integer"
+  },
+  "minItems": 2,
+  "maxItems": 2,
+  "default": [1111, 22222]
+}
+
 const targetSchema = JSON.parse(JSON.stringify(baseSchema));
-const createSchema = JSON.parse(JSON.stringify(baseSchema));;
+targetSchema.keys["defaultCenter"] = defaultCenter;
+const createSchema = JSON.parse(JSON.stringify(baseSchema));
 createSchema.keys["search"] = searchFeature;
-const selectSchema = JSON.parse(JSON.stringify(baseSchema));;
+createSchema.keys["defaultCenter"] = defaultCenter;
+const selectSchema = JSON.parse(JSON.stringify(baseSchema));
 selectSchema.keys["search"] = searchFeature;
 selectSchema.keys["wfs"] = wfsOption;
 selectSchema.keys["cluster"] = clusterOption;
+selectSchema.keys["defaultCenter"] = defaultCenter;
 // ------------------ CODE PART ----------------------------
 
 let form;
@@ -437,17 +471,35 @@ function setupDisplay(data) {
   }
 }
 
+function setupDate(data) {
+  let shouldUpdate = false;
+  if (data.defaultCenter && data.defaultCenter[0] == null) {
+    data.defaultCenter[0] = 2539057;
+    shouldUpdate = true;
+  }
+  if (data.defaultCenter && data.defaultCenter[1] == null) {
+    data.defaultCenter[1] = 1181111;
+    shouldUpdate = true;
+  }
+  if (shouldUpdate) {
+    form.update({
+      schema: schema,
+      data: data
+    });
+  }
+}
+
 function onJsonFormChange(e) {
   const data = e.data;
   const prevData = e.prevData;
 
   if (prevData.inclusionArea && data.inclusionArea) {
     if (prevData.inclusionArea.url == '' && data.inclusionArea.url != '') {
-      data.notifications.push(areaConstraintNotification)
+      data.notifications.push(areaConstraintNotification);
       form.update({
         schema: schema,
         data: data
-      })
+      });
     } else if (prevData.inclusionArea.url != '' && data.inclusionArea.url == '') {
       const index = data.notifications.findIndex((notification) => notification.rule.type == "AREA_CONSTRAINT");
       if (index != -1) {
@@ -455,17 +507,19 @@ function onJsonFormChange(e) {
         form.update({
           schema: schema,
           data: data
-        })
+        });
       }
     }
   }
 
 
   if (data.mode.type != prevData.mode.type) {
-    changeSchema(data, true)
+    changeSchema(data, true);
   }
 
-  setupDisplay(data)
+  setupDisplay(data);
+
+  setupDate(data);
 }
 
 window.addEventListener('load', function() {

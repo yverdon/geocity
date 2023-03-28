@@ -303,21 +303,33 @@ class MapWidgetConfiguration(models.Model):
                         "type": "object",
                         "keys": {
                             "mode": {
-                                "type": "object",
-                                "keys": {
-                                    "type": {
-                                        "type": "string",
-                                        "title": "Modes d’interaction avec la carte",
-                                        "enum": [
-                                            "create",
-                                            "select",
-                                            "target",
-                                            "mix"
-                                        ],
-                                        'widget': 'radio'
-                                    }
+                            "type": "object",
+                            "keys": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Modes d’interaction avec la carte",
+                                    "choices": [
+                                        {
+                                        "title": "Création",
+                                        "value": "create",
+                                        },
+                                        {
+                                        "title": "Sélection",
+                                        "value": "select"
+                                        },
+                                        {
+                                        "title": "Cible",
+                                        "value": "target"
+                                        },
+                                        {
+                                        "title": "Mixte",
+                                        "value": "mix"
+                                        }
+                                    ],
+                                    'widget': 'radio'
                                 }
-                            },
+                            }
+                        },
                         }
                     }
     name = models.CharField(_("Nom de la configuration"), max_length=255)
