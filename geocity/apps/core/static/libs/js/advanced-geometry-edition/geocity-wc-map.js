@@ -255,9 +255,7 @@ vn.finalized = !0, vn.elementProperties = /* @__PURE__ */ new Map(), vn.elementS
  * SPDX-License-Identifier: BSD-3-Clause
  */
 var Bo;
-const Dr = window, Fn = Dr.trustedTypes, oh = Fn ? Fn.createPolicy("lit-html", { createHTML: (i) => i }) : void 0, kr = "$lit$", ei = `lit$${(Math.random() + "").slice(9)}$`, Xa = "?" + ei, Zf = `<${Xa}>`, Dn = document, Es = () => Dn.createComment(""), ws = (i) => i === null || typeof i != "object" && typeof i != "function", lu = Array.isArray, hu = (i) => lu(i) || typeof (i == null ? void 0 : i[Symbol.iterator]) == "function", zo = `[ 	
-\f\r]`, ls = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ah = /-->/g, lh = />/g, Fi = RegExp(`>|${zo}(?:([^\\s"'>=/]+)(${zo}*=${zo}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), hh = /'/g, ch = /"/g, cu = /^(?:script|style|textarea|title)$/i, Uf = (i) => (t, ...e) => ({ _$litType$: i, strings: t, values: e }), Lt = Uf(1), Si = Symbol.for("lit-noChange"), bt = Symbol.for("lit-nothing"), uh = /* @__PURE__ */ new WeakMap(), An = Dn.createTreeWalker(Dn, 129, null, !1), uu = (i, t) => {
+const Dr = window, Fn = Dr.trustedTypes, oh = Fn ? Fn.createPolicy("lit-html", { createHTML: (i) => i }) : void 0, kr = "$lit$", ei = `lit$${(Math.random() + "").slice(9)}$`, Xa = "?" + ei, Zf = `<${Xa}>`, Dn = document, Es = () => Dn.createComment(""), ws = (i) => i === null || typeof i != "object" && typeof i != "function", lu = Array.isArray, hu = (i) => lu(i) || typeof (i == null ? void 0 : i[Symbol.iterator]) == "function", zo = `[ \f\r]`, ls = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ah = /-->/g, lh = />/g, Fi = RegExp(`>|${zo}(?:([^\\s"'>=/]+)(${zo}*=${zo}*(?:[^ \f\r"'\`<>=]|("|')|))|$)`, "g"), hh = /'/g, ch = /"/g, cu = /^(?:script|style|textarea|title)$/i, Uf = (i) => (t, ...e) => ({ _$litType$: i, strings: t, values: e }), Lt = Uf(1), Si = Symbol.for("lit-noChange"), bt = Symbol.for("lit-nothing"), uh = /* @__PURE__ */ new WeakMap(), An = Dn.createTreeWalker(Dn, 129, null, !1), uu = (i, t) => {
   const e = i.length - 1, n = [];
   let s, r = t === 2 ? "<svg>" : "", o = ls;
   for (let l = 0; l < e; l++) {
@@ -14737,7 +14735,7 @@ class Yd {
 class st {
   static zoomInLabel() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                       <g class="Plus" clip-path="url(#a)">
                         <g class="icon">
                           <path d="M5 16H27M16 5V27" class="Vector"/>
@@ -14752,7 +14750,7 @@ class st {
   }
   static zoomOutLabel() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                       <g class="Minus" clip-path="url(#a)">
                       <g class="icon">
                         <path d="M5 16H27" class="Vector"/>
@@ -14767,7 +14765,7 @@ class st {
   }
   static fullScreenLabel() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                       <g class="ArrowsOut" clip-path="url(#a)">
                         <g class="icon">
                           <path d="M21 6H26V11M19 13 26 6M11 26H6V21M13 19 6 26M26 21V26H21M19 19 26 26M6 11V6H11M13 13 6 6" class="Vector"/>
@@ -14782,7 +14780,7 @@ class st {
   }
   static fullScreenLabelActive() {
     const t = document.createElement("div"), e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = ` 
+    return e.setAttributeNS(null, "width", "32"), e.setAttributeNS(null, "height", "32"), e.setAttributeNS(null, "viewBox", "0 0 32 32"), e.innerHTML = `
                         <g class="ArrowsIn" clip-path="url(#a)">
                         <g class="icon">
                           <path d="M24 13H19V8M26 6 19 13M8 19H13V24M6 26 13 19M19 24V19H24M26 26 19 19M13 8V13H8M6 6 13 13" class="Vector"/>
@@ -15018,7 +15016,7 @@ st.cross = `
           <path fill="#fff" d="M0 0H32V32H0z"/>
         </clipPath>
       </defs>
-    </svg>  
+    </svg>
   `;
 st.stack = `
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -18013,7 +18011,7 @@ let tn = class extends Pt {
             ${Le(this.icon)}
           </div>
           <div class="notification-title-text">${this.message}</div>
-        </div>  
+        </div>
       </div>
     `;
   }
@@ -20261,9 +20259,9 @@ function Rf(i) {
     c += 2e6;
   var u = t - r;
   if (u % 2 !== 0)
-    throw `MGRSPoint has to have an even number 
-of digits after the zone letter and two 100km letters - front 
-half for easting meters, second half for 
+    throw `MGRSPoint has to have an even number
+of digits after the zone letter and two 100km letters - front
+half for easting meters, second half for
 northing meters` + i;
   var d = u / 2, f = 0, g = 0, m, p, _, y, v;
   return d > 0 && (m = 1e5 / Math.pow(10, d), p = i.substring(r, r + d), f = parseFloat(p) * m, _ = i.substring(r + d), g = parseFloat(_) * m), y = f + h, v = g + c, {
