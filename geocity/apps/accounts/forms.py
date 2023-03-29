@@ -1,13 +1,11 @@
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
 from captcha.fields import CaptchaField
-from constance import config
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db.models import Q
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from geocity.fields import AddressWidget
@@ -168,14 +166,6 @@ class GenericUserProfileForm(forms.ModelForm):
         ),
     )
     captcha = CaptchaField(required=True)
-    policy = forms.BooleanField(
-        required=True,
-        label=mark_safe(
-            _(
-                f'J\'ai lu et j\'accepte la <b><a href="{config.PRIVACY_POLICY_URL}" target="_blank">politique de confidentialité</a></b>'
-            )
-        ),
-    )
 
     class Meta:
         model = models.UserProfile
