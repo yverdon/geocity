@@ -1,7 +1,3 @@
-.map-widget-configuration-hide {
+.hide {
   display: none;
-}
-
-.map-widget-configuration-show {
-  display: block;
 }

@@ -471,7 +471,7 @@ function setupDisplay(data) {
   }
 }
 
-function setupDate(data) {
+function setupPosition(data) {
   let shouldUpdate = false;
   if (data.defaultCenter && data.defaultCenter[0] == null) {
     data.defaultCenter[0] = 2539057;
@@ -519,7 +519,7 @@ function onJsonFormChange(e) {
 
   setupDisplay(data);
 
-  setupDate(data);
+  setupPosition(data);
 }
 
 window.addEventListener('load', function() {

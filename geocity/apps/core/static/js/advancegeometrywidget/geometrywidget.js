@@ -1,4 +1,4 @@
-const roResult = document.getElementById("map-ro-result");
+const readOnlyMap = document.getElementById("map-ro-result");
 const editableMap = document.getElementById("web-component-advanced");
 const serialized = document.querySelector("[data-role='serialized']");
 const buttonModal = document.getElementById("map-custom-modal-button");
@@ -24,7 +24,7 @@ if (
   options = JSON.parse(optionsDiv[0].dataset.options);
 }
 
-parseCoordiantes = (data) => {
+parseCoordinates = (data) => {
   const selections = [];
   if (options.map_widget_configuration[0].outputFormat == 'GeometryCollection') {
     data.geometries.forEach((geometry) => {
@@ -47,7 +47,7 @@ setupMap = (container, options, readonly) => {
     };
     if (serialized.value) {
       const data = JSON.parse(serialized.value);
-      const selections = parseCoordiantes(data);
+      const selections = parseCoordinates(data);
       states['currentSelections'] = selections;
     }
     wc.states = states;
@@ -55,17 +55,17 @@ setupMap = (container, options, readonly) => {
   }
 }
 
-updateROMap = () => {
-  if (roResult) {
+updateReadOnlyMap = () => {
+  if (readOnlyMap) {
     const states = {
       readonly: true,
     };
     if (serialized.value) {
       const data = JSON.parse(serialized.value);
-      const selections = parseCoordiantes(data);
+      const selections = parseCoordinates(data);
       states['currentSelections'] = selections;
     }
-    roResult.lastChild.states = states;
+    readOnlyMap.lastChild.states = states;
   }
 }
 
@@ -81,7 +81,7 @@ createMap = () => {
         readonly: false,
       };
       const data = JSON.parse(serialized.value);
-      const selections = parseCoordiantes(data);
+      const selections = parseCoordinates(data);
       states['currentSelections'] = selections;
       editableMap.lastChild.states = states;
     }
@@ -127,7 +127,7 @@ validationButton.addEventListener("click", () => {
   {
     serialized.value = selectedValues;
     toogleModal("none");
-    updateROMap();
+    updateReadOnlyMap();
   }
 
 });
@@ -149,7 +149,7 @@ if (isInvalid) {
   document.getElementById("geo-invalid-content").style.display = "block";
 }
 
-setupMap(roResult, options, true);
+setupMap(readOnlyMap, options, true);
 
 if (options && !options.edit_geom) {
   buttonModal.style.display = 'none';
