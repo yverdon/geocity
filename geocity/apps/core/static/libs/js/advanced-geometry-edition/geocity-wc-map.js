@@ -17557,7 +17557,7 @@ class Fc {
       throw new Error("Missing map or options");
     this.options = r, this.map = s, this.control = new kl(this.store), this.vectorLayer = new Vn(), this.vectorSource = of.getSource(r.wfs.url, "", !1), this.vectorSource.on("featuresloadend", () => {
       this.renderUtils.setIsLoaded(!0);
-    }), this.displayDataOnMap(s, this.vectorLayer, r, this.vectorSource), this.states.readonly || s.on("click", (o) => {
+    }), this.displayDataOnMap(s, this.vectorLayer, r, this.vectorSource), this.states.readonly || (s.on("click", (o) => {
       s.forEachFeatureAtPixel(o.pixel, (a) => {
         var l;
         a && ((l = a.getGeometry()) == null ? void 0 : l.getType()) === "Point" && (a.getProperties().features && a.getProperties().features.length === 1 ? (this.store.getSelectedFeature(a.getProperties().features[0].get("objectid")) === void 0 && this.store.addSelectedFeature(a.getProperties().features[0], a.getProperties().features[0].get("objectid"), "select"), tt.sendEvent("icon-clicked", a.getProperties().features[0].get("objectid"))) : this.control.hide());
@@ -17566,7 +17566,7 @@ class Fc {
       var l;
       const o = this.store.getCurrentItemId(), a = (l = this.store.getSelectedFeature(o)) == null ? void 0 : l.get("geom").getCoordinates();
       s.getView().setCenter(a);
-    }), r.mode.type === "mix" && window.addEventListener("remove-clicked", (o) => {
+    })), r.mode.type === "mix" && window.addEventListener("remove-clicked", (o) => {
       var a;
       (a = this.vectorLayer.getSource()) == null || a.getFeatures().forEach((l) => {
         l.get("features").forEach((h) => {
@@ -21701,7 +21701,7 @@ class nu {
     this.map = o, this.control = new kl(this.store), this.vectorSource = new Qn(), this.setupMapForCreation(o, this.vectorSource), this.states.readonly || (window.addEventListener("authorize-created", (l) => {
       this.createElement(this.vectorSource, l);
     }), window.addEventListener("refused-created", () => {
-      this.store.removeLastSelectedFeature(), tt.sendEvent("rule-validation", void 0);
+      this.store.removeLastSelectedFeature(), this.store.getMaxElement() === 1 && this.previousElement && this.store.addSelectedFeature(this.previousElement, this.previousElement.get("id"), "create"), tt.sendEvent("rule-validation", void 0);
     }), window.addEventListener("remove-created-icon", () => {
       this.deleteElement(this.vectorSource);
     }), window.addEventListener("recenter-selected-element", () => {
@@ -21785,7 +21785,7 @@ class nu {
           }
         }
         const c = this.store.getSelectedFeatures();
-        c.length > 0 && this.store.removeSelectedFeature(c[0].get("id"));
+        c.length > 0 && (this.store.removeSelectedFeature(c[0].get("id")), this.previousElement = c[0]);
       }
       (this.store.getMaxElement() === -1 || this.store.getSelectedFeatures().length <= this.store.getMaxElement()) && (this.store.addSelectedFeature(h, h.get("id"), "create"), tt.sendEvent("icon-created", h.get("id")));
     }
