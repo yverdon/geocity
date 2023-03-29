@@ -44,7 +44,7 @@ const baseSchema = {
                         },
                         "layer": {
                             "type": "string",
-                            "title": "Nom de la couche",
+                            "title": "Identifiant de la couche WMTS",
                             "placeholder": "asitvd.fond_cadastral"
                         },
                         "projection": {

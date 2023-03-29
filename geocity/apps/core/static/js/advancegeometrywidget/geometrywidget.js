@@ -1,5 +1,5 @@
 const roResult = document.getElementById("map-ro-result");
-const componentDiv = document.getElementById("web-component-advanced");
+const editableMap = document.getElementById("web-component-advanced");
 const serialized = document.querySelector("[data-role='serialized']");
 const buttonModal = document.getElementById("map-custom-modal-button");
 const crossButton = document.getElementById("modal-close-button");
@@ -24,6 +24,20 @@ if (
   options = JSON.parse(optionsDiv[0].dataset.options);
 }
 
+parseCoordiantes = (data) => {
+  const selections = [];
+  if (options.map_widget_configuration[0].outputFormat == 'GeometryCollection') {
+    data.geometries.forEach((geometry) => {
+      selections.push(geometry.coordinates[0]);
+    });
+  } else {
+    data.features.forEach((feature) => {
+      selections.push(feature.geometry.coordinates[0]);
+    })
+  }
+  return selections;
+}
+
 setupMap = (container, options, readonly) => {
   if (options && options.map_widget_configuration) {
     const wc = document.createElement("openlayers-element");
@@ -33,10 +47,7 @@ setupMap = (container, options, readonly) => {
     };
     if (serialized.value) {
       const data = JSON.parse(serialized.value);
-      const selections = [];
-      data.geometries.forEach((geometry) => {
-        selections.push(geometry.coordinates[0]);
-      });
+      const selections = parseCoordiantes(data);
       states['currentSelections'] = selections;
     }
     wc.states = states;
@@ -51,10 +62,7 @@ updateROMap = () => {
     };
     if (serialized.value) {
       const data = JSON.parse(serialized.value);
-      const selections = [];
-      data.geometries.forEach((geometry) => {
-        selections.push(geometry.coordinates[0]);
-      });
+      const selections = parseCoordiantes(data);
       states['currentSelections'] = selections;
     }
     roResult.lastChild.states = states;
@@ -63,10 +71,20 @@ updateROMap = () => {
 
 createMap = () => {
   if (!mapIsCreated) {
-      if (componentDiv) {
-        setupMap(componentDiv, options, false)
+      if (editableMap) {
+        setupMap(editableMap, options, false)
         mapIsCreated = true;
       }
+  } else if (editableMap.lastChild) {
+    if (serialized.value) {
+      const states = {
+        readonly: false,
+      };
+      const data = JSON.parse(serialized.value);
+      const selections = parseCoordiantes(data);
+      states['currentSelections'] = selections;
+      editableMap.lastChild.states = states;
+    }
   }
 };
 
@@ -74,7 +92,13 @@ toogleModal = (state) => {
   map.style.display = state;
   overlay.style.display = state;
   if (state == "block") document.body.style.overflow = "hidden";
-  else document.body.style.overflow = "visible";
+  else {
+    document.body.style.overflow = "visible"
+    editableMap.lastChild.states = {
+      readonly: true,
+      currentSelections: []
+    }
+  };
 };
 
 buttonModal.addEventListener("click", () => {
@@ -99,11 +123,13 @@ overlay.addEventListener("click", () => {
 });
 
 validationButton.addEventListener("click", () => {
-  if (selectedValues != "") toogleModal("none");
+  if (selectedValues != "")
   {
     serialized.value = selectedValues;
+    toogleModal("none");
     updateROMap();
   }
+
 });
 
 window.addEventListener("position-selected", (event) => {
