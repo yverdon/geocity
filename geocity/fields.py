@@ -40,6 +40,7 @@ class GeometryWidget(geoforms.OSMWidget):
             ),
         )
 
+
 class GeometryWidgetAdvanced(geoforms.OpenLayersWidget):
     template_name = "advancedgeometrywidget/geometrywidget.html"
     map_srid = 2056

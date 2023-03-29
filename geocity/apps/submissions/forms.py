@@ -1230,11 +1230,9 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             del self.fields["geom"]
 
         else:
-            options = self.get_widget_options(
-                self.submission
-            )
+            options = self.get_widget_options(self.submission)
             if options["geo_widget_option"][0] == 2:
-                self.fields["geom"].widget = GeometryWidgetAdvanced();
+                self.fields["geom"].widget = GeometryWidgetAdvanced()
             self.fields["geom"].widget.attrs["options"] = options
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
@@ -1278,7 +1276,9 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         has_geom_polygon = any(form.has_geometry_polygon for form in forms_set)
 
         map_widget_configuration = [
-            form.map_widget_configuration.configuration for form in forms if form.map_widget_configuration != None
+            form.map_widget_configuration.configuration
+            for form in forms
+            if form.map_widget_configuration != None
         ]
 
         geo_widget_option = [

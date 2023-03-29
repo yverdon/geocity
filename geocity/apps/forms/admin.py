@@ -2,11 +2,13 @@ import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
-from django.db.models.fields.json import JSONField
 from django.utils.translation import gettext_lazy as _
-from django_jsonform.widgets import JSONFormWidget
 
-from geocity.apps.accounts.admin import IntegratorFilterMixin, MapCustomChoiceField, filter_for_user
+from geocity.apps.accounts.admin import (
+    IntegratorFilterMixin,
+    MapCustomChoiceField,
+    filter_for_user,
+)
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
 from geocity.apps.forms.models import MapWidgetConfiguration
 
@@ -103,9 +105,10 @@ class FormAdminForm(forms.ModelForm):
 
     @property
     def media(self):
-        return forms.Media( css={'all': ('css/admin/display.css',)},
-                            js=('js/admin/form.js', 'js/admin/display.js'))
-
+        return forms.Media(
+            css={"all": ("css/admin/display.css",)},
+            js=("js/admin/form.js", "js/admin/display.js"),
+        )
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -552,7 +555,6 @@ TODO:
 
 @admin.register(models.MapWidgetConfiguration)
 class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -567,7 +569,5 @@ class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         fields = "__all__"
 
     class Media:
-        css = {
-            'all': ('css/admin/map_widget_configurator.css',)
-        }
-        js = ('js/admin/map_widget_configurator.js',)
+        css = {"all": ("css/admin/map_widget_configurator.css",)}
+        js = ("js/admin/map_widget_configurator.js",)

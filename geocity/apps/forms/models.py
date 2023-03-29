@@ -10,11 +10,10 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q
-
-from django_jsonform.models.fields import JSONField
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from django_jsonform.models.fields import JSONField
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -300,38 +299,29 @@ class FormPrice(models.Model):
 
 class MapWidgetConfiguration(models.Model):
     ITEMS_SCHEMA = {
-                        "type": "object",
-                        "keys": {
-                            "mode": {
-                            "type": "object",
-                            "keys": {
-                                "type": {
-                                    "type": "string",
-                                    "title": "Modes d’interaction avec la carte",
-                                    "choices": [
-                                        {
-                                        "title": "Création",
-                                        "value": "create",
-                                        },
-                                        {
-                                        "title": "Sélection",
-                                        "value": "select"
-                                        },
-                                        {
-                                        "title": "Cible",
-                                        "value": "target"
-                                        },
-                                        {
-                                        "title": "Mixte",
-                                        "value": "mix"
-                                        }
-                                    ],
-                                    'widget': 'radio'
-                                }
-                            }
-                        },
-                        }
+        "type": "object",
+        "keys": {
+            "mode": {
+                "type": "object",
+                "keys": {
+                    "type": {
+                        "type": "string",
+                        "title": "Modes d’interaction avec la carte",
+                        "choices": [
+                            {
+                                "title": "Création",
+                                "value": "create",
+                            },
+                            {"title": "Sélection", "value": "select"},
+                            {"title": "Cible", "value": "target"},
+                            {"title": "Mixte", "value": "mix"},
+                        ],
+                        "widget": "radio",
                     }
+                },
+            },
+        },
+    }
     name = models.CharField(_("Nom de la configuration"), max_length=255)
     configuration = JSONField(schema=ITEMS_SCHEMA)
     integrator = models.ForeignKey(
