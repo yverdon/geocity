@@ -1,6 +1,7 @@
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
 from captcha.fields import CaptchaField
+from constance import config
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
@@ -171,7 +172,7 @@ class GenericUserProfileForm(forms.ModelForm):
         required=True,
         label=mark_safe(
             _(
-                'J\'ai lu et j\'accepte la <b><a href="https://geocity.ch/legal/confidentialite.pdf" target="_blank">politique de confidentialité</a></b>'
+                f'J\'ai lu et j\'accepte la <b><a href="{config.PRIVACY_POLICY_URL}" target="_blank">politique de confidentialité</a></b>'
             )
         ),
     )
