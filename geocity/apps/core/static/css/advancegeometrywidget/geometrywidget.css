@@ -1,0 +1,97 @@
+#map-ro-result {
+  width: 100%;
+  height: 30vh;
+}
+
+#map-custom-modal-button {
+  border: 1px solid #008c6f;
+  color: #008c6f;
+  width: 222px;
+  height: 38px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4px;
+}
+
+#map-custom-modal-button > i {
+  padding-right: 7px;
+}
+
+#geo-invalid-content {
+  color: #dc3545;
+  display: none;
+  width: 100%;
+  font-weight: bold;
+  font-size: 80%;
+}
+
+#map-custom-modal {
+  position: fixed;
+  z-index: 1022;
+  background-color: white;
+}
+
+#web-component-advanced {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#map-custom-modal-overlay {
+  position: fixed;
+  z-index: 1021;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  opacity: 0.4;
+}
+
+.map-modal-header {
+  width: calc(100% - 40px);
+  margin-left: 20px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.map-modal-header > p {
+  width: 80%;
+  margin: 0;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 19px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.map-modal-header > i {
+  width: 20%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.validate-layout {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#modal-validation-button {
+  width: 229px;
+  height: 36px;
+  color: white;
+  background-color: #008c6f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.cursor {
+  cursor: pointer;
+}

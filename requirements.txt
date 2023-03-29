@@ -89,6 +89,7 @@ django-js-asset==2.0.0
     # via django-ckeditor
 django-jsoneditor==0.2.4
     # via -r requirements.in
+django-jsonform=2.15.0
 django-oauth-toolkit==2.2.0
     # via -r requirements.in
 django-otp==1.1.4

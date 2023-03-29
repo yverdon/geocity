@@ -2,12 +2,15 @@ import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
-from django.db.models.fields.json import JSONField
 from django.utils.translation import gettext_lazy as _
-from jsoneditor.forms import JSONEditor
 
-from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
+from geocity.apps.accounts.admin import (
+    IntegratorFilterMixin,
+    MapCustomChoiceField,
+    filter_for_user,
+)
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
+from geocity.apps.forms.models import MapWidgetConfiguration
 
 from . import models
 
@@ -54,6 +57,15 @@ class FormAdminForm(forms.ModelForm):
         LINE = "has_geometry_line", _("Ligne")
         POLYGON = "has_geometry_polygon", _("Polygone")
 
+    def get_map_config():
+        qs = MapWidgetConfiguration.objects.all()
+
+        return MapCustomChoiceField(
+            queryset=qs,
+            widget=forms.Select,
+            label=_("Configuration de la carte avancée"),
+        )
+
     geometry_types = forms.MultipleChoiceField(
         choices=GeometryTypes.choices,
         widget=forms.CheckboxSelectMultiple,
@@ -67,6 +79,8 @@ class FormAdminForm(forms.ModelForm):
         required=False,
         # default=models.Form.GEO_WIDGET_GENERIC,
     )
+
+    map_widget_configuration = get_map_config()
 
     class Meta:
         model = models.Form
@@ -89,8 +103,12 @@ class FormAdminForm(forms.ModelForm):
             "wms_layers_order": "Ordre de(s) la(les) couche(s) dans la carte. 1: au-dessus",
         }
 
-    class Media:
-        js = ("js/admin/form.js",)
+    @property
+    def media(self):
+        return forms.Media(
+            css={"all": ("css/admin/display.css",)},
+            js=("js/admin/form.js", "js/admin/display.js"),
+        )
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -537,21 +555,19 @@ TODO:
 
 @admin.register(models.MapWidgetConfiguration)
 class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     list_display = [
         "name",
         "configuration",
         "integrator",
     ]
-    formfield_overrides = {
-        JSONField: {
-            "widget": JSONEditor(
-                init_options={"mode": "view", "modes": ["view", "code", "tree"]},
-                ace_options={"readOnly": True},
-                attrs={"style": "height: 1000px;"},
-            ),
-        },
-    }
 
     class Meta:
         model = models.MapWidgetConfiguration
         fields = "__all__"
+
+    class Media:
+        css = {"all": ("css/admin/map_widget_configurator.css",)}
+        js = ("js/admin/map_widget_configurator.js",)

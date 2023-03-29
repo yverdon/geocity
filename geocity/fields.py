@@ -41,6 +41,15 @@ class GeometryWidget(geoforms.OSMWidget):
         )
 
 
+class GeometryWidgetAdvanced(geoforms.OpenLayersWidget):
+    template_name = "advancedgeometrywidget/geometrywidget.html"
+    map_srid = 2056
+
+    @property
+    def media(self):
+        return forms.Media()
+
+
 class AddressWidget(forms.TextInput):
     @property
     def media(self):
@@ -75,7 +84,3 @@ class AddressWidget(forms.TextInput):
                 "data_remote_autocomplete": json.dumps(autocomplete_options),
             }
         )
-
-
-class AdvancedGeometryWidget(forms.TextInput):
-    template_name = "advancedgeometrywidget/advancedgeometrywidget.html"

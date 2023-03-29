@@ -549,6 +549,21 @@ def get_sites_field(user):
     )
 
 
+class MapCustomChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.name
+
+
+def get_map_config():
+    qs = MapWidgetConfiguration.objects.all()
+
+    return MapCustomChoiceField(
+        queryset=qs,
+        widget=forms.Select,
+        label=_("Configuration de la carte avancée"),
+    )
+
+
 class AdministrativeEntityAdminForm(forms.ModelForm):
     """Form class to configure an administrative entity (commune, organisation)"""
 
@@ -556,6 +571,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
         self.fields["sites"] = get_sites_field(user)
+        self.fields["map_widget_configuration"] = get_map_config()
 
     class Meta:
         model = models.AdministrativeEntityForAdminSite

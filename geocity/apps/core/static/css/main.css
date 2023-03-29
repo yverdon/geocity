@@ -596,6 +596,18 @@ th.actions {
   h5 {
     font-size: 1.3rem;
   }
+
+  #map-custom-modal {
+    top: 10vh;
+    left: 10vw;
+    width: 80vw;
+    height: 80vh;
+  }
+
+  #web-component-advanced {
+    width: calc(100% - 40px);
+    height: calc(80vh - 96px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -651,6 +663,18 @@ th.actions {
     width: 15px;
     height: 15px;
     line-height: 15px;
+  }
+
+  #map-custom-modal {
+    top: 0vh;
+    left: 0vw;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #web-component-advanced {
+    width: 100%;
+    height: calc(100vh - 96px);
   }
 
 }

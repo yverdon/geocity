@@ -19,6 +19,7 @@ requests
 tablib[xlsx]
 whitenoise
 django-jsoneditor
+django-jsonform
 django-admin-sortable2
 django-simple-history
 djangorestframework
