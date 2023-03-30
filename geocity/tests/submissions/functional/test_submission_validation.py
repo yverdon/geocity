@@ -323,10 +323,29 @@ class SubmissionValidationTestcase(TestCase):
         )
 
     def test_author_can_only_see_visible_validation_comment(self):
+        validation = factories.SubmissionValidationFactory()
+        pilot_group = factories.GroupFactory(name="pilot")
+        department = factories.PermitDepartmentFactory(
+            group=pilot_group, is_backoffice=True
+        )
+        factories.SecretariatUserFactory(
+            groups=[pilot_group], email="secretary@geocity.ch"
+        )
+        validation.submission.administrative_entity.departments.set([department])
+        form = factories.FormFactory()
+        form_name = form.name
+        validation.submission.forms.set([form])
+
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()],
+        )
+
+        author = validation.submission.author
+
+        self.client.login(username=validator.username, password="password")
         # Button should not appear
         # Check comment is_visible_by_author=True appears
         # Check comment is_visible_by_author=False dont appears
-        pass
 
     def test_pilot_can_edit_validation_only_with_perms(self):
         # Button should not appear
