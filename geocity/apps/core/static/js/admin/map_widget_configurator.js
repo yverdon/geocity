@@ -40,12 +40,14 @@ const baseSchema = {
                         "capability": {
                             "type": "string",
                             "title": "Lien vers la capability",
-                            "placeholder": "https://wmts.asit-asso.ch/wmts?&Service=WMTS&Version=1.0.0&Request=GetCapabilities"
+                            "placeholder": "https://wmts.geo.admin.ch/EPSG/2056/1.0.0/WMTSCapabilities.xml",
+                            "default": "https://wmts.geo.admin.ch/EPSG/2056/1.0.0/WMTSCapabilities.xml"
                         },
                         "layer": {
                             "type": "string",
                             "title": "Identifiant de la couche WMTS",
-                            "placeholder": "asitvd.fond_cadastral"
+                            "placeholder": "ch.swisstopo.swissimage",
+                            "default": "ch.swisstopo.swissimage"
                         },
                         "projection": {
                             "type": "string",
@@ -59,7 +61,8 @@ const baseSchema = {
                         },
                         "thumbnail": {
                             "type": "string",
-                            "title": "Lien vers l'image qui sera affiché lors de la sélection de la couche"
+                            "title": "Lien vers l'image qui sera affiché lors de la sélection de la couche",
+                            "default": "/static/images/aerial.svg"
                         }
                     }
         }
@@ -347,7 +350,8 @@ const wfsOption = {
       "url": {
           "type": "string",
           "title": "URL de la couche WFS",
-          "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
+          "placeholder": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco",
+          "default": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
       }
   }
 };
