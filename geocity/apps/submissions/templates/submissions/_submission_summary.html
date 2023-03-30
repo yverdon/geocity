@@ -14,8 +14,7 @@
                 <dt> {{ field.label }} </dt>
                 <dd> {{ field.value|human_field_value|linebreaksbr }} </dd>
               {% else %}
-                <dt style="white-space: nowrap;">{{ field.repr|safe }}</dt>
-                <dd></dd>
+                <div class="w-100">{{ field.repr|safe }}</div>
               {% endif %}
             {% endfor %}
 

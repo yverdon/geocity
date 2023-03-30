@@ -496,7 +496,7 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "get__tags",
     ]
     search_fields = [
-        "id",
+        "name",
     ]
 
     def sortable_str(self, obj):

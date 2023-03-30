@@ -132,10 +132,10 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
 
         Notes:
             1.- For forms that do not have geometry, the returned
-                geometry is a 2x2 square around the centroid of the administrative entity geometry
+                geometry is a 2x2 meters square around the centroid of the administrative entity geometry
             2.- This endpoint does not filter out items without geometry.
                 For forms types that have only point geometry, the returned geometry
-                is a polygon of 2 x 2 meters
+                is a polygon of 2x2 meters
 
             This endpoint is mainly designed for atlas print generation with QGIS Server
             For standard geometric endpoints, please use the following endpoints

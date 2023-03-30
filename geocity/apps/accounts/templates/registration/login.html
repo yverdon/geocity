@@ -9,15 +9,17 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
 
   <style>
-    {% if customization.background_image.url %}
-      #login-content {
-          background-image: url("{{ customization.background_image.url }}");
-      }
-    {% else %}
-      #login-content {
-            background-image: url("{% static 'images/login_geocity.svg' %}");
-      }
-    {% endif %}
+    @media (min-width: 769px) {
+      {% if customization.background_image.url %}
+        #login-content {
+            background-image: url("{{ customization.background_image.url }}");
+        }
+      {% else %}
+        #login-content {
+              background-image: url("{% static 'images/login_geocity.svg' %}");
+        }
+      {% endif %}
+    }
   </style>
 {% endblock %}
 {% block navbar %}{% endblock %}
