@@ -112,6 +112,16 @@ field_list_multiple = {
 # - NO_GEOM_NOR_TIME
 form_categories = [
     (
+        "ADVANCED_MAP_PLUGIN Gestion participative de l'espace public",
+        [
+            (
+                "Signaler un problème sur un lampadaire",
+                field_comment,
+                field_date,
+            ),
+        ],
+    ),
+    (
         "RENEWAL_REMINDER Stationnement (ex. de demande devant être prolongée)",
         [
             (
@@ -233,3 +243,84 @@ On the other hand, we denounce with righteous indignation and dislike men who ar
 of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to
 those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases
 are perfectly simple and easy to distinguish."""
+
+# Advanced map config example
+
+advanced_map_config = {
+    "wfs": {
+        "url": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"
+    },
+    "mode": {"type": "mix"},
+    "wmts": [
+        {
+            "name": "",
+            "layer": "ch.swisstopo.swissimage",
+            "thumbnail": "/static/images/aerial.svg",
+            "capability": "https://wmts.geo.admin.ch/EPSG/2056/1.0.0/WMTSCapabilities.xml",
+            "projection": "EPSG:2056",
+        }
+    ],
+    "zoom": 15,
+    "border": {
+        "url": "",
+        "notification": "Veuillez placer votre élément dans les limites autorisées",
+    },
+    "search": {
+        "displaySearch": True,
+        "bboxRestiction": "",
+        "requestWithoutCustomValue": "https://api3.geo.admin.ch/rest/services/api/SearchServer?limit=5&&type=locations&sr=2056&lang=fr&origins=address%2Cparcel",
+    },
+    "cluster": {"distance": 40, "minDistance": 35},
+    "maxZoom": 20,
+    "minZoom": 1,
+    "information": {"title": "Signaler ...", "content": "", "duration": 5000},
+    "interaction": {
+        "fullscreen": True,
+        "displayZoom": True,
+        "enableRotation": True,
+        "displayScaleLine": False,
+        "enableGeolocation": True,
+        "enableCenterButton": True,
+    },
+    "outputFormat": "GeometryCollection",
+    "defaultCenter": [2539057, 1181111],
+    "inclusionArea": {"url": "", "filter": ""},
+    "notifications": [
+        {
+            "rule": {
+                "type": "ZOOM_CONSTRAINT",
+                "minZoom": 16,
+                "maxElement": None,
+                "couldBypass": None,
+            },
+            "type": "warning",
+            "message": "Veuillez zoomer davantage avant de pouvoir sélectionner un emplacement.",
+        },
+        {
+            "rule": {
+                "type": "MAX_SELECTION",
+                "minZoom": None,
+                "maxElement": 1,
+                "couldBypass": None,
+            },
+            "type": "warning",
+            "message": "Le maximum de sélection est limité à {x}.",
+        },
+        {
+            "rule": {
+                "type": "INFORMATION",
+                "minZoom": None,
+                "maxElement": None,
+                "couldBypass": None,
+            },
+            "type": "info",
+            "message": "Sélectionnez un marqueur ou cliquez longuement sur la carte pour qu’un élément soit créé.",
+        },
+    ],
+    "geolocationInformation": {
+        "displayBox": True,
+        "currentLocation": False,
+        "reverseLocation": True,
+    },
+    "selectionTargetBoxMessage": "",
+}
