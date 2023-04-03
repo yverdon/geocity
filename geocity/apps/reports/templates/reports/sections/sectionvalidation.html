@@ -9,9 +9,9 @@
         <div class="flex_container">
             <div class="flex_item-100">
                 {% for service, validation in request_data.properties.validations.items %}
+                    <h3>Validation: {{service}}</h3>
+                    <span class="bold">Statut : </span>{{validation.validation_status}}<br>
                     {% if validation.comment_is_visible_by_author %}
-                        <h3>Validation: {{service}}</h3>
-                        <span class="bold">Statut : </span>{{validation.validation_status}}<br>
                         <span class="bold">Commentaire : </span>{{validation.comment}}<br>
                     {% endif %}
                 {% endfor %}
