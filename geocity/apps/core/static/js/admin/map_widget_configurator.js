@@ -147,6 +147,7 @@ const baseSchema = {
               "filter": {
                   "type": "string",
                   "title": "Filtre d’URL pour WFS permettant de filtrer les données de la zone d’inclusion",
+                  "helpText": "Filtre de service WFS, le filtre doit être un GeometryOperands et doit contenir le motif <BBOX>",
                   "placeholder": "GeometryOperands=urn:ogc:def:crs:EPSG::2056&FILTER=<Filter><And><PropertyIsEqualTo><ValueReference>commune</ValueReference><Literal>Yverdon-les-Bains</Literal></PropertyIsEqualTo><PropertyIsNotEqualTo><ValueReference>genre</ValueReference><Literal>Parcelle privée</Literal></PropertyIsNotEqualTo><BBOX></And></Filter>"
               }
           }
@@ -449,6 +450,16 @@ function changeSchema(data, isSchemaChange) {
 
 function setupDisplay(data) {
   if (data.notifications && data.notifications.length > 0) {
+     // There is no unique ID for array element add button.
+    // The only way is to use the class name. Then check the table title
+    // In case of translation. change the check v alue by the translation result.
+    const addButtons = document.getElementsByClassName('rjf-add-button');
+    if (addButtons && addButtons.length > 0) {
+      for (let element of addButtons) {
+        if (element.parentElement.firstChild.innerHTML == 'Notifications')
+          element.style.display = 'none';
+      };
+    }
     for (let i = 0; i < data.notifications.length; i++) {
       const ruleType = document.getElementsByName(`rjf§notifications§${i}§rule§type`)
       if (ruleType && ruleType.length > 0 ) {

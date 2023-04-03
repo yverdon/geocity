@@ -1,4 +1,5 @@
 const readOnlyMap = document.getElementById("map-ro-result");
+readOnlyMap.style.display = 'none';
 const editableMap = document.getElementById("web-component-advanced");
 const serialized = document.querySelector("[data-role='serialized']");
 const buttonModal = document.getElementById("map-custom-modal-button");
@@ -22,6 +23,11 @@ if (
   optionsDiv[0].dataset.options
 ) {
   options = JSON.parse(optionsDiv[0].dataset.options);
+}
+
+setupReadOnlyMap = () => {
+  readOnlyMap.style.display = 'block';
+  setupMap(readOnlyMap, options, true);
 }
 
 parseCoordinates = (data) => {
@@ -52,20 +58,24 @@ setupMap = (container, options, readonly) => {
     }
     wc.states = states;
     container.appendChild(wc);
+    const modalHeight = window.innerHeight;
+    container.style.setProperty('--window-modal-size', modalHeight + 'px');
   }
 }
 
 updateReadOnlyMap = () => {
-  if (readOnlyMap) {
+  // update map only if exists. If there is no value when the form is set.
+  // The read-only map is not instancitated but create when data is set.
+  if (readOnlyMap && readOnlyMap.lastChild && serialized.value) {
     const states = {
       readonly: true,
     };
-    if (serialized.value) {
-      const data = JSON.parse(serialized.value);
-      const selections = parseCoordinates(data);
-      states['currentSelections'] = selections;
-    }
+    const data = JSON.parse(serialized.value);
+    const selections = parseCoordinates(data);
+    states['currentSelections'] = selections;
     readOnlyMap.lastChild.states = states;
+  } else if (serialized.value) {
+    setupReadOnlyMap();
   }
 }
 
@@ -126,6 +136,7 @@ validationButton.addEventListener("click", () => {
   if (selectedValues != "")
   {
     serialized.value = selectedValues;
+    buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`
     toogleModal("none");
     updateReadOnlyMap();
   }
@@ -142,6 +153,11 @@ window.addEventListener("position-selected", (event) => {
   }
 });
 
+window.addEventListener('resize', () => {
+  const modalHeight = window.innerHeight;
+  editableMap.style.setProperty('--window-modal-size', modalHeight + 'px');
+})
+
 const isInvalid = document
   .querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")[0]
   ?.parentNode?.parentNode?.classList.contains("is-invalid");
@@ -149,7 +165,10 @@ if (isInvalid) {
   document.getElementById("geo-invalid-content").style.display = "block";
 }
 
-setupMap(readOnlyMap, options, true);
+if (serialized.value) {
+  setupReadOnlyMap();
+  buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`
+}
 
 if (options && !options.edit_geom) {
   buttonModal.style.display = 'none';

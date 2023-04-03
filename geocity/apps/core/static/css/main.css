@@ -598,7 +598,7 @@ th.actions {
   }
 
   #map-custom-modal {
-    top: 10vh;
+    top: 5vh;
     left: 10vw;
     width: 80vw;
     height: 80vh;
@@ -606,7 +606,7 @@ th.actions {
 
   #web-component-advanced {
     width: calc(100% - 40px);
-    height: calc(80vh - 96px);
+    height: calc(var(--window-modal-size) * 0.8 - 96px);
   }
 }
 
@@ -674,7 +674,7 @@ th.actions {
 
   #web-component-advanced {
     width: 100%;
-    height: calc(100vh - 96px);
+    height: calc(var(--window-modal-size) - 96px);
   }
 
 }
