@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("reports", "0021_remove_section_padding_top_and_more"),
+        ("reports", "0022_alter_sectionparagraph_content"),
     ]
 
     operations = [
