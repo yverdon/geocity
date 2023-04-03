@@ -151,7 +151,7 @@
 
     {% if validations %}
 
-      <div class="row sub-row">
+      <div class="row sub-row py-2">
         <div class="col">
           <h2>{% trans "Informations générales" %}</h2>
           <div class="container">
@@ -168,9 +168,23 @@
     {% endif %}
 
     {% if validations %}
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
-        <h2>{% trans "Validation" %}</h2>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-6">
+              <h2>{% trans "Validation" %}</h2>
+            </div>
+            <div class="col-md-6" style="padding-top:5px;">
+              {% if has_permission_to_edit_submission_validations %}
+                <div class="text-right">
+                  <a href="{% url 'submissions:submission_validations_edit' submission_id=submission.pk %}" class="btn btn-primary">{% trans "Modifier les validations" %}&nbsp;<i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
           {% for validation in validations %}
             <div class="container">
               <dl>
@@ -186,24 +200,31 @@
                   {% if has_permission_to_classify or can_validate_submission%}
                     {{ validation.get_validation_status_display }} par
                     {% if validation.validated_by %}
-                      {{ validation.validated_by.userprofile.first_name }}
-                      {{ validation.validated_by.userprofile.last_name }}
+                      {{ validation.validated_by.first_name }}
+                      {{ validation.validated_by.last_name }}
                       le
                       {{ validation.validated_at }}
                     {% endif %}
                   {% endif %}
                 </dd>
-                {% if validation.comment_before %}
-                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before|linebreaksbr }} </dd>
-                {% endif %}
-                {% if validation.comment_during %}
-                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during|linebreaksbr }} </dd>
-                {% endif %}
-                {% if validation.comment_after %}
-                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after|linebreaksbr }} </dd>
+                {% if validation.comment %}
+                  {% if validation.comment_is_visible_by_author or current_user != submission.author %}
+                    <dt>{% trans "Commentaire" %}:</dt> <dd> {{ validation.comment|linebreaksbr }} </dd>
+                    {% if current_user != submission.author %}
+                      <dt>{% trans "Commentaire visible par l'auteur de la demande" %}:</dt>
+                      <dd>
+                      {% if validation.comment_is_visible_by_author %}
+                        <i class="fa fa-check-circle" aria-hidden="true"></i>
+                      {% else %}
+                        <i class="fa fa-times-circle" aria-hidden="true"></i>
+                      {% endif %}
+                      </dd>
+                    {% endif %}
+                  {% endif %}
                 {% endif %}
               </dl>
             </div>
+            {% if not forloop.last %}<hr>{% endif %}
           {% endfor %}
       </div>
     </div>
@@ -212,7 +233,7 @@
 
     {% if submission.can_be_prolonged and submission.prolongation_date %}
 
-      <div class="row sub-row">
+      <div class="row sub-row py-2">
         <div class="col">
           <h2>{% trans "Prolongation" %}</h2>
           <div class="container">
@@ -232,7 +253,7 @@
 
     {% endif %}
 
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
         <h2>{% trans "Résumé" %}</h2>
           {% submission_summary submission %}
@@ -240,7 +261,7 @@
     </div>
 
     {% if submission.additional_decision_information %}
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
         <h2>{% trans "Informations complémentaires" %}</h2>
         <dl>

@@ -263,12 +263,14 @@ docker-compose exec web pip install -r requirements.txt
 ### Permissions
 
 The user belonging to backoffice group can be granted specific permissions:
+
 - `view_private_form`, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
-- `amend_submission`,"Traiter les demandes": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
-- `validate_submission`,"Valider les demandes": allow the user to fill the validation form
-- `classify_submission`,"Classer les demandes" allow the user to accept/reject the requests if validations services have all accepted it
-- `edit_submission`, "Éditer les demandes": allow the user to edit de requests filled by another person
+- `amend_submission`, "Traiter les demandes": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
+- `validate_submission`, "Valider les demandes": allow the user to fill the validation form
+- `classify_submission`, "Classer les demandes" allow the user to accept/reject the requests if validations services have all accepted it
+- `edit_submission`, "Modifier les demandes": allow the user to edit the requests filled by another person
 - `read_submission`, "Consulter les demandes": allow a trusted user to only read submissions without any other permission
+- `edit_submission_validations`, "Modifier les validations": allow the pilot to edit the validation to correct spelling mistakes
 
 ### Two factor authentication
 

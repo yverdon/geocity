@@ -131,4 +131,9 @@ urlpatterns = [
         views.SubmissionPaymentRedirect.as_view(),
         name="submission_payment_redirect",
     ),
+    path(
+        "validations/<int:submission_id>/edit",
+        views.submission_validations_edit,
+        name="submission_validations_edit",
+    ),
 ]

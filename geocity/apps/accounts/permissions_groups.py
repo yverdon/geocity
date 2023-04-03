@@ -53,6 +53,7 @@ if not settings.ALLOW_REMOTE_USER_AUTH:
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "read_submission",
     "amend_submission",
+    "edit_submission_validations",
     "validate_submission",
     "classify_submission",
     "edit_submission",
