@@ -1406,15 +1406,13 @@ class SubmissionValidationForm(forms.ModelForm):
         model = models.SubmissionValidation
         fields = [
             "validation_status",
-            "comment_before",
-            "comment_during",
-            "comment_after",
+            "comment",
+            "comment_is_visible_by_author",
         ]
         widgets = {
             "validation_status": forms.RadioSelect(),
-            "comment_before": forms.Textarea(attrs={"rows": 3}),
-            "comment_during": forms.Textarea(attrs={"rows": 3}),
-            "comment_after": forms.Textarea(attrs={"rows": 3}),
+            "comment": forms.Textarea(attrs={"rows": 3}),
+            "comment_is_visible_by_author": forms.CheckboxInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1896,3 +1894,15 @@ def get_submission_forms(submission):
     ]
 
     return forms_infos
+
+
+class SubmissionValidationsForm(forms.ModelForm):
+    class Meta:
+        model = models.SubmissionValidation
+        fields = ["department", "comment", "comment_is_visible_by_author"]
+
+    def __init__(self, *args, **kwargs):
+        super(SubmissionValidationsForm, self).__init__(*args, **kwargs)
+        if self.instance.id:
+            self.fields["department"].widget.attrs["readonly"] = True
+            self.fields["department"].widget.attrs["hidden"] = True

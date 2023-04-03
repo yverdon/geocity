@@ -282,6 +282,9 @@ class SubmissionDetailView(View):
                     self.request.user, self.submission
                 ),
                 "can_validate_submission": can_validate_submission,
+                "has_permission_to_edit_submission_validations": permissions.has_permission_to_edit_submission_validations(
+                    self.request.user, self.submission
+                ),
                 "directives": self.submission.get_submission_directives(),
                 "prolongation_enabled": prolongation_enabled,
                 "document_enabled": self.submission.has_document_enabled(),
@@ -293,6 +296,7 @@ class SubmissionDetailView(View):
                 == self.submission.forms.count(),
                 "inquiry_in_progress": self.submission.status
                 == models.Submission.STATUS_INQUIRY_IN_PROGRESS,
+                "current_user": self.request.user,
             },
         }
 
@@ -2210,3 +2214,57 @@ class SubmissionPaymentRedirect(View):
             return redirect(payment_url)
 
         return redirect(reverse_lazy("submissions:submissions_list"))
+
+
+# TODO: SET PERMISSIONS
+@login_required
+@check_mandatory_2FA
+def submission_validations_edit(request, submission_id):
+
+    # Check that user is authorize to see submission
+    submission = get_object_or_404(
+        models.Submission.objects.filter_for_user(request.user), pk=submission_id
+    )
+
+    # Check that user is authorized to edit submission validations
+    if not permissions.has_permission_to_edit_submission_validations(
+        request.user, submission
+    ):
+        # TODO: be nicer whith user
+        raise PermissionDenied
+
+    submissionValidationFormset = modelformset_factory(
+        models.SubmissionValidation,
+        form=forms.SubmissionValidationsForm,
+        edit_only=True,
+        extra=0,
+    )
+    if request.method == "POST":
+        if request.method == "POST":
+            formset = submissionValidationFormset(request.POST)
+            if formset.is_valid():
+                formset.save()
+                if "save_continue" in request.POST:
+                    return redirect(
+                        "submissions:submission_validations_edit",
+                        submission_id=submission_id,
+                    )
+                else:
+                    return redirect(
+                        "submissions:submission_detail",
+                        submission_id=submission_id,
+                    )
+
+    else:
+        formset = submissionValidationFormset(
+            queryset=models.SubmissionValidation.objects.filter(
+                submission=submission_id
+            )
+        )
+    return render(
+        request,
+        "submissions/submission_validations_edit.html",
+        {
+            "formset": formset,
+        },
+    )

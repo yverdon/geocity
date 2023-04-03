@@ -1,13 +1,15 @@
+from django.contrib.auth.models import Permission
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
 from geocity.apps.submissions import models as submissions_models
+from geocity.apps.submissions.models import Submission, SubmissionValidation
 from geocity.tests import factories
 from geocity.tests.utils import LoggedInSecretariatMixin, get_parser
 
 
-class SubmissionValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
+class SubmissionValidationRequestTestCase(LoggedInSecretariatMixin, TestCase):
     def test_secretariat_can_request_validation(self):
         validator_groups = factories.ValidatorGroupFactory.create_batch(
             2, department__administrative_entity=self.administrative_entity
@@ -131,7 +133,7 @@ class SubmissionValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, [validator_user.email])
 
 
-class SubmissionValidationTestcase(TestCase):
+class SubmissionValidationTestCase(TestCase):
     def test_validator_can_see_assigned_submissions(self):
         validation = factories.SubmissionValidationFactory()
         validator = factories.ValidatorUserFactory(
@@ -321,3 +323,184 @@ class SubmissionValidationTestcase(TestCase):
             "Les services chargés de la validation d'une demande ont donné leur préavis",
             mail.outbox[0].message().as_string(),
         )
+
+
+class SubmissionValidationOnDetailsTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        """Generate validations and users
+        """
+
+        self.edit_submission_validations = Permission.objects.get(
+            codename="edit_submission_validations",
+            content_type__app_label="submissions",
+        )
+
+        # Create submission
+        self.submission = factories.SubmissionFactory(
+            status=Submission.STATUS_PROCESSING
+        )
+
+        # Create all cases of validations
+        self.validation_1 = factories.SubmissionValidationFactory(
+            comment_is_visible_by_author=True,
+            submission=self.submission,
+            comment="Requested and visible",
+            validation_status=SubmissionValidation.STATUS_REQUESTED,
+        )
+        self.validation_2 = factories.SubmissionValidationFactory(
+            comment_is_visible_by_author=False,
+            submission=self.submission,
+            comment="Approved and hidden",
+            validation_status=SubmissionValidation.STATUS_APPROVED,
+        )
+        self.validation_3 = factories.SubmissionValidationFactory(
+            comment_is_visible_by_author=True,
+            submission=self.submission,
+            comment="Approved and visible",
+            validation_status=SubmissionValidation.STATUS_APPROVED,
+        )
+        self.validation_4 = factories.SubmissionValidationFactory(
+            comment_is_visible_by_author=True,
+            submission=self.submission,
+            comment="Rejected and visible",
+            validation_status=SubmissionValidation.STATUS_REJECTED,
+        )
+
+        # Create pilot group
+        self.pilot_group = factories.GroupFactory(name="pilot")
+
+        # Create department
+        department = factories.PermitDepartmentFactory(
+            group=self.pilot_group, is_backoffice=True
+        )
+
+        # Create pilot user
+        self.pilot = factories.SecretariatUserFactory(
+            groups=[self.pilot_group], email="secretary@geocity.ch"
+        )
+
+        # Create validator
+        self.validator = factories.ValidatorUserFactory(
+            groups=[
+                self.validation_1.department.group,
+                factories.ValidatorGroupFactory(),
+            ],
+        )
+
+        # Define author
+        self.author = self.submission.author
+
+        # Set department for submission.administrative_entity
+        self.submission.administrative_entity.departments.set([department])
+
+        # Create used form
+        self.form = factories.FormFactory()
+
+        # Assign form to submission
+        self.submission.forms.set([self.form])
+
+    def test_author_can_only_see_visible_validation_comment(self):
+        self.client.login(username=self.author.username, password="password")
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode()
+
+        # Button should not appear
+        self.assertNotIn("Modifier les validations", content)
+
+        # Check comment and status for comment_is_visible_by_author=True appears
+        # Check comment and status for comment_is_visible_by_author=False dont appears
+        self.assertIn(self.validation_1.comment, content)
+        self.assertIn(self.validation_3.comment, content)
+        self.assertIn(self.validation_4.comment, content)
+        self.assertNotIn(self.validation_2.comment, content)
+
+        self.assertIn("fa fa-check-circle", content)
+        self.assertIn("fa fa-clock-o", content)
+        self.assertIn("fa fa-times-circle", content)
+
+        # Check comment_is_visible_by_author never appears
+        self.assertNotIn("Commentaire visible par l'auteur de la demande", content)
+
+    def test_pilot_can_edit_validation_only_with_perms(self):
+        self.client.login(username=self.pilot.username, password="password")
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode()
+
+        # Button should not appear
+        self.assertNotIn("Modifier les validations", content)
+
+        # Can see all comments
+        self.assertIn(self.validation_1.comment, content)
+        self.assertIn(self.validation_2.comment, content)
+        self.assertIn(self.validation_3.comment, content)
+        self.assertIn(self.validation_4.comment, content)
+
+        # See all icons
+        self.assertIn("fa fa-check-circle", content)
+        self.assertIn("fa fa-clock-o", content)
+        self.assertIn("fa fa-times-circle", content)
+
+        # Add permission
+        self.pilot_group.permissions.add(self.edit_submission_validations)
+
+        # Check permission is assigned correctly
+        self.assertTrue(self.pilot.has_perm("submissions.edit_submission_validations"))
+
+        # Refresh response
+        response = self.client.get(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode()
+
+        # Button should appear
+        self.assertIn("Modifier les validations", content)
+
+    def test_validator_cant_edit_validation_even_with_perms(self):
+        # Add permission
+        self.validator.user_permissions.add(self.edit_submission_validations)
+
+        # Check permission is assigned correctly
+        self.assertTrue(
+            self.validator.has_perm("submissions.edit_submission_validations")
+        )
+
+        self.client.login(username=self.pilot.username, password="password")
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        content = response.content.decode()
+
+        # Button should not appear
+        self.assertNotIn("Modifier les validations", content)

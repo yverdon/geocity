@@ -81,14 +81,15 @@ class SubmissionQuerySet(models.QuerySet):
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
             permit_duration_max=Max("forms__permit_duration"),
-            remaining_validations=Count("validations")
+            remaining_validations=Count("validations__department", distinct=True)
             - Count(
-                "validations",
+                "validations__department",
+                distinct=True,
                 filter=~Q(
                     validations__validation_status=SubmissionValidation.STATUS_REQUESTED
                 ),
             ),
-            required_validations=Count("validations"),
+            required_validations=Count("validations__department", distinct=True),
             author_fullname=Concat(
                 F("author__first_name"),
                 Value(" "),
@@ -271,9 +272,10 @@ class Submission(models.Model):
         permissions = [
             ("read_submission", _("Consulter les demandes")),
             ("amend_submission", _("Traiter les demandes")),
+            ("edit_submission_validations", _("Modifier les validations")),
             ("validate_submission", _("Valider les demandes")),
             ("classify_submission", _("Classer les demandes")),
-            ("edit_submission", _("Éditer les demandes")),
+            ("edit_submission", _("Modifier les demandes")),
             ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
@@ -1782,28 +1784,23 @@ class SubmissionValidation(models.Model):
     )
     department = models.ForeignKey(
         PermitDepartment,
+        verbose_name=_("Département"),
         on_delete=models.CASCADE,
         related_name="submission_validations",
     )
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
-    comment_before = models.TextField(
-        _("Commentaire (avant)"),
+    comment = models.TextField(
+        _("Commentaire"),
         blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
     )
-    comment_during = models.TextField(
-        _("Commentaire (pendant)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    comment_is_visible_by_author = models.BooleanField(
+        _("Commentaire visible par l'auteur de la demande"), default=True
     )
-    comment_after = models.TextField(
-        _("Commentaire (après)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    validated_by = models.ForeignKey(
+        User, verbose_name=_("Validé par"), null=True, on_delete=models.SET_NULL
     )
-    validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
 
