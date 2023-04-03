@@ -416,14 +416,16 @@ class CurrentUserSerializer(serializers.Serializer):
 
 
 class SubmissionValidationSerializer(serializers.Serializer):
-    # TODO: Add comment_is_visible_by_author
     def to_representation(self, value):
         rep = {}
         for validation in value.validations.all().select_related("department"):
             values = {}
             for field in validation._meta.fields:
                 values["validation_status"] = validation.get_validation_status_display()
-                if field.name == "comment":
+                if (
+                    field.name == "comment"
+                    or field.name == "comment_is_visible_by_author"
+                ):
                     values[field.name] = getattr(validation, field.name)
 
             rep[validation.department.description] = values
