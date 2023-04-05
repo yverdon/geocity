@@ -24,10 +24,10 @@
     {% crispy submission_form %}
     {% buttons %}
       {% if previous_step.url %}
-        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+        <a href="{{ previous_step.url }}" class="mr-2">{% translate "Retour" %}</a>
       {% endif %}
 
-      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+      <button class="btn btn-primary">{% translate "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
 {% endblock %}

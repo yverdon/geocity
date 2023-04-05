@@ -12,7 +12,7 @@
 
 {% block content %}
   {% submission_progressbar steps StepType.SUBMIT %}
-  <h3>{% trans "Résumé et envoi" %}</h3>
+  <h3>{% translate "Résumé et envoi" %}</h3>
   <hr>
 
   {% directives_and_legal submission %}
@@ -20,72 +20,72 @@
 
   {% if submission.administrative_entity.signature_sheet and submission.administrative_entity.signature_sheet_description %}
   <div id="legal-infos">
-    <h5>{% trans "Volet de transmission" %}</h5>
+    <h5>{% translate "Volet de transmission" %}</h5>
     <div class="additional_information">{{ submission.administrative_entity.signature_sheet_description|safe }}</div>
     <br>
     <i class="fa fa-download" aria-hidden="true"></i>
     <a class="directive_file" href="{{ submission.administrative_entity.signature_sheet.url }}" target="_blank"
-      rel="noreferrer">{% trans "Télécharger le volet de transmission pour impression et signature" %}
+      rel="noreferrer">{% translate "Télécharger le volet de transmission pour impression et signature" %}
     </a>
   </div>
   {% endif %}
 
   {% if incomplete_steps %}
     <p>
-      {% blocktrans trimmed %}
+      {% blocktranslate trimmed %}
         Votre demande n'est pas complète mais elle est sauvegardée. Vous pouvez
         revenir dans l'application ultérieurement afin de la compléter. Une fois
         toutes les informations saisies, vous pourrez l'envoyer.
-      {% endblocktrans %}
+      {% endblocktranslate %}
     </p>
     <p>
       <a class="btn btn-primary"
-         href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
+         href="{{ incomplete_steps|first }}">{% translate "Renseigner les informations manquantes" %}</a>
     </p>
   {% endif %}
 
   {% if not incomplete_steps %}
     <p class="font-weight-bold">
       <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
-      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les" %} <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "conditions d'utilisation" %}</a></label><br>
+      <label for="chk_accept_terms"> {% translate "J'ai lu et j'accepte les" %} <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% translate "conditions d'utilisation" %}</a></label><br>
     </p>
     {% if should_go_to_payment %}
       {% if not submission.get_submission_price %}
         <div class="alert alert-danger mb-4">
           <div class="mb-4">
-            {% blocktrans trimmed %}
+            {% blocktranslate trimmed %}
               Vous devez choisir un tarif à l'étape "Détails"
-            {% endblocktrans %}
+            {% endblocktranslate %}
             <hr/>
           </div>
           <div class="mb-4">
             <a href="{% url 'submissions:submission_fields' submission_id=submission.pk %}"
-              class="btn btn-primary">{% trans "Retour" %}</a>
+              class="btn btn-primary">{% translate "Retour" %}</a>
           </div>
         </div>
       {% else %}
         <div class="alert alert-info mb-4">
           <div class="mb-4">
-            {% blocktrans trimmed %}
+            {% blocktranslate trimmed %}
               Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
               Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton "Payer maintenant" pour être redirigé vers l'interface de paiement sécurisée.
-            {% endblocktrans %}
+            {% endblocktranslate %}
             <hr/>
           </div>
           <div class="mb-4">
-            {% blocktrans trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
+            {% blocktranslate trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
               <p>Vous avez sélectionné <strong>{{ text }}</strong> au prix de
                 <strong>{{ amount }} {{ currency }}</strong>
               </p>
-            {% endblocktrans %}
+            {% endblocktranslate %}
           </div>
           <div class="mb-4">
             {% if previous_step.url %}
-              <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+              <a href="{{ previous_step.url }}" class="mr-2">{% translate "Retour" %}</a>
             {% endif %}
             <a href="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" style="text-decoration:none">
               <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
-                {% trans "Payer maintenant" %}
+                {% translate "Payer maintenant" %}
               </button>
             </a>
             {% if has_any_form_with_exceeded_submissions %}
@@ -101,10 +101,10 @@
         {% csrf_token %}
         {% buttons %}
           {% if previous_step.url %}
-            <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+            <a href="{{ previous_step.url }}" class="mr-2">{% translate "Retour" %}</a>
           {% endif %}
           <button type="submit" class="btn btn-primary mr-2" id="btn_accept_terms" disabled>
-            {% trans "Envoyer" %}
+            {% translate "Envoyer" %}
           </button>
           {% if has_any_form_with_exceeded_submissions %}
             <span class="text-danger font-weight-bold mx-2 maximum-submission-message">
@@ -116,7 +116,7 @@
     {% endif %}
   {% endif %}
   <p>
-    {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
+    {% translate "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
   <div class="row">
     <div class="col">

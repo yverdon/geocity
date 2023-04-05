@@ -1,13 +1,13 @@
 {% load i18n %}
 {% autoescape off %}
-{% blocktrans %}Bonjour {{ user }}{% endblocktrans %},
+{% blocktranslate %}Bonjour {{ user }}{% endblocktranslate %},
 
-{% trans "Nous devons simplement vérifier votre adresse e-mail avant que vous puissiez accéder à Geocity." %}
+{% translate "Nous devons simplement vérifier votre adresse e-mail avant que vous puissiez accéder à Geocity." %}
 
-{% trans "Vérifiez votre adresse e-mail: " %}https://{{ domain }}{{ url }}
+{% translate "Vérifiez votre adresse e-mail: " %}https://{{ domain }}{{ url }}
 
-{% trans "Avec nos meilleures salutations," %}
+{% translate "Avec nos meilleures salutations," %}
 {{ signature }}
 
-{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
+{% translate "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}
