@@ -12,12 +12,12 @@
                     <h3>Validation: {{group}}</h3>
                     <span class="bold">Statut : </span>{{validation.validation_status}}<br>
                     {% if validation.comment_is_visible_by_author %}
-                        <span class="bold">Commentaire : </span>{{validation.comment}}<br>
+                        <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">Commentaire : </span>{{validation.comment}}</div><br>
                     {% endif %}
                 {% endfor %}
             </div>
         </div>
     {% else %}
-        <p>Aucune propriété pour cette demande</p>
+        <p>Aucun commentaire des services pour cette demande</p>
     {% endif %}
 {% endblock %}
