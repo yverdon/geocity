@@ -1024,6 +1024,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     (
                         self[self.get_field_name(form.id, field.id)],
                         field.is_visible_by_author,
+                        field.is_visible_by_validators,
                     )
                     for field in fields
                 ],
