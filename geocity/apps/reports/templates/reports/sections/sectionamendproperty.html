@@ -11,12 +11,12 @@
                 {% for form, commentaires in request_data.properties.amend_fields.items %}
                     <h3>{{form}}</h3>
                     {% for key, commentaire in commentaires.items %}
-                    <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">{{key}} : </span>{{commentaire}}</div><br>
+                        <span class="bold">{{key}} : </span>{{commentaire}}<br>
                     {% endfor %}
                 {% endfor %}
             </div>
         </div>
     {% else %}
-        <p>Aucun commentaire du secrétariat pour cette demande</p>
+        <p>Aucun contact pour cette demande</p>
     {% endif %}
 {% endblock %}
