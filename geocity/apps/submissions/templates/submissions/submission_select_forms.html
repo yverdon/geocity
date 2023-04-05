@@ -8,7 +8,7 @@
   <h3>{{ current_step_title }}</h3>
 
   {% if typefilter and not user.userprofile.is_temporary %}
-    {% trans "La liste ci-dessous est filtrée," %} <a href="{% url 'submissions:submission_select_forms' submission_id=submission.pk %}"><b>{% trans "voir toutes les possibilités" %}</b></a>
+    {% translate "La liste ci-dessous est filtrée," %} <a href="{% url 'submissions:submission_select_forms' submission_id=submission.pk %}"><b>{% translate "voir toutes les possibilités" %}</b></a>
   {% endif %}
 
   <hr>
@@ -22,9 +22,9 @@
 
     {% buttons %}
       {% if previous_step.url %}
-        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+        <a href="{{ previous_step.url }}" class="mr-2">{% translate "Retour" %}</a>
       {% endif %}
-      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+      <button class="btn btn-primary">{% translate "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
 {% endblock %}

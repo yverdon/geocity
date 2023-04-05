@@ -57,7 +57,7 @@
                 <li class="nav-item d-flex align-items-center">
                     <a href="{% url 'submissions:submissions_list' %}" role="button">
                       <i class="fa fa-list-ul" aria-hidden="true"></i>
-                      {% trans "Mes demandes" %}
+                      {% translate "Mes demandes" %}
                     </a>
                 </li>
                 {% can_archive as can_archive %}
@@ -65,7 +65,7 @@
                   <li class="nav-item d-flex align-items-center">
                       <a href="{% url 'submissions:archived_submission_list' %}" role="button">
                         <i class="fa fa-archive" aria-hidden="true"></i>
-                        {% trans "Demandes archivées" %}
+                        {% translate "Demandes archivées" %}
                       </a>
                   </li>
                 {% endif %}
@@ -73,7 +73,7 @@
                     <li class="nav-item d-flex align-items-center">
                       <a href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
                         <i class="fa fa-calendar aria-hidden="true"></i>
-                        {% trans "Calendrier" %}
+                        {% translate "Calendrier" %}
                       </a>
                     </li>
                   {% endif %}
@@ -85,7 +85,7 @@
                       {% if request.user.groups.all.count > 0 %}
                         <a class="btn btn-outline-primary" href="{{group.permit_department.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer">
                           <i class="fa fa-archive"></i>
-                          {% trans "Archives" %}</a>
+                          {% translate "Archives" %}</a>
                       {% endif %}
                     {% endif %}
                   {% endwith %}
@@ -96,14 +96,14 @@
                 <li class="nav-item d-flex align-items-center">
                   <div class="global-search-form-container">
                     <form  class="navbar-form navbar-right" method="get" action="{% url 'submissions:submissions_search' %}" id="global-search-form">
-                      <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
+                      <input data-role="search-input" placeholder="{% translate "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
                       <div data-role="search-results" class="search-results-container"></div>
                     </form>
                   </div>
                 </li>
-                <li class="nav-item d-flex align-items-center" title="{% trans 'Imprimer cette page' %}">
+                <li class="nav-item d-flex align-items-center" title="{% translate 'Imprimer cette page' %}">
                   <a href="javascript:window.print()" class="text-secondary" role="button">
-                    <i class="fa fa-print" aria-hidden="true"></i>&nbsp;{% trans "Imprimer" %}
+                    <i class="fa fa-print" aria-hidden="true"></i>&nbsp;{% translate "Imprimer" %}
                   </a>
                 </li>
                 <li class="nav-item d-flex align-items-center login-navbar-desktop">
@@ -113,21 +113,21 @@
                     </a>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
                       {% if user.is_staff %}
-                      <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans "Interface d'administration" %}</a>
+                      <a class="dropdown-item" href="{% url 'admin:index' %}">{% translate "Interface d'administration" %}</a>
                       <div class="dropdown-divider"></div>
                       {% endif %}
-                      <a class="dropdown-item" href="{% url 'accounts:user_profile_edit' %}">{% trans "Gérer mon compte" %}</a>
+                      <a class="dropdown-item" href="{% url 'accounts:user_profile_edit' %}">{% translate "Gérer mon compte" %}</a>
                       {% if ENABLE_2FA %}
-                      <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% trans "Gérer la sécurité de mon compte" %}</a>
+                      <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% translate "Gérer la sécurité de mon compte" %}</a>
                       {% endif %}
                       {% if not user.socialaccount_set.exists %}
-                      <a class="dropdown-item" href="{% url 'accounts:password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
+                      <a class="dropdown-item" href="{% url 'accounts:password_change' %}">{% translate "Modifier mon mot de passe" %}</a>
                       {% endif %}
                       <div class="dropdown-divider"></div>
                       <form method="post" action="{% url 'accounts:logout' %}">
                         {% csrf_token %}
                         <button class="btn dropdown-item">
-                          {% trans "Me déconnecter" %}
+                          {% translate "Me déconnecter" %}
                         </button>
                       </form>
                   </div>
@@ -138,21 +138,21 @@
                     <ul class="navbar-nav d-flex d-md-none">
                       {% if user.is_staff %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">{% trans "Interface d'administration" %}</a>
+                        <a class="nav-link" href="{% url 'admin:index' %}">{% translate "Interface d'administration" %}</a>
                       </li>
                       <div class="dropdown-divider"></div>
                       {% endif %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:user_profile_edit' %}">{% trans "Gérer mon compte" %}</a>
+                        <a class="nav-link" href="{% url 'accounts:user_profile_edit' %}">{% translate "Gérer mon compte" %}</a>
                       </li>
                       {% if ENABLE_2FA %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'two_factor:profile' %}">{% trans "Gérer la sécurité de mon compte" %}</a>
+                        <a class="nav-link" href="{% url 'two_factor:profile' %}">{% translate "Gérer la sécurité de mon compte" %}</a>
                       </li>
                       {% endif %}
                       {% if not user.socialaccount_set.exists %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
+                        <a class="nav-link" href="{% url 'accounts:password_change' %}">{% translate "Modifier mon mot de passe" %}</a>
                       </li>
                       {% endif %}
                       <div class="dropdown-divider"></div>
@@ -160,7 +160,7 @@
                         <form method="post" action="{% url 'accounts:logout' %}">
                           {% csrf_token %}
                           <button class="btn btn-block text-left nav-link">
-                            {% trans "Me déconnecter" %}
+                            {% translate "Me déconnecter" %}
                           </button>
                         </form>
                       </li>
@@ -208,18 +208,18 @@
           <small>
             &copy; {% now "Y" %} Geocity
             &nbsp;|&nbsp;
-            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "A propos" %}</a>
+            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% translate "A propos" %}</a>
             {% if config.CONTACT_URL %}
               &nbsp;|&nbsp;
-              <a href="{{ config.CONTACT_URL }}" target="_blank" rel="noreferrer">{% trans "Contact" %}</a>
+              <a href="{{ config.CONTACT_URL }}" target="_blank" rel="noreferrer">{% translate "Contact" %}</a>
             {% endif %}
             {% if config.GENERAL_CONDITIONS_URL %}
               &nbsp;|&nbsp;
-              <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
+              <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% translate "Conditions" %}</a>
             {% endif %}
             {% if config.PRIVACY_POLICY_URL %}
               &nbsp;|&nbsp;
-              <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer">{% trans "Confidentialité" %}</a>
+              <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer">{% translate "Confidentialité" %}</a>
             {% endif %}
           </small>
         </div>
