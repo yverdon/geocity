@@ -530,16 +530,21 @@ class SiteWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
 
 
 def get_sites_field(user):
+
     qs = models.Site.objects.all()
+
     if not user.is_superuser:
+        integrator = user.groups.get(permit_department__is_integrator_admin=True)
+        administrative_entity = integrator.permit_department.administrative_entity
+
+        # Get the default site
+        # Get the sites associated to this integrator
+        # Get the sites associated to the entity
         qs = qs.filter(
-            Q(
-                site_profile__integrator__in=user.groups.filter(
-                    permit_department__is_integrator_admin=True
-                )
-            )
-            | Q(domain=settings.DEFAULT_SITE)
-        )
+            Q(domain=settings.DEFAULT_SITE)
+            | Q(site_profile__integrator=integrator.pk)
+            | Q(administrative_entity=administrative_entity.pk)
+        ).distinct()
 
     return SiteWithAdministrativeEntitiesField(
         queryset=qs,

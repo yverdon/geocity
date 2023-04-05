@@ -290,7 +290,7 @@ class AdministrativeEntity(models.Model):
 
     sites = models.ManyToManyField(
         Site,
-        related_name="+",
+        related_name="administrative_entity",
         verbose_name=_("Détails du Site"),
     )
     directive = AdministrativeEntityFileField(
