@@ -1017,15 +1017,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         Return a list of tuples `(Form, List[Field])` for each form and their fields.
         """
 
-        for form, fields in self.instance.get_amend_custom_fields_by_form():
-            for field in fields:
-                # print(dir(field))
-                field_v = self[self.get_field_name(form.id, field.id)]
-                print(field_v.css_classes)
-                # field_v.widget.attrs.update({
-                #     'autocomplete': 'off'
-                # })
-
         return [
             (
                 form,
