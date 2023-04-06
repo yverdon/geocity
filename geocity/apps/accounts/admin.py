@@ -440,6 +440,8 @@ class GroupAdmin(admin.ModelAdmin):
         "get__is_default_validator",
         "get__is_backoffice",
         "get__mandatory_2fa",
+        "get__forms_number",
+        "get__sites_number",
     ]
 
     filter_horizontal = ("permissions",)
@@ -482,6 +484,18 @@ class GroupAdmin(admin.ModelAdmin):
 
     get__mandatory_2fa.admin_order_field = "permit_department__mandatory_2fa"
     get__mandatory_2fa.short_description = _("2FA obligatoire")
+
+    def get__forms_number(self, obj):
+        if obj.permit_department.is_integrator_admin:
+            return obj.permit_department.administrative_entity.forms.count()
+
+    get__forms_number.short_description = _("Nombre de formulaires")
+
+    def get__sites_number(self, obj):
+        if obj.permit_department.is_integrator_admin:
+            return obj.site_profiles.count()
+
+    get__sites_number.short_description = _("Nombre de sites")
 
     def get_queryset(self, request):
 
