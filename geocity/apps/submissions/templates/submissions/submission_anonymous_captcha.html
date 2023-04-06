@@ -4,7 +4,7 @@
 {% load submissions_extras %}
 
 {% block content %}
-  <h3>{% trans "Formulaire" %}</h3>
+  <h3>{% translate "Formulaire" %}</h3>
   <hr>
   <div class="card mb-3">
     <div class="card-body">
@@ -14,9 +14,9 @@
         {% bootstrap_form anonymous_request_form layout='horizontal' %}
         {% buttons %}
           <button class='js-captcha-refresh btn btn-secondary'>
-            {% trans "Rafraîchir le captcha" %}
+            {% translate "Rafraîchir le captcha" %}
           </button>
-          <button type="submit" class="btn btn-primary">{% trans "Continuer" %}</button>
+          <button type="submit" class="btn btn-primary">{% translate "Continuer" %}</button>
         {% endbuttons %}
       </form>
     </div>

@@ -17,19 +17,19 @@
         {% bootstrap_field field %}
       {% endfor %}
     {% empty %}
-      <h5>{% trans "Aucune annexe requise pour cette demande de permis." %}</h5>
+      <h5>{% translate "Aucune annexe requise pour cette demande de permis." %}</h5>
       <br>
     {% endfor %}
 
     {% buttons %}
     {% if previous_step.url %}
-      <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      <a href="{{ previous_step.url }}" class="mr-2">{% translate "Retour" %}</a>
     {% endif %}
     <button class="btn btn-primary">
       {% if forms %}
-        {% trans "Enregistrer et continuer" %}
+        {% translate "Enregistrer et continuer" %}
       {% else %}
-        {% trans "Continuer" %}
+        {% translate "Continuer" %}
       {% endif %}
     </button>
     {% endbuttons %}

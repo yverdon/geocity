@@ -4,7 +4,7 @@
 
 <div class="container">
   {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
-  <h2>{% trans "" %}</h2>
+  <h2>{% translate "" %}</h2>
   <div class="row">
     <div class="col">
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
@@ -12,7 +12,7 @@
       {% if forms.amend %}
 
           <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" or active_form == "request_inquiry" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traitement" %}</a>
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" or active_form == "request_inquiry" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% translate "Traitement" %}</a>
           </li>
 
       {% endif %}
@@ -20,7 +20,7 @@
       {% if forms.request_validation %}
 
           <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoi pour validation" %}</a>
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% translate "Envoi pour validation" %}</a>
           </li>
 
       {% endif %}
@@ -29,7 +29,7 @@
 
           <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
-              {% trans "Validation" %}
+              {% translate "Validation" %}
               </a>
           </li>
 
@@ -39,7 +39,7 @@
 
         <li class="nav-item">
         <a class="btn btn-primary btn-action nav-link" id="directives-tab" data-toggle="tab" href="#directives" role="tab" aria-controls="directives">
-            {% trans "Directives" %}
+            {% translate "Directives" %}
         </a>
         </li>
 
@@ -49,7 +49,7 @@
 
           <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
-              {% trans "Classement" %}
+              {% translate "Classement" %}
               </a>
           </li>
 
@@ -59,7 +59,7 @@
 
           <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
-              {% trans "Prolongation" %}
+              {% translate "Prolongation" %}
               </a>
           </li>
 
@@ -67,14 +67,14 @@
       {% if formsets.complementary_documents and document_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                {% trans "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
+                {% translate "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
             </a>
           </li>
       {% endif %}
       {% if transactions_table and online_payment_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'payments' %} active{% endif %}" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments">
-                {% trans "Paiement en ligne" %}
+                {% translate "Paiement en ligne" %}
             </a>
           </li>
       {% endif %}
@@ -88,32 +88,63 @@
 
         {% if forms.amend %}
             <div class='tab-pane{% if active_form == "amend" or active_form == "request_inquiry" %} show active{% endif %}' id="amend" role="tabpanel" aria-labelledby="amend-tab">
-                <h4>{% trans "Informations générales" %}</h4>
+                <h4>{% translate "Informations générales" %}</h4>
                 <form method="post">
                     {% csrf_token %}
                     {% for field in forms.amend.get_base_fields %}
                         {% bootstrap_field field layout='horizontal'%}
                     {% endfor %}
-
-                    {% for object_type, fields in forms.amend.get_fields_by_form %}
-                        {% if fields %}
+                    <div class="container">
+                      {% for object_type, fields in forms.amend.get_fields_by_form %}
+                          {% if fields %}
                             <h4 class="my-5">{{ object_type }}</h4>
-                            {% for field in fields %}
-                                {% bootstrap_field field layout='horizontal'%}
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
+                            <div class="row">
+                              <div class="col-10">
+                              </div>
+                              <div class="col-2">
+                                <p>{% translate 'Visible par' %}</p>
+                                <hr>
+                              </div>
+                            </div>
+                            <div class="row">
+                              {% for field, is_visible_by_author, is_visible_by_validators in fields %}
+                                <div class="col-10">
+                                  {% bootstrap_field field layout='horizontal'%}
+                                </div>
+                                <div class="col-2">
+                                  <p>
+                                    {% if is_visible_by_author %}
+                                      <i class="fa fa-check-circle" aria-hidden="true"></i>
+                                    {% else %}
+                                      <i class="fa fa-times-circle" aria-hidden="true"></i>
+                                    {% endif %}
+                                    &nbsp;{% translate 'Auteur' %}
+                                  </p>
+                                  <p>
+                                    {% if is_visible_by_validators %}
+                                      <i class="fa fa-check-circle" aria-hidden="true"></i>
+                                    {% else %}
+                                      <i class="fa fa-times-circle" aria-hidden="true"></i>
+                                    {% endif %}
+                                    &nbsp;{% translate 'Validateurs' %}
+                                  </p>
+                                </div>
+                              {% endfor %}
+                            </div>
+                          {% endif %}
+                      {% endfor %}
+                    </div>
 
                     <div class="text-right">
                         <input name="action" type="hidden" value="amend">
-                        <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
-                        <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+                        <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                        <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
                     </div>
                 </form>
 
               {% if publication_enabled %}
               <hr>
-              <h4>{% trans "Mise en consultation publique" %}</h4><span class="badge badge-beta badge-success">Beta</span>
+              <h4>{% translate "Mise en consultation publique" %}</h4><span class="badge badge-beta badge-success">Beta</span>
               <form method="post">
                 {% csrf_token %}
 
@@ -121,7 +152,7 @@
                 {% bootstrap_form forms.request_inquiry layout='horizontal' %}
                 <div class="text-right">
                     <input name="action" type="hidden" value="request_inquiry">
-                    <button class="btn btn-primary" {% if forms.request_inquiry.disabled %}disabled{% endif %}>{% trans "Envoyer" %}</button>
+                    <button class="btn btn-primary" {% if forms.request_inquiry.disabled %}disabled{% endif %}>{% translate "Envoyer" %}</button>
                 </div>
               </form>
               {% endif %}
@@ -131,14 +162,14 @@
 
         {% if forms.request_validation %}
             <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
-                <h4>{% trans "Envoi aux services pour validation" %}</h4>
+                <h4>{% translate "Envoi aux services pour validation" %}</h4>
                 <form method="post">
                     {% csrf_token %}
 
                     {% bootstrap_form forms.request_validation layout='horizontal' %}
                     <div class="text-right">
                         <input name="action" type="hidden" value="request_validation">
-                        <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
+                        <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% translate "Envoyer pour validation" %}</button>
                     </div>
                 </form>
             </div>
@@ -146,14 +177,14 @@
 
         {% if forms.validate %}
             <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
-                <h4>{% trans "Réponse à la demande de validation" %}</h4>
+                <h4>{% translate "Réponse à la demande de validation" %}</h4>
                 <form method="post">
                     {% csrf_token %}
 
                     {% bootstrap_form forms.validate layout='horizontal' %}
                     <div class="text-right">
                         <input name="action" type="hidden" value="validate">
-                        <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Soumettre" %}</button>
+                        <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% translate "Soumettre" %}</button>
                     </div>
                 </form>
             </div>
@@ -161,14 +192,14 @@
 
         {% if directives %}
             <div class="tab-pane" id="directives" role="tabpanel" aria-labelledby="directives-tab">
-                <h4>{% trans "Directives liées à la demande" %}</h4>
+                <h4>{% translate "Directives liées à la demande" %}</h4>
 
                 {% for directive_file, directive_description, additional_information in directives %}
                     <div{% if not forloop.last %} class="mb-3"{% endif %}>
                       {% if directive_file and directive_description %}
                           <span class="directive_description">{{ directive_description }}</span>:
                           <i class="fa fa-download" aria-hidden="true"></i>
-                          <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>
+                          <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% translate "Télécharger le fichier" %}</a>
                           <br>
                       {% endif %}
 
@@ -182,33 +213,33 @@
 
         {% if forms.poke or can_classify %}
             <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
-                <h4>{% trans "Classement de la demande" %}</h4>
+                <h4>{% translate "Classement de la demande" %}</h4>
                 <form method="post">
                     {% csrf_token %}
 
                     {% if nb_pending_validations and not forms.poke.disabled %}
-                        <div class="form-text text-muted mb-3">{% trans "La demande ne peut pas être classée car elle est toujours en attente de validation." %}</div>
+                        <div class="form-text text-muted mb-3">{% translate "La demande ne peut pas être classée car elle est toujours en attente de validation." %}</div>
                         <div class="text-right">
                             <button name="action" value="poke" class="btn btn-primary">
-                                {% blocktrans trimmed count counter=nb_pending_validations %}
+                                {% blocktranslate trimmed count counter=nb_pending_validations %}
                                 Envoyer un rappel au service
                                 {% plural %}
                                 Envoyer des rappels à {{ counter }} services
-                                {% endblocktrans %}
+                                {% endblocktranslate %}
                             </button>
                         </div>
 
                     {% elif has_permission_to_classify %}
                         {% if not can_classify %}
-                            <div class="form-text text-muted mb-3">{% trans "La demande ne peut pas être classée car elle n'a pas encore été envoyée en validation." %}</div>
+                            <div class="form-text text-muted mb-3">{% translate "La demande ne peut pas être classée car elle n'a pas encore été envoyée en validation." %}</div>
                         {% else %}
-                            <div class="form-text text-muted mb-3">{% trans "Un message facultatif pourra être ajouté à la réponse à la page suivante." %}</div>
+                            <div class="form-text text-muted mb-3">{% translate "Un message facultatif pourra être ajouté à la réponse à la page suivante." %}</div>
                             <div class="text-right">
                                 <a href="{% url 'submissions:submission_reject' submission_id=submission.pk %}" class="btn btn-primary ">
-                                    {% trans "Refuser" %}
+                                    {% translate "Refuser" %}
                                 </a>
                                 <a href="{% url 'submissions:submission_approve' submission_id=submission.pk %}" class="btn btn-primary">
-                                    {% trans "Approuver" %}
+                                    {% translate "Approuver" %}
                                 </a>
                             </div>
                         {% endif %}
@@ -219,20 +250,20 @@
 
         {% if forms.prolong and prolongation_enabled %}
             <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
-                <h4>{% trans "Prolongation de la demande" %}</h4>
+                <h4>{% translate "Prolongation de la demande" %}</h4>
                 <form method="post">
                     {% csrf_token %}
 
                     {{ forms.prolong.media }}
                     {% if not forms.prolong.prolongation_date.value %}
-                        <div class="form-text text-muted mb-3">{% trans "Aucune prolongation n'a été demandée par l'auteur-e." %}</div>
+                        <div class="form-text text-muted mb-3">{% translate "Aucune prolongation n'a été demandée par l'auteur-e." %}</div>
                     {% endif %}
 
                     {% bootstrap_form forms.prolong layout='horizontal' %}
                     <div class="text-right">
                         <input name="action" type="hidden" value="prolong">
-                        <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
-                        <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+                        <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                        <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
                     </div>
                 </form>
             </div>
@@ -240,7 +271,7 @@
 
         {% if formsets.complementary_documents and document_enabled %}
           <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
-              <h4>{% trans "Ajout de documents à la demande" %}</h4>
+              <h4>{% translate "Ajout de documents à la demande" %}</h4>
               <form method="post" enctype="multipart/form-data">
                 {{ formsets.complementary_documents.management_form }}
                 {% csrf_token %}
@@ -257,7 +288,7 @@
                                   data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" "000000000" %}"
                                   class="btn btn-primary"
                                   name="preview" disabled>
-                            {% trans "Prévisualiser" %}
+                            {% translate "Prévisualiser" %}
                           </button>
                         </div>
                         <div class="col-sm-2">
@@ -289,13 +320,13 @@
                   {% endfor %}
                 </div>
                 <div class="text-center mb-4">
-                  <a href="#" id="add-document"><i class="fa fa-plus"></i> {% trans "Ajouter un autre document" %}</a>
-                  <a href="#" id="remove-document" class="text-danger" hidden><i class="fa fa-minus"></i> {% trans "Supprimer un document" %}</a>
+                  <a href="#" id="add-document"><i class="fa fa-plus"></i> {% translate "Ajouter un autre document" %}</a>
+                  <a href="#" id="remove-document" class="text-danger" hidden><i class="fa fa-minus"></i> {% translate "Supprimer un document" %}</a>
                 </div>
                 <div class="text-right">
                   <input name="action" type="hidden" value="complementary_documents">
-                  <button class="btn btn-primary" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
-                  <button class="btn btn-primary" name="save_continue" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+                  <button class="btn btn-primary" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                  <button class="btn btn-primary" name="save_continue" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
                 </div>
               </form>
           </div>
@@ -303,7 +334,7 @@
 
         {% if transactions_table and online_payment_enabled %}
           <div class='tab-pane{% if active_form == "payments" %} show active{% endif %}' id="payments" role="tabpanel" aria-labelledby="payments-tab">
-            <h4>{% trans "Transactions" %}</h4>
+            <h4>{% translate "Transactions" %}</h4>
             <div>
               {% render_table transactions_table %}
             </div>

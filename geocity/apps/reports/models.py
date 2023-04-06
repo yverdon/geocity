@@ -766,7 +766,7 @@ class HeaderFooterParagraph(HeaderFooter):
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
         result = (
-            BeautifulSoup(mark_safe(rendered_html))
+            BeautifulSoup(mark_safe(rendered_html), features="html5lib")
             .get_text()
             .replace("\r", "\A ")
             .replace("\n", "\A ")

@@ -428,7 +428,7 @@ class SubmissionValidationSerializer(serializers.Serializer):
                 ):
                     values[field.name] = getattr(validation, field.name)
 
-            rep[validation.department.description] = values
+            rep[validation.department.group.name] = values
         return rep
 
 
