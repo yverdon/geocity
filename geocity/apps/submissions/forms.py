@@ -1016,10 +1016,18 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         """
         Return a list of tuples `(Form, List[Field])` for each form and their fields.
         """
+
         return [
             (
                 form,
-                [self[self.get_field_name(form.id, field.id)] for field in fields],
+                [
+                    (
+                        self[self.get_field_name(form.id, field.id)],
+                        field.is_visible_by_author,
+                        field.is_visible_by_validators,
+                    )
+                    for field in fields
+                ],
             )
             for form, fields in self.instance.get_amend_custom_fields_by_form()
         ]
