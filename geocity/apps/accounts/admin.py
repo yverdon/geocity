@@ -440,9 +440,9 @@ class GroupAdmin(admin.ModelAdmin):
         "get__is_default_validator",
         "get__is_backoffice",
         "get__mandatory_2fa",
-        # FIXME: Causes a crash on prod
-        # "get__forms_number",
-        # "get__sites_number",
+        "get__administrative_entity",
+        "get__forms_number",
+        "get__sites_number",
     ]
 
     filter_horizontal = ("permissions",)
@@ -486,18 +486,29 @@ class GroupAdmin(admin.ModelAdmin):
     get__mandatory_2fa.admin_order_field = "permit_department__mandatory_2fa"
     get__mandatory_2fa.short_description = _("2FA obligatoire")
 
-    # FIXME: Causes a crash on prod
-    # def get__forms_number(self, obj):
-    #     if obj.permit_department.is_integrator_admin:
-    #         return obj.permit_department.administrative_entity.forms.count()
+    def get__administrative_entity(self, obj):
+        if (
+            obj.permit_department.is_integrator_admin
+            and obj.permit_department.administrative_entity
+        ):
+            return obj.permit_department.administrative_entity
 
-    # get__forms_number.short_description = _("Nombre de formulaires")
+    get__administrative_entity.short_description = _("Entité administrative")
 
-    # def get__sites_number(self, obj):
-    #     if obj.permit_department.is_integrator_admin:
-    #         return obj.site_profiles.count()
+    def get__forms_number(self, obj):
+        if (
+            obj.permit_department.is_integrator_admin
+            and obj.permit_department.administrative_entity
+        ):
+            return obj.permit_department.administrative_entity.forms.count()
 
-    # get__sites_number.short_description = _("Nombre de sites")
+    get__forms_number.short_description = _("Nombre de formulaires")
+
+    def get__sites_number(self, obj):
+        if obj.permit_department.is_integrator_admin and obj.site_profiles:
+            return obj.site_profiles.count()
+
+    get__sites_number.short_description = _("Nombre de sites")
 
     def get_queryset(self, request):
 
