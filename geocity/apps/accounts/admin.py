@@ -436,6 +436,7 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
         "get__integrator",
+        "get__is_integrator",
         "get__is_validator",
         "get__is_default_validator",
         "get__is_backoffice",
@@ -449,6 +450,13 @@ class GroupAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+
+    @admin.display(boolean=True)
+    def get__is_integrator(self, obj):
+        return obj.permit_department.is_integrator_admin
+
+    get__is_integrator.admin_order_field = "permit_department__is_integrator_admin"
+    get__is_integrator.short_description = _("Intégrateur")
 
     @admin.display(boolean=True)
     def get__is_validator(self, obj):
