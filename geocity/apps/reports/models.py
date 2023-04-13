@@ -392,7 +392,7 @@ class SectionParagraph(Section):
         _("Contenu"),
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/" target="_blank">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
             )
         ),
     )
@@ -541,6 +541,8 @@ class SectionPlanning(Section):
 
 
 class SectionHorizontalRule(Section):
+    padding_top = padding_top_field()
+
     class Meta:
         verbose_name = _("Ligne horizontale")
 
@@ -764,7 +766,7 @@ class HeaderFooterParagraph(HeaderFooter):
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
         result = (
-            BeautifulSoup(mark_safe(rendered_html))
+            BeautifulSoup(mark_safe(rendered_html), features="html5lib")
             .get_text()
             .replace("\r", "\A ")
             .replace("\n", "\A ")

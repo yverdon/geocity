@@ -8,9 +8,9 @@
 
 {% block content %}
 <h1>
-  {% blocktrans with request_id=submission.pk %}
+  {% blocktranslate with request_id=submission.pk %}
     Demande #{{ request_id }}
-  {% endblocktrans %}
+  {% endblocktranslate %}
   {% if config.ENABLE_GEOCALENDAR %}
     {% if submission.is_public %}
       <span class="badge badge-pill badge-success">Publique</span>
@@ -19,10 +19,10 @@
     {% endif %}
   {% endif %}
   {% if inquiry_in_progress %}
-    <span class="badge badge-pill badge-info">{% trans "Mise en consultation publique" %}</span>
+    <span class="badge badge-pill badge-info">{% translate "Mise en consultation publique" %}</span>
   {% endif %}
   {% if submission.is_archived %}
-    <span class="badge badge-pill badge-info">{% trans "Archivée" %}</span>
+    <span class="badge badge-pill badge-info">{% translate "Archivée" %}</span>
   {% endif %}
 </h1>
 
@@ -47,7 +47,7 @@
 
         <dl>
           <dd>
-            <h4>{% trans "Auteur-e" %}</h4>
+            <h4>{% translate "Auteur-e" %}</h4>
           </dd>
           <dd>
             <a href="mailto:{{ submission.author.userprofile }} <{{ submission.author.email }}>" target="_blank" rel="noreferrer">
@@ -58,9 +58,9 @@
             {{ submission.author.userprofile.address }}, {{ submission.author.userprofile.zipcode }} {{ submission.author.userprofile.city }}
           </dd>
           <dd>
-            <a href="tel:{{ submission.author.userprofile.phone_first }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone principal' %}">{{ submission.author.userprofile.phone_first }}</a>
+            <a href="tel:{{ submission.author.userprofile.phone_first }}" target="_blank" rel="noreferrer" title="{% translate 'Téléphone principal' %}">{{ submission.author.userprofile.phone_first }}</a>
             {% if submission.author.userprofile.phone_second %}
-            &nbsp;/&nbsp; <a href="tel:{{ submission.author.userprofile.phone_second }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone secondaire' %}">{{ submission.author.userprofile.phone_second }}</a>
+            &nbsp;/&nbsp; <a href="tel:{{ submission.author.userprofile.phone_second }}" target="_blank" rel="noreferrer" title="{% translate 'Téléphone secondaire' %}">{{ submission.author.userprofile.phone_second }}</a>
             {% endif %}
           </dd>
           {% if settings.AUTHOR_IBAN_VISIBLE %}
@@ -80,7 +80,7 @@
         <div id="validation_pdf">
           <dl>
             <dd>
-              <h4>{% trans "Document" %}</h4>
+              <h4>{% translate "Document" %}</h4>
             </dd>
             <dd>
               <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
@@ -96,12 +96,12 @@
           <div id="validation_pdf">
             <dl>
               <dd>
-                <h4>{% trans "Volet de transmission" %}</h4>
+                <h4>{% translate "Volet de transmission" %}</h4>
               </dd>
               <dd>
                 <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
                 <a href="{{ submission.administrative_entity.signature_sheet.url }}" target="_blank" rel="noreferrer">
-                  {% trans "Télécharger à nouveau le document à signer" %}
+                  {% translate "Télécharger à nouveau le document à signer" %}
                 </a>
               </dd>
             </dl>
@@ -111,7 +111,7 @@
         {% if history %}
 
           <div id="history_timeline">
-            <h4>{% trans "Historique" %}</h4>
+            <h4>{% translate "Historique" %}</h4>
             <ul>
               {% for date, archive in history %}
                 {% if archive.status == submission.STATUS_PROCESSING and forloop.last %}
@@ -119,7 +119,7 @@
                     <div class="row-1">
                       <i class="fa fa-circle status{{archive.status}}"></i>
                       {{ archive.history_date }}
-                      <b>{% trans "Demande soumise par" %}</b>
+                      <b>{% translate "Demande soumise par" %}</b>
                     </div>
                     <div class="row-2 history_user">
                       <b>{{ archive.history_user }}</b>
@@ -151,13 +151,13 @@
 
     {% if validations %}
 
-      <div class="row sub-row">
+      <div class="row sub-row py-2">
         <div class="col">
-          <h2>{% trans "Informations générales" %}</h2>
+          <h2>{% translate "Informations générales" %}</h2>
           <div class="container">
             <dl>
               {% if submission.status %}
-                <dt>{% trans "État" %}</dt>
+                <dt>{% translate "État" %}</dt>
                 <dd> {{ submission.get_status_display }} </dd>
               {% endif %}
             </dl>
@@ -168,9 +168,23 @@
     {% endif %}
 
     {% if validations %}
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
-        <h2>{% trans "Validation" %}</h2>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-6">
+              <h2>{% translate "Validation" %}</h2>
+            </div>
+            <div class="col-md-6" style="padding-top:5px;">
+              {% if has_permission_to_edit_submission_validations %}
+                <div class="text-right">
+                  <a href="{% url 'submissions:submission_validations_edit' submission_id=submission.pk %}" class="btn btn-primary">{% translate "Modifier les validations" %}&nbsp;<i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
           {% for validation in validations %}
             <div class="container">
               <dl>
@@ -186,24 +200,31 @@
                   {% if has_permission_to_classify or can_validate_submission%}
                     {{ validation.get_validation_status_display }} par
                     {% if validation.validated_by %}
-                      {{ validation.validated_by.userprofile.first_name }}
-                      {{ validation.validated_by.userprofile.last_name }}
+                      {{ validation.validated_by.first_name }}
+                      {{ validation.validated_by.last_name }}
                       le
                       {{ validation.validated_at }}
                     {% endif %}
                   {% endif %}
                 </dd>
-                {% if validation.comment_before %}
-                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before|linebreaksbr }} </dd>
-                {% endif %}
-                {% if validation.comment_during %}
-                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during|linebreaksbr }} </dd>
-                {% endif %}
-                {% if validation.comment_after %}
-                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after|linebreaksbr }} </dd>
+                {% if validation.comment %}
+                  {% if validation.comment_is_visible_by_author or current_user != submission.author %}
+                    <dt>{% translate "Commentaire" %}:</dt> <dd> {{ validation.comment|linebreaksbr }} </dd>
+                    {% if current_user != submission.author %}
+                      <dt>{% translate "Commentaire visible par l'auteur de la demande" %}:</dt>
+                      <dd>
+                      {% if validation.comment_is_visible_by_author %}
+                        <i class="fa fa-check-circle" aria-hidden="true"></i>
+                      {% else %}
+                        <i class="fa fa-times-circle" aria-hidden="true"></i>
+                      {% endif %}
+                      </dd>
+                    {% endif %}
+                  {% endif %}
                 {% endif %}
               </dl>
             </div>
+            {% if not forloop.last %}<hr>{% endif %}
           {% endfor %}
       </div>
     </div>
@@ -212,17 +233,17 @@
 
     {% if submission.can_be_prolonged and submission.prolongation_date %}
 
-      <div class="row sub-row">
+      <div class="row sub-row py-2">
         <div class="col">
-          <h2>{% trans "Prolongation" %}</h2>
+          <h2>{% translate "Prolongation" %}</h2>
           <div class="container">
             <dl>
               {% if submission.get_prolongation_status_display %}
-                <dt>{% trans "État" %}</dt>
+                <dt>{% translate "État" %}</dt>
                 <dd> {{ submission.get_prolongation_status_display }} </dd>
               {% endif %}
               {% if submission.prolongation_comment %}
-                <dt>{% trans "Commentaire" %}</dt>
+                <dt>{% translate "Commentaire" %}</dt>
                 <dd> {{ submission.prolongation_comment|linebreaksbr }} </dd>
               {% endif %}
             </dl>
@@ -232,19 +253,19 @@
 
     {% endif %}
 
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
-        <h2>{% trans "Résumé" %}</h2>
+        <h2>{% translate "Résumé" %}</h2>
           {% submission_summary submission %}
       </div>
     </div>
 
     {% if submission.additional_decision_information %}
-    <div class="row sub-row">
+    <div class="row sub-row py-2">
       <div class="col">
-        <h2>{% trans "Informations complémentaires" %}</h2>
+        <h2>{% translate "Informations complémentaires" %}</h2>
         <dl>
-            <dt>{% trans "Information sur la décision" %}</dt>
+            <dt>{% translate "Information sur la décision" %}</dt>
             <dd>{{ submission.additional_decision_information|linebreaksbr }}</dd>
         </dl>
     </div></div>
@@ -254,9 +275,9 @@
       <div class="col">
         <p class="mt-4">
           {% if submission.is_archived %}
-            <a href="{% url 'submissions:archived_submission_list' %}">{% trans "Retour à la liste des demandes archivées" %}</a>
+            <a href="{% url 'submissions:archived_submission_list' %}">{% translate "Retour à la liste des demandes archivées" %}</a>
           {% else %}
-            <a href="{% url 'submissions:submissions_list' %}">{% trans "Retour à la liste des demandes" %}</a>
+            <a href="{% url 'submissions:submissions_list' %}">{% translate "Retour à la liste des demandes" %}</a>
           {% endif %}
         </p>
       </div>

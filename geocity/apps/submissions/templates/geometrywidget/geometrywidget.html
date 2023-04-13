@@ -97,7 +97,7 @@
   <div class="map" data-role="map" style="width: {{ map_width }}; height: {{ map_height }}px;">
     <img class="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" data-action="switchBaseLayers">
   </div>
-  {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
+  {% if display_raw %}<p>{% translate "Debugging window (serialized value)" %}</p>{% endif %}
   <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
 </div>
 

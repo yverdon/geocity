@@ -9,14 +9,14 @@
     <div class="p-2 permits-action-btns">
       <a class="btn btn-primary" href="{% url 'submissions:submission_select_administrative_entity'%}" role="button">
         <i class="fa fa-plus aria-hidden="true"></i>
-        {% trans "Créer une nouvelle demande" %}
+        {% translate "Créer une nouvelle demande" %}
       </a>
     </div>
 
     <div class="p-2 permits-action-btns">
         <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
           <i class="fa fa-filter"></i>
-          {% trans "Filtrer" %}
+          {% translate "Filtrer" %}
       </a>
     </div>
 
@@ -24,7 +24,7 @@
     <div class="p-2 permits-action-btns">
         <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}" role="button">
           <i class="fa fa-eraser"></i>
-          {% trans "Effacer le filtre" %}
+          {% translate "Effacer le filtre" %}
         </a>
     </div>
     {% endif %}
@@ -32,7 +32,7 @@
     <div class="p-2 permits-action-btns">
         <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}?{{ export_csv_url_params }}" role="button">
           <i class="fa fa-file"></i>
-          {% trans "Exporter" %}
+          {% translate "Exporter" %}
         </a>
     </div>
     {% can_archive as can_archive %}
@@ -42,7 +42,7 @@
             {% csrf_token %}
             <button class="btn btn-outline-primary" type="submit">
               <i class="fa fa-archive"></i>
-              {% trans "Archiver" %}
+              {% translate "Archiver" %}
             </button>
           </form>
       </div>

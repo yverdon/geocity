@@ -13,12 +13,12 @@
 
     <div class="text-right">
       <a href="{% url 'submissions:submission_detail' submission_id=submission.pk %}"
-        class="mr-2">{% trans "Retour" %}</a>
+        class="mr-2">{% translate "Retour" %}</a>
       <button class="btn btn-primary">
         {% if approve %}
-        {% trans "Approuver la demande" %}
+        {% translate "Approuver la demande" %}
         {% else %}
-        {% trans "Refuser la demande" %}
+        {% translate "Refuser la demande" %}
         {% endif %}
       </button>
     </div>
