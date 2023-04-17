@@ -629,11 +629,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         }
 
     class Media:
-        css = {
-            "all": (
-                "css/admin/admin.css",
-            )
-        }
+        css = {"all": ("css/admin/admin.css",)}
 
     def clean(self):
         signature_sheet = self.cleaned_data["signature_sheet"]
