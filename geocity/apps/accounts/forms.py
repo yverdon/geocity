@@ -147,6 +147,8 @@ class GenericUserProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if create:
             self.fields["notify_per_email"].disabled = True
+        else:
+            self.fields.pop("captcha")
 
     required_css_class = "required"
     address = forms.CharField(
