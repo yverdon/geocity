@@ -47,12 +47,7 @@ from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
     permanent_user_required,
 )
-from geocity.apps.accounts.forms import GenericUserProfileForm
-from geocity.apps.accounts.models import (
-    AdministrativeEntity,
-    PermitDepartment,
-    UserProfile,
-)
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
@@ -1995,25 +1990,6 @@ def field_file_download(request, path):
     Download the wot file at the given `path` as an attachment.
     """
     return services.download_file(path)
-
-
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
-def genericauthorview(request, pk):
-    # FIXME shouldn’t we use the user id in the url?
-    # FIXME shouldn’t this be moved to the accounts app?
-    instance = get_object_or_404(UserProfile, pk=pk)
-    form = GenericUserProfileForm(
-        request.POST or None,
-        instance=instance,
-        create=False,
-    )
-
-    for field in form.fields:
-        form.fields[field].disabled = True
-
-    return render(request, "submissions/submission_author.html", {"form": form})
 
 
 @login_required
