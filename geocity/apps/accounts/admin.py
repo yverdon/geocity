@@ -648,13 +648,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         }
 
     class Media:
-        js = ("https://code.jquery.com/jquery-3.5.1.slim.min.js",)
-        css = {
-            "all": (
-                "https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css",
-                "css/admin/admin.css",
-            )
-        }
+        css = {"all": ("css/admin/admin.css",)}
 
     def clean(self):
         signature_sheet = self.cleaned_data["signature_sheet"]
