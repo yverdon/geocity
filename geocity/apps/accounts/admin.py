@@ -10,6 +10,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import path, reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
@@ -24,6 +25,43 @@ from .users import get_integrator_permissions, get_users_list_for_integrator_adm
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
     "Un utilisateur ne peut être membre que d'un seul groupe 'Intégrateur'"
 )
+
+LEGAL_TEXT_EXAMPLE = """
+                        <h5>Exemple de texte relatif à la protection des données</h5>
+                        <hr>
+                        <p><b>Les informations à fournir selon l'art. 13 LPrD sont:</b></p>
+                        <ul>
+                            <li>
+                                <b>Identité du responsable du traitement :</b><br>
+                                <i>ex: <Service communal> (service.communal@macommune.ch, +41 00 000 00 00)</i>
+                            </li>
+                            <li>
+                                <b>Finalités du traitement pour lesquels les données sont collectées :</b><br>
+                                <i>
+                                    ex: La date de naissance est collectée dans le but de distinguer les éventuels homonymes.<br>
+                                    ex: Les données financières sont collectées dans le but de procéder à un éventuel remboursement.
+                                </i>
+                            </li>
+                            <li>
+                                <b>Catégories des destinataires des données :</b><br>
+                                <i>
+                                    ex: Les données ne sont pas communiquées en dehors du <Service communal>, sauf accord de la personne concernée par le biais du présent formulaire.
+                                </i>
+                            </li>
+                            <li>
+                                <b>Droit d'accès :</b><br>
+                                <i>
+                                    ex: Vous avez en tout temps le droit de demander l'accès à vos données personnelles auprès du responsable du traitement en application des art. 25 et suivants LPrD.
+                                </i>
+                            </li>
+                            <li>
+                                <b>Possibilité de refuser de fournir les données et les conséquences :</b><br>
+                                <i>
+                                    ex: En cas de refus de fournir les données financières, aucun remoursement ne pourra être effectué.
+                                </i>
+                            </li>
+                        </ul>
+                    """
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
@@ -709,9 +747,15 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "directive_description",
                     "additional_information",
                 ),
-                "description": _(
-                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
-                    ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires"""
+                "description": format_html(
+                    f"""
+                    <p>
+                        Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
+                        ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires
+                    </p>
+                    <hr>
+                    {LEGAL_TEXT_EXAMPLE}
+                    """
                 ),
             },
         ),
