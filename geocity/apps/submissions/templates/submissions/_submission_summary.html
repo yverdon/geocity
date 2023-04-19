@@ -60,16 +60,14 @@
       <div class="col">
         <div class="container">
           <h4>{% translate "Contacts" %}</h4>
+          {% if requires_payment %}
             <dl>
-              {% if requires_payment %}
-                <dt>Destinataire de la facture</dt>
-                <dd> {{ creditor }} </dd>
-              {% endif %}
+              <dt>Destinataire de la facture</dt>
+              <dd> {{ creditor }} </dd>
             </dl>
-        </div>
-
+          {% endif %}
           {% for contact_type, contact_infos in contacts %}
-          <h5>{{ contact_type }}</h5>
+            <h5>{{ contact_type }}</h5>
             <div class="row">
               <div class="col">
                 <div class="grid-container">
@@ -77,8 +75,8 @@
                     {% if field_value %}
                     <div class="grid-element">
                       <dl>
-                         <dt> {{ field_label }} </dt>
-                         <dd> {{ field_value }} </dd>
+                        <dt> {{ field_label }} </dt>
+                        <dd> {{ field_value }} </dd>
                       </dl>
                     </div>
                     {% endif %}
@@ -87,7 +85,7 @@
               </div>
             </div>
           {% endfor %}
-
+        </div>
       </div>
     </div>
 
