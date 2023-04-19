@@ -69,7 +69,7 @@ class NewDjangoAuthUserForm(UserCreationForm):
                 raise forms.ValidationError(
                     {
                         "username": _(
-                            "L'e nom d'utilisat·eur·rice' ne peut pas commencer par %s"
+                            "Le nom d'utilisat·eur·rice ne peut pas commencer par %s"
                         )
                         % reserved_usernames
                     }
