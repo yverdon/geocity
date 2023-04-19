@@ -49,6 +49,18 @@ class NewDjangoAuthUserForm(UserCreationForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        if not "username" in cleaned_data:
+            raise forms.ValidationError({"username": ""})
+
+        if not "first_name" in cleaned_data:
+            raise forms.ValidationError({"first_name": ""})
+
+        if not "last_name" in cleaned_data:
+            raise forms.ValidationError({"last_name": ""})
+
+        if not "email" in cleaned_data:
+            raise forms.ValidationError({"email": ""})
+
         for reserved_usernames in (
             settings.TEMPORARY_USER_PREFIX,
             settings.ANONYMOUS_USER_PREFIX,
