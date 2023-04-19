@@ -517,3 +517,4 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return list(obj.tags.all())
 
     get__tags.short_description = _("Mots-clés")
+    get__tags.admin_order_field = "tags__name"
