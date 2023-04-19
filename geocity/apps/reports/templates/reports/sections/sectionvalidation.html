@@ -9,9 +9,7 @@
         <div class="flex_container">
             <div class="flex_item-100">
                 {% for group, validation in request_data.properties.validations.items %}
-                    {% if section.show_validation_group %}
-                        <h3>Validation: {{group}}</h3>
-                    {% endif %}
+                    <h3>Validation: {{group}}</h3>
                     <span class="bold">Statut : </span>{{validation.validation_status}}<br>
                     {% if validation.comment_is_visible_by_author %}
                         <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">Commentaire : </span>{{validation.comment}}</div><br>

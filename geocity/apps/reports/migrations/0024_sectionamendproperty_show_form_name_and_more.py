@@ -30,13 +30,4 @@ class Migration(migrations.Migration):
                 verbose_name="Nom de champs a masquer",
             ),
         ),
-        migrations.AddField(
-            model_name="sectionvalidation",
-            name="show_validation_group",
-            field=models.BooleanField(
-                default=True,
-                help_text="Cocher cette option affiche le groupe de validation",
-                verbose_name="Afficher le groupe de validation",
-            ),
-        ),
     ]

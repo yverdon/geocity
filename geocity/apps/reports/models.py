@@ -561,11 +561,6 @@ class SectionValidation(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
-    show_validation_group = models.BooleanField(
-        _("Afficher le groupe de validation"),
-        default=True,
-        help_text=_("Cocher cette option affiche le groupe de validation"),
-    )
 
     class Meta:
         verbose_name = _("Commentaire·s des services")
