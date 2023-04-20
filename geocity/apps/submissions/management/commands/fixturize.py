@@ -806,7 +806,10 @@ Après : Excellent projet qui bénéficiera à la communauté."""
 
         # Create permit_department
         self.create_permit_department(
-            group, administrative_entity, integrator=integrator_group
+            group,
+            administrative_entity,
+            is_backoffice=True,
+            integrator=integrator_group,
         )
 
         # Set permissions

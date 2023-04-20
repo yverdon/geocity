@@ -20,7 +20,8 @@ class LoggedInUserMixin:
 
 class LoggedInSecretariatMixin:
     def setUp(self):
-        self.group = factories.SecretariatGroupFactory()
+        self.department = factories.PermitDepartmentFactory(is_backoffice=True)
+        self.group = factories.SecretariatGroupFactory(department=self.department)
         self.administrative_entity = self.group.permit_department.administrative_entity
         self.user = factories.SecretariatUserFactory(groups=[self.group])
         self.client.login(username=self.user.username, password="password")
