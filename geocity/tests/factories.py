@@ -173,7 +173,9 @@ class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
 
 
 class SecretariatGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
+    department = factory.RelatedFactory(
+        PermitDepartmentFactory, "group", is_backoffice=True
+    )
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):

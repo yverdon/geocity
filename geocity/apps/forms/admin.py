@@ -2,9 +2,14 @@ import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
+from geocity.apps.accounts.admin import (
+    LEGAL_TEXT_EXAMPLE,
+    IntegratorFilterMixin,
+    filter_for_user,
+)
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
 
 from . import models
@@ -227,9 +232,12 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "directive_description",
                     "additional_information",
                 ),
-                "description": _(
-                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles.
-                    Note: si ces informations ont une portée globale pour toute l'entité, cette information peut être saisie à l'étape 1.1 Entité administrative"""
+                "description": format_html(
+                    f"""<p>Saisir ici les directives et informations obligatoires concernant la protection des données personnelles.
+                    Note: si ces informations ont une portée globale pour toute l'entité, cette information peut être saisie à l'étape 1.1 Entité administrative</p>
+                     <hr>
+                    {LEGAL_TEXT_EXAMPLE}
+                    """
                 ),
             },
         ),
@@ -509,3 +517,4 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return list(obj.tags.all())
 
     get__tags.short_description = _("Mots-clés")
+    get__tags.admin_order_field = "tags__name"

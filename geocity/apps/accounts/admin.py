@@ -10,6 +10,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import path, reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
@@ -24,6 +25,43 @@ from .users import get_integrator_permissions, get_users_list_for_integrator_adm
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
     "Un utilisateur ne peut être membre que d'un seul groupe 'Intégrateur'"
 )
+
+LEGAL_TEXT_EXAMPLE = """
+                        <h5>Exemple de texte relatif à la protection des données</h5>
+                        <hr>
+                        <p><b>Les informations à fournir selon l'art. 13 LPrD sont:</b></p>
+                        <ul>
+                            <li>
+                                <b>Identité du responsable du traitement :</b><br>
+                                <i>ex: <Service communal> (service.communal@macommune.ch, +41 00 000 00 00)</i>
+                            </li>
+                            <li>
+                                <b>Finalités du traitement pour lesquels les données sont collectées :</b><br>
+                                <i>
+                                    ex: La date de naissance est collectée dans le but de distinguer les éventuels homonymes.<br>
+                                    ex: Les données financières sont collectées dans le but de procéder à un éventuel remboursement.
+                                </i>
+                            </li>
+                            <li>
+                                <b>Catégories des destinataires des données :</b><br>
+                                <i>
+                                    ex: Les données ne sont pas communiquées en dehors du <Service communal>, sauf accord de la personne concernée par le biais du présent formulaire.
+                                </i>
+                            </li>
+                            <li>
+                                <b>Droit d'accès :</b><br>
+                                <i>
+                                    ex: Vous avez en tout temps le droit de demander l'accès à vos données personnelles auprès du responsable du traitement en application des art. 25 et suivants LPrD.
+                                </i>
+                            </li>
+                            <li>
+                                <b>Possibilité de refuser de fournir les données et les conséquences :</b><br>
+                                <i>
+                                    ex: En cas de refus de fournir les données financières, aucun remoursement ne pourra être effectué.
+                                </i>
+                            </li>
+                        </ul>
+                    """
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
@@ -436,19 +474,27 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
         "get__integrator",
+        "get__is_integrator",
         "get__is_validator",
         "get__is_default_validator",
         "get__is_backoffice",
         "get__mandatory_2fa",
-        # FIXME: Causes a crash on prod
-        # "get__forms_number",
-        # "get__sites_number",
+        "get__administrative_entity",
+        "get__forms_number",
+        "get__sites_number",
     ]
 
     filter_horizontal = ("permissions",)
     search_fields = [
         "name",
     ]
+
+    @admin.display(boolean=True)
+    def get__is_integrator(self, obj):
+        return obj.permit_department.is_integrator_admin
+
+    get__is_integrator.admin_order_field = "permit_department__is_integrator_admin"
+    get__is_integrator.short_description = _("Intégrateur")
 
     @admin.display(boolean=True)
     def get__is_validator(self, obj):
@@ -486,18 +532,29 @@ class GroupAdmin(admin.ModelAdmin):
     get__mandatory_2fa.admin_order_field = "permit_department__mandatory_2fa"
     get__mandatory_2fa.short_description = _("2FA obligatoire")
 
-    # FIXME: Causes a crash on prod
-    # def get__forms_number(self, obj):
-    #     if obj.permit_department.is_integrator_admin:
-    #         return obj.permit_department.administrative_entity.forms.count()
+    def get__administrative_entity(self, obj):
+        if (
+            obj.permit_department.is_integrator_admin
+            and obj.permit_department.administrative_entity
+        ):
+            return obj.permit_department.administrative_entity
 
-    # get__forms_number.short_description = _("Nombre de formulaires")
+    get__administrative_entity.short_description = _("Entité administrative")
 
-    # def get__sites_number(self, obj):
-    #     if obj.permit_department.is_integrator_admin:
-    #         return obj.site_profiles.count()
+    def get__forms_number(self, obj):
+        if (
+            obj.permit_department.is_integrator_admin
+            and obj.permit_department.administrative_entity
+        ):
+            return obj.permit_department.administrative_entity.forms.count()
 
-    # get__sites_number.short_description = _("Nombre de sites")
+    get__forms_number.short_description = _("Nombre de formulaires")
+
+    def get__sites_number(self, obj):
+        if obj.permit_department.is_integrator_admin and obj.site_profiles:
+            return obj.site_profiles.count()
+
+    get__sites_number.short_description = _("Nombre de sites")
 
     def get_queryset(self, request):
 
@@ -629,13 +686,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         }
 
     class Media:
-        js = ("https://code.jquery.com/jquery-3.5.1.slim.min.js",)
-        css = {
-            "all": (
-                "https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css",
-                "css/admin/admin.css",
-            )
-        }
+        css = {"all": ("css/admin/admin.css",)}
 
     def clean(self):
         signature_sheet = self.cleaned_data["signature_sheet"]
@@ -696,9 +747,15 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "directive_description",
                     "additional_information",
                 ),
-                "description": _(
-                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
-                    ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires"""
+                "description": format_html(
+                    f"""
+                    <p>
+                        Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
+                        ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires
+                    </p>
+                    <hr>
+                    {LEGAL_TEXT_EXAMPLE}
+                    """
                 ),
             },
         ),

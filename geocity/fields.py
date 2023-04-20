@@ -36,7 +36,7 @@ class GeometryWidget(geoforms.OSMWidget):
                 "libs/js/openlayers6/ol.js",
                 "libs/js/proj4js/proj4-src.js",
                 "customWidgets/GeometryWidget/geometrywidget.js",
-                "libs/js/jquery-ui-custom/jquery-ui.js",
+                "libs/js/jquery-ui-custom/jquery-ui.min.js",
             ),
         )
 
@@ -53,7 +53,7 @@ class AddressWidget(forms.TextInput):
             },
             js=(
                 "customWidgets/RemoteAutocomplete/remoteautocomplete.js",
-                "libs/js/jquery-ui-custom/jquery-ui.js",
+                "libs/js/jquery-ui-custom/jquery-ui.min.js",
             ),
         )
 
