@@ -1,26 +1,46 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 
 from ..forms.models import Form
 from . import models
 from .models import ComplementaryDocumentType, Submission
 
 
+def is_backoffice_of_submission(user, submission):
+    """Check user is_backoffice for an submission"""
+    # Get entity of the submission
+    administrative_entity = submission.administrative_entity
+    # Find the department of this submission and filter by backoffice
+    departments = PermitDepartment.objects.filter(
+        administrative_entity=administrative_entity, is_backoffice=True
+    )
+    # List of groups related to the user
+    user_groups = list(user.groups.all().values_list("id", flat=True))
+    # List of groups for this submission department
+    department_groups = list(departments.values_list("group", flat=True))
+    # Check user is in any group related of the permit department groups
+    return any(
+        department_group in user_groups for department_group in department_groups
+    )
+
+
 def has_permission_to_amend_submission(user, submission):
-    return user.has_perm(
-        "submissions.amend_submission"
-    ) and submission.administrative_entity in AdministrativeEntity.objects.associated_to_user(
-        user
+    return (
+        user.has_perm("submissions.amend_submission")
+        and submission.administrative_entity
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_submission(user, submission)
     )
 
 
 def has_permission_to_edit_submission_validations(user, submission):
-    return user.has_perm(
-        "submissions.edit_submission_validations"
-    ) and submission.administrative_entity in AdministrativeEntity.objects.associated_to_user(
-        user
+    return (
+        user.has_perm("submissions.edit_submission_validations")
+        and submission.administrative_entity
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_submission(user, submission)
     )
 
 
@@ -59,10 +79,11 @@ def can_validate_submission(user, submission):
 
 
 def has_permission_to_poke_submission(user, submission):
-    return user.has_perm(
-        "submissions.amend_submission"
-    ) and submission.administrative_entity in AdministrativeEntity.objects.associated_to_user(
-        user
+    return (
+        user.has_perm("submissions.amend_submission")
+        and submission.administrative_entity
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_submission(user, submission)
     )
 
 
@@ -74,10 +95,11 @@ def can_poke_submission(user, submission):
 
 
 def has_permission_to_classify_submission(user, submission):
-    return user.has_perm(
-        "submissions.amend_submission"
-    ) and submission.administrative_entity in AdministrativeEntity.objects.associated_to_user(
-        user
+    return (
+        user.has_perm("submissions.amend_submission")
+        and submission.administrative_entity
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_submission(user, submission)
     )
 
 
@@ -109,7 +131,7 @@ def has_permission_to_edit_submission(user, submission):
         and models.Submission.objects.filter_for_user(user)
         .filter(pk=submission.pk)
         .exists()
-    )
+    ) and is_backoffice_of_submission(user, submission)
 
 
 def can_edit_submission(user, submission):
