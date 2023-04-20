@@ -3,8 +3,8 @@
 {% translate "Nous vous informons que votre demande a été traitée et classée." %}
 
 {% translate "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
-{% if permit_request.additional_decision_information %}
-{{ permit_request.additional_decision_information }}
+{% if submission.additional_decision_information %}
+{{ submission.additional_decision_information }}
 {% endif %}
 {% translate "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
