@@ -86,7 +86,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             new_fields_values_qs,
         )
 
-    def test_secretariat_cannot_amend_submission_fields_if_can_always_be_updated(
+    def test_secretariat_cannot_amend_submission_fields_without_can_always_update(
         self,
     ):
         submission = factories.SubmissionFactory(
@@ -112,7 +112,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         element = "disabled" in str(parser.select('input[id="id_shortname"]'))
         self.assertTrue(element)
 
-    def test_secretariat_can_amend_submission_fields_if_it_can_always_be_updated(
+    def test_secretariat_can_amend_submission_fields_with_can_always_update(
         self,
     ):
         submission = factories.SubmissionFactory(
@@ -135,7 +135,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
+        element = "disabled" not in str(parser.select('input[id="id_shortname"]'))
         self.assertTrue(element)
 
     def test_author_cannot_see_private_secretariat_amend_field(
