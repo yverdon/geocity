@@ -10,20 +10,16 @@ from .models import ComplementaryDocumentType, Submission
 
 def is_backoffice_of_submission(user, submission):
     """Check user is_backoffice for an submission"""
-    # Get entity of the submission
-    administrative_entity = submission.administrative_entity
     # Find the department of this submission and filter by backoffice
     departments = PermitDepartment.objects.filter(
-        administrative_entity=administrative_entity, is_backoffice=True
+        administrative_entity=submission.administrative_entity, is_backoffice=True
     )
-    # List of groups related to the user
-    user_groups = list(user.groups.all().values_list("id", flat=True))
-    # List of groups for this submission department
-    department_groups = list(departments.values_list("group", flat=True))
+    # Tuple of groups related to the user and to this submission department
+    user_groups = set(user.groups.all().values_list("id", flat=True))
+    department_groups = set(departments.values_list("group", flat=True))
+
     # Check user is in any group related of the permit department groups
-    return any(
-        department_group in user_groups for department_group in department_groups
-    )
+    return any(user_groups.intersection(department_groups))
 
 
 def has_permission_to_amend_submission(user, submission):
