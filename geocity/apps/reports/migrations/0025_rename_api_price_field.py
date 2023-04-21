@@ -4,7 +4,9 @@ from django.db import migrations
 
 
 def rename_api_price_field(apps, schema_editor):
-    # Rename `submission_submission_price` to `submission_price` in reports
+    """
+    Rename `submission_submission_price` to `submission_price` in SectionParagraph
+    """
 
     SectionParagraph = apps.get_model("reports", "SectionParagraph")
 
