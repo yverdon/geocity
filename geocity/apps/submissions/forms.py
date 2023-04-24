@@ -80,7 +80,7 @@ def get_field_cls_for_field(field):
 
 
 def regroup_by_ofs_id(entities):
-    return groupby(entities.order_by("ofs_id"), lambda entity: entity.ofs_id)
+    return groupby(entities.order_by("ofs_id", "name"), lambda entity: entity.ofs_id)
 
 
 def disable_form(form, editable_fields=None):

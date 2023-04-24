@@ -215,7 +215,7 @@ class AdministrativeEntityManager(models.Manager):
             .filter(
                 departments__group__in=user.groups.all(),
             )
-            .order_by("ofs_id", "-name")
+            .order_by("ofs_id", "name")
         )
 
 

@@ -109,7 +109,7 @@ class FormQuerySet(models.QuerySet):
                 pk__in=self.values_list("administrative_entities", flat=True),
                 forms__is_anonymous=False,
             )
-            .order_by("ofs_id", "-name")
+            .order_by("ofs_id", "name")
             .distinct()
         )
 
