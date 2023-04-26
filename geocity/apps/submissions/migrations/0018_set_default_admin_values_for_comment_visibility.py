@@ -6,18 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0017_alter_submission_options_and_more'),
+        ("submissions", "0017_alter_submission_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalsubmissionvalidation',
-            name='comment_is_visible_by_author',
-            field=models.BooleanField(default=False, verbose_name="Commentaire visible par l'auteur de la demande"),
+            model_name="historicalsubmissionvalidation",
+            name="comment_is_visible_by_author",
+            field=models.BooleanField(
+                default=False,
+                verbose_name="Commentaire visible par l'auteur de la demande",
+            ),
         ),
         migrations.AlterField(
-            model_name='submissionvalidation',
-            name='comment_is_visible_by_author',
-            field=models.BooleanField(default=False, verbose_name="Commentaire visible par l'auteur de la demande"),
+            model_name="submissionvalidation",
+            name="comment_is_visible_by_author",
+            field=models.BooleanField(
+                default=False,
+                verbose_name="Commentaire visible par l'auteur de la demande",
+            ),
         ),
     ]

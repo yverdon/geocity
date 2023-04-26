@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0012_alter_administrativeentity_sites'),
+        ("accounts", "0012_alter_administrativeentity_sites"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='administrativeentity',
-            name='is_single_form_submissions',
-            field=models.BooleanField(default=True, help_text="Nécessaire pour l'utilisation du système de paiement en ligne", verbose_name='Autoriser uniquement un objet par demande'),
+            model_name="administrativeentity",
+            name="is_single_form_submissions",
+            field=models.BooleanField(
+                default=True,
+                help_text="Nécessaire pour l'utilisation du système de paiement en ligne",
+                verbose_name="Autoriser uniquement un objet par demande",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitdepartment',
-            name='mandatory_2fa',
-            field=models.BooleanField(default=True, help_text='Cocher si les membres doivent obligatoirement utiliser la double authentification', verbose_name='2FA obligatoire'),
+            model_name="permitdepartment",
+            name="mandatory_2fa",
+            field=models.BooleanField(
+                default=True,
+                help_text="Cocher si les membres doivent obligatoirement utiliser la double authentification",
+                verbose_name="2FA obligatoire",
+            ),
         ),
     ]
