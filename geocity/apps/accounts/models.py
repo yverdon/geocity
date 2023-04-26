@@ -164,7 +164,7 @@ class PermitDepartment(models.Model):
         help_text=_(
             "Cocher si les membres doivent obligatoirement utiliser la double authentification"
         ),
-        default=False,
+        default=True,
     )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
@@ -283,7 +283,7 @@ class AdministrativeEntity(models.Model):
     )
     is_single_form_submissions = models.BooleanField(
         _("Autoriser uniquement un objet par demande"),
-        default=False,
+        default=True,
         help_text=_("Nécessaire pour l'utilisation du système de paiement en ligne"),
     )
 
