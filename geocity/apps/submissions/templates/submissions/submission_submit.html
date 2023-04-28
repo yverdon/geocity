@@ -47,7 +47,7 @@
   {% if not incomplete_steps %}
     <p class="font-weight-bold">
       <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
-      <label for="chk_accept_terms"> {% translate "J'ai lu et j'accepte les" %} <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% translate "conditions d'utilisation" %}</a></label><br>
+      <label for="chk_accept_terms"> {% translate "J'ai lu et accepte les" %} <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% translate "conditions d'utilisation" %}</a></label><br>
     </p>
     {% if should_go_to_payment %}
       {% if not submission.get_submission_price %}
