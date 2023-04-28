@@ -276,7 +276,13 @@ class SubmissionDetailView(View):
                 "can_classify": permissions.can_classify_submission(
                     self.request.user, self.submission
                 ),
+                "has_permission_to_classify_submission": permissions.has_permission_to_classify_submission(
+                    self.request.user, self.submission
+                ),
                 "can_validate_submission": can_validate_submission,
+                "has_permission_to_validate_submission": permissions.has_permission_to_validate_submission(
+                    self.request.user, self.submission
+                ),
                 "has_permission_to_edit_submission_validations": permissions.has_permission_to_edit_submission_validations(
                     self.request.user, self.submission
                 ),
@@ -599,7 +605,6 @@ class SubmissionDetailView(View):
                 services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
-
             return redirect(
                 "submissions:submission_detail",
                 submission_id=self.submission.pk,
@@ -618,7 +623,14 @@ class SubmissionDetailView(View):
             _("La demande #%s a bien été transmise pour validation.")
             % self.submission.pk,
         )
-        return redirect("submissions:submissions_list")
+
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
 
     def handle_validation_form_submission(self, form):
         validation_object = models.SubmissionValidation.objects.filter(
@@ -686,7 +698,13 @@ class SubmissionDetailView(View):
 
         messages.success(self.request, validation_message)
 
-        return redirect("submissions:submissions_list")
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
 
     def handle_poke(self, form):
         validations = form.save()
