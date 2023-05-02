@@ -446,6 +446,14 @@ class PaymentSettingsAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = ["name", "prices_label", "payment_processor"]
     list_filter = ["name", "internal_account", "payment_processor"]
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name in ["payment_confirmation_report", "payment_refund_report"]:
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.Report.objects.all()
+            )
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(models.Field)
 class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
