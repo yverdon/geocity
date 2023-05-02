@@ -170,6 +170,9 @@
                     <div class="text-right">
                         <input name="action" type="hidden" value="request_validation">
                         <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% translate "Envoyer pour validation" %}</button>
+                        {% if has_permission_to_validate_submission %}
+                          <button class="btn btn-primary" name="save_continue" {% if forms.request_validation.disabled %}disabled{% endif %}>{% translate "Envoyer pour validation et continuer les modifications" %}</button>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -185,6 +188,9 @@
                     <div class="text-right">
                         <input name="action" type="hidden" value="validate">
                         <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% translate "Soumettre" %}</button>
+                        {% if has_permission_to_classify_submission %}
+                          <button class="btn btn-primary" name="save_continue" {% if forms.validate.disabled %}disabled{% endif %}>{% translate "Soumettre et continuer les modifications" %}</button>
+                        {% endif %}
                     </div>
                 </form>
             </div>
