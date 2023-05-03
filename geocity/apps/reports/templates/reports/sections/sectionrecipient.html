@@ -4,16 +4,30 @@
     <div class="flex_container" style="padding-top: {{section.padding_top_recipient}}px;">
         <div class="flex_item-60">
         </div>
-        <div class="flex_item-40" style="text-align: left;">
-            {% if section.is_recommended %}
-                <span class="bold">RECOMMANDEE</span><br>
-            {% endif %}
-            {% if submission.author.userprofile.company_name %}
-                {{submission.author.userprofile.company_name}}<br>
-            {% endif %}
-            {{submission.author.last_name}} {{submission.author.first_name}}<br>
-            {{submission.author.userprofile.address}}<br>
-            {{submission.author.userprofile.zipcode}} {{submission.author.userprofile.city}}
-        </div>
+        {% if section.uses_dynamic_recipient %}
+            <div class="flex_item-40" style="text-align: left;">
+                {% if section.is_recommended %}
+                    <span class="bold">RECOMMANDEE</span><br>
+                {% endif %}
+                {% if dynamic_recipient.company_name %}
+                    {{dynamic_recipient.company_name}}<br>
+                {% endif %}
+                {{dynamic_recipient.last_name}} {{dynamic_recipient.first_name}}<br>
+                {{dynamic_recipient.address}}<br>
+                {{dynamic_recipient.zipcode}} {{dynamic_recipient.city}}
+            </div>
+        {% else %}
+            <div class="flex_item-40" style="text-align: left;">
+                {% if section.is_recommended %}
+                    <span class="bold">RECOMMANDEE</span><br>
+                {% endif %}
+                {% if submission.author.userprofile.company_name %}
+                    {{submission.author.userprofile.company_name}}<br>
+                {% endif %}
+                {{submission.author.last_name}} {{submission.author.first_name}}<br>
+                {{submission.author.userprofile.address}}<br>
+                {{submission.author.userprofile.zipcode}} {{submission.author.userprofile.city}}
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

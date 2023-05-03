@@ -34,29 +34,8 @@ from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
+from .contact_type_choices import *
 from .payments.models import SubmissionPrice
-
-# Contact types
-CONTACT_TYPE_OTHER = 0
-CONTACT_TYPE_REQUESTOR = 1
-CONTACT_TYPE_OWNER = 2
-CONTACT_TYPE_COMPANY = 3
-CONTACT_TYPE_CLIENT = 4
-CONTACT_TYPE_SECURITY = 5
-CONTACT_TYPE_ASSOCIATION = 6
-CONTACT_TYPE_ENGINEER = 7
-CONTACT_TYPE_WORKDIRECTOR = 8
-CONTACT_TYPE_CHOICES = (
-    (CONTACT_TYPE_ENGINEER, _("Architecte/Ingénieur")),
-    (CONTACT_TYPE_ASSOCIATION, _("Association")),
-    (CONTACT_TYPE_OTHER, _("Autres")),
-    (CONTACT_TYPE_WORKDIRECTOR, _("Direction des travaux")),
-    (CONTACT_TYPE_COMPANY, _("Entreprise")),
-    (CONTACT_TYPE_CLIENT, _("Maître d'ouvrage")),
-    (CONTACT_TYPE_OWNER, _("Propriétaire")),
-    (CONTACT_TYPE_REQUESTOR, _("Requérant (si différent de l'auteur de la demande)")),
-    (CONTACT_TYPE_SECURITY, _("Sécurité")),
-)
 
 # Actions
 ACTION_AMEND = "amend"
@@ -102,14 +81,15 @@ class SubmissionQuerySet(models.QuerySet):
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
             permit_duration_max=Max("forms__permit_duration"),
-            remaining_validations=Count("validations")
+            remaining_validations=Count("validations__department", distinct=True)
             - Count(
-                "validations",
+                "validations__department",
+                distinct=True,
                 filter=~Q(
                     validations__validation_status=SubmissionValidation.STATUS_REQUESTED
                 ),
             ),
-            required_validations=Count("validations"),
+            required_validations=Count("validations__department", distinct=True),
             author_fullname=Concat(
                 F("author__first_name"),
                 Value(" "),
@@ -292,9 +272,10 @@ class Submission(models.Model):
         permissions = [
             ("read_submission", _("Consulter les demandes")),
             ("amend_submission", _("Traiter les demandes")),
+            ("edit_submission_validations", _("Modifier les validations")),
             ("validate_submission", _("Valider les demandes")),
             ("classify_submission", _("Classer les demandes")),
-            ("edit_submission", _("Éditer les demandes")),
+            ("edit_submission", _("Modifier les demandes")),
             ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
@@ -497,7 +478,34 @@ class Submission(models.Model):
             if settings.SITE_DOMAIN == "localhost"
             else ""
         )
-        return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
+
+        if settings.SITE_DOMAIN:
+            site_domain = settings.SITE_DOMAIN
+        else:
+            id = relative_url.split("/")[-2]
+            submission = Submission.objects.get(id=id)
+            site_domain = submission.get_site(use_default=False)
+
+        return f"{protocol}://{site_domain}{port}{relative_url}"
+
+    def get_site(self, use_default=False):
+        """Get a site for the submission submission given"""
+        sites = self.administrative_entity.sites.all()
+        default_site = settings.DEFAULT_SITE
+
+        site_not_excluded = sites.exclude(domain=default_site)
+        default_site_exists = sites.filter(domain=default_site).exists()
+
+        default_site = default_site if default_site_exists else sites.first()
+        other_site = (
+            site_not_excluded.first() if site_not_excluded.exists() else default_site
+        )
+
+        if use_default:
+            site = default_site
+        else:
+            site = other_site
+        return site
 
     def start_inquiry(self):
         if self.status == self.STATUS_INQUIRY_IN_PROGRESS:
@@ -537,7 +545,11 @@ class Submission(models.Model):
                 # include additional documents
                 for document in self.complementary_documents.all():
                     zip_file.write(document.path, document.name)
-
+                # include user uploaded documents
+                for document in self.get_appendices_values():
+                    filename = document.value["val"].split("/")[-1]
+                    path = f"{settings.PRIVATE_MEDIA_ROOT}/{document.value['val']}"
+                    zip_file.write(path, filename)
             # Reset file pointer
             tmp_file.seek(0)
             archived_request = ArchivedSubmission(
@@ -1131,6 +1143,16 @@ class Submission(models.Model):
         ]
         history.sort(reverse=True)
         return history
+
+    @property
+    def sent_date(self):
+        # Return the last sent date because the submission can be resent if it was incomplete
+        last_sent_history = (
+            self.history.filter(status=Submission.STATUS_SUBMITTED_FOR_VALIDATION)
+            .order_by("history_date")
+            .last()
+        )
+        return last_sent_history.history_date if last_sent_history is not None else None
 
     def get_last_transaction(self):
         if self.get_transactions() is None:
@@ -1762,28 +1784,23 @@ class SubmissionValidation(models.Model):
     )
     department = models.ForeignKey(
         PermitDepartment,
+        verbose_name=_("Département"),
         on_delete=models.CASCADE,
         related_name="submission_validations",
     )
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
-    comment_before = models.TextField(
-        _("Commentaire (avant)"),
+    comment = models.TextField(
+        _("Commentaire"),
         blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
     )
-    comment_during = models.TextField(
-        _("Commentaire (pendant)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    comment_is_visible_by_author = models.BooleanField(
+        _("Commentaire visible par l'auteur de la demande"), default=True
     )
-    comment_after = models.TextField(
-        _("Commentaire (après)"),
-        blank=True,
-        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    validated_by = models.ForeignKey(
+        User, verbose_name=_("Validé par"), null=True, on_delete=models.SET_NULL
     )
-    validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
 

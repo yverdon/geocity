@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "docker:disable"
+  ],
+  "constraints": {
+    "python": "==3.10.6"
+  },
+  "automerge": false,
+  "baseBranches": ["develop"],
+  "pip_requirements": {
+    "enabled": false
+  },
+  "pip-compile": {
+    "fileMatch": ["requirements.in", "requirements_dev.in"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "branchTopic": "pip-compile-refresh",
+    "commitMessageAction": "Refresh pip-compile outputs"
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "gdal",
+        "django-bootstrap-datepicker-plus",
+        "django-bootstrap4",
+        "django-two-factor-auth",
+        "django-crispy-forms"
+      ],
+      "enabled": false
+    }
+  ]
+}

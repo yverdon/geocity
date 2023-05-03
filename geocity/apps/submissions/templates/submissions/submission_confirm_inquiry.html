@@ -3,10 +3,10 @@
 {% load i18n %}
 
 {% block content %}
-  <h3 class="mt-2">{% trans "Mise en consultation publique" %}</h3>
+  <h3 class="mt-2">{% translate "Mise en consultation publique" %}</h3>
     <form method="post">
       {% csrf_token %}
-      <p>{% trans "Attention, les documents suivants deviendront publics une fois la mise en consultation publique démarrée :" %}</p>
+      <p>{% translate "Attention, les documents suivants deviendront publics une fois la mise en consultation publique démarrée :" %}</p>
       <ul>
         {% for non_public_document in non_public_documents %}
           <li>{{ non_public_document }}</li>
@@ -18,8 +18,8 @@
       <div class="text-right">
         <input name="action" type="hidden" value="request_inquiry">
         <input name="confirmation" type="hidden" value="confirmed">
-        <a class="ml-2" href="{% url 'submissions:submission_detail' submission.pk %}">{% trans "Annuler" %}</a>
-        <button class="btn btn-primary">{% trans "Continuer" %}</button>
+        <a class="ml-2" href="{% url 'submissions:submission_detail' submission.pk %}">{% translate "Annuler" %}</a>
+        <button class="btn btn-primary">{% translate "Continuer" %}</button>
       </div>
     </form>
 {% endblock %}

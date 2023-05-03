@@ -49,6 +49,18 @@ class NewDjangoAuthUserForm(UserCreationForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        if not "username" in cleaned_data:
+            raise forms.ValidationError({"username": ""})
+
+        if not "first_name" in cleaned_data:
+            raise forms.ValidationError({"first_name": ""})
+
+        if not "last_name" in cleaned_data:
+            raise forms.ValidationError({"last_name": ""})
+
+        if not "email" in cleaned_data:
+            raise forms.ValidationError({"email": ""})
+
         for reserved_usernames in (
             settings.TEMPORARY_USER_PREFIX,
             settings.ANONYMOUS_USER_PREFIX,
@@ -147,6 +159,8 @@ class GenericUserProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if create:
             self.fields["notify_per_email"].disabled = True
+        else:
+            self.fields.pop("captcha")
 
     required_css_class = "required"
     address = forms.CharField(
@@ -185,9 +199,7 @@ class GenericUserProfileForm(forms.ModelForm):
 
         help_texts = {
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
-            "notify_per_email": """Permet d'activer la réception des notifications
-                automatiques de suivi dans votre boîte mail, par exemple lorsqu'une
-                demande a été soumise ou est en attente de validation.""",
+            "notify_per_email": "Permet d'activer la réception des notifications automatiques de suivi dans votre boîte mail, par exemple lorsqu'une demande a été soumise ou est en attente de validation.",
         }
         widgets = {
             "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),

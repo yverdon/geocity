@@ -1,17 +1,17 @@
-{% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+{% load i18n %}{% autoescape off %}{% blocktranslate %}Bonjour {{ name }}{% endblocktranslate %},
 
-{% trans "Nous vous confirmons bonne réception de votre demande/annonce et vous en remercions." %}
+{% translate "Nous vous confirmons bonne réception de votre demande/annonce et vous en remercions." %}
 
-{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
+{% translate "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
 {% if submission.requires_online_payment %}
-{% trans "Veuillez trouver ci-joint la facture relative à votre demande." %}
+{% translate "Veuillez trouver ci-joint la facture relative à votre demande." %}
 {% endif %}
-{% trans "Avec nos meilleures salutations," %}
+{% translate "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}
 {% else %}
 {{ administrative_entity.name }}
 {% endif %}
 
-{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
+{% translate "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}

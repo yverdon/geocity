@@ -47,12 +47,7 @@ from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
     permanent_user_required,
 )
-from geocity.apps.accounts.forms import GenericUserProfileForm
-from geocity.apps.accounts.models import (
-    AdministrativeEntity,
-    PermitDepartment,
-    UserProfile,
-)
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
@@ -281,7 +276,16 @@ class SubmissionDetailView(View):
                 "can_classify": permissions.can_classify_submission(
                     self.request.user, self.submission
                 ),
+                "has_permission_to_classify_submission": permissions.has_permission_to_classify_submission(
+                    self.request.user, self.submission
+                ),
                 "can_validate_submission": can_validate_submission,
+                "has_permission_to_validate_submission": permissions.has_permission_to_validate_submission(
+                    self.request.user, self.submission
+                ),
+                "has_permission_to_edit_submission_validations": permissions.has_permission_to_edit_submission_validations(
+                    self.request.user, self.submission
+                ),
                 "directives": self.submission.get_submission_directives(),
                 "prolongation_enabled": prolongation_enabled,
                 "document_enabled": self.submission.has_document_enabled(),
@@ -293,6 +297,7 @@ class SubmissionDetailView(View):
                 == self.submission.forms.count(),
                 "inquiry_in_progress": self.submission.status
                 == models.Submission.STATUS_INQUIRY_IN_PROGRESS,
+                "current_user": self.request.user,
             },
         }
 
@@ -562,7 +567,6 @@ class SubmissionDetailView(View):
             )
 
         messages.success(self.request, success_message)
-
         if (
             form.instance.status == models.Submission.STATUS_RECEIVED
             and form.instance.status is not initial_status
@@ -601,7 +605,6 @@ class SubmissionDetailView(View):
                 services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
-
             return redirect(
                 "submissions:submission_detail",
                 submission_id=self.submission.pk,
@@ -620,7 +623,14 @@ class SubmissionDetailView(View):
             _("La demande #%s a bien été transmise pour validation.")
             % self.submission.pk,
         )
-        return redirect("submissions:submissions_list")
+
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
 
     def handle_validation_form_submission(self, form):
         validation_object = models.SubmissionValidation.objects.filter(
@@ -688,7 +698,13 @@ class SubmissionDetailView(View):
 
         messages.success(self.request, validation_message)
 
-        return redirect("submissions:submissions_list")
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
 
     def handle_poke(self, form):
         validations = form.save()
@@ -1148,8 +1164,14 @@ def submission_select_administrative_entity(request, submission_id=None):
             limit_to_categories=selectable_categories,
         )
 
-        # If filter combinations return only one form object, this combination must be set on submission object
-        if len(candidate_forms) == 1:
+        # If filter combinations return only one form object that is not exceeded,
+        # this combination must be set on submission object
+        if len(candidate_forms) == 1 and all(
+            [
+                not candidate_form.has_exceeded_maximum_submissions()
+                for candidate_form in candidate_forms
+            ]
+        ):
             submission.forms.set(candidate_forms)
 
         steps = get_progress_bar_steps(request=request, submission=submission)
@@ -1990,25 +2012,6 @@ def field_file_download(request, path):
 
 @login_required
 @permanent_user_required
-@check_mandatory_2FA
-def genericauthorview(request, pk):
-    # FIXME shouldn’t we use the user id in the url?
-    # FIXME shouldn’t this be moved to the accounts app?
-    instance = get_object_or_404(UserProfile, pk=pk)
-    form = GenericUserProfileForm(
-        request.POST or None,
-        instance=instance,
-        create=False,
-    )
-
-    for field in form.fields:
-        form.fields[field].disabled = True
-
-    return render(request, "submissions/submission_author.html", {"form": form})
-
-
-@login_required
-@permanent_user_required
 def submissions_search(request):
     terms = request.GET.get("search")
 
@@ -2205,3 +2208,57 @@ class SubmissionPaymentRedirect(View):
             return redirect(payment_url)
 
         return redirect(reverse_lazy("submissions:submissions_list"))
+
+
+# TODO: SET PERMISSIONS
+@login_required
+@check_mandatory_2FA
+def submission_validations_edit(request, submission_id):
+
+    # Check that user is authorize to see submission
+    submission = get_object_or_404(
+        models.Submission.objects.filter_for_user(request.user), pk=submission_id
+    )
+
+    # Check that user is authorized to edit submission validations
+    if not permissions.has_permission_to_edit_submission_validations(
+        request.user, submission
+    ):
+        # TODO: be nicer whith user
+        raise PermissionDenied
+
+    submissionValidationFormset = modelformset_factory(
+        models.SubmissionValidation,
+        form=forms.SubmissionValidationsForm,
+        edit_only=True,
+        extra=0,
+    )
+    if request.method == "POST":
+        if request.method == "POST":
+            formset = submissionValidationFormset(request.POST)
+            if formset.is_valid():
+                formset.save()
+                if "save_continue" in request.POST:
+                    return redirect(
+                        "submissions:submission_validations_edit",
+                        submission_id=submission_id,
+                    )
+                else:
+                    return redirect(
+                        "submissions:submission_detail",
+                        submission_id=submission_id,
+                    )
+
+    else:
+        formset = submissionValidationFormset(
+            queryset=models.SubmissionValidation.objects.filter(
+                submission=submission_id
+            )
+        )
+    return render(
+        request,
+        "submissions/submission_validations_edit.html",
+        {
+            "formset": formset,
+        },
+    )

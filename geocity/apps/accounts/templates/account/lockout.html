@@ -1,22 +1,45 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="fr">
-<head>
-  {% load static %}
-  {% load i18n %}
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Geocity</title>
-{% block stylesheets%}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
-{% endblock %}
-</head>
-<body>
-  <div class="error-page">
-    <p>
+  <head>
+    {% load static %}
+    {% load i18n %}
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Geocity</title>
+    {% block stylesheets%}
+      <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    {% endblock %}
+  </head>
+  <body class="d-flex flex-column min-vh-100">
+    <div class="container">
+      <p>
         <h1>Geocity</h1>
-        <h2>{% trans "Trop de tentatives de connexion!" %}</h2>
-        <h3>{% trans "Votre compte a été vérouillé par mesure de sécurité. Merci de contacter l'administrateur pour résoudre le problème" %}</h3>
-    </p>
-    <img src="{% static 'images/errors/lockout.svg'%}" type="image/gif">
+        <h2>{% translate "Trop de tentatives de connexion!" %}</h2>
+        <h3>{% translate "Votre compte a été verrouillé par mesure de sécurité. Merci de contacter l'administrateur pour résoudre le problème." %}</h3>
+      </p>
+      <img src="{% static 'images/errors/lockout.svg'%}" class="img-fluid" type="image/gif">
     </div>
-</body>
+    <footer class="flex-shrink-0 py-2 bg-light text-dark mt-auto">
+      <div class="container text-center">
+        <small>
+          &copy; {% now "Y" %} Geocity
+          &nbsp;|&nbsp;
+          <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% translate "A propos" %}</a>
+          {% if config.CONTACT_URL %}
+            &nbsp;|&nbsp;
+            <a href="{{ config.CONTACT_URL }}" target="_blank" rel="noreferrer">{% translate "Contact" %}</a>
+          {% endif %}
+          {% if config.GENERAL_CONDITIONS_URL %}
+            &nbsp;|&nbsp;
+            <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% translate "Conditions" %}</a>
+          {% endif %}
+          {% if config.PRIVACY_POLICY_URL %}
+            &nbsp;|&nbsp;
+            <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer">{% translate "Confidentialité" %}</a>
+          {% endif %}
+        </small>
+      </div>
+    </footer>
+  </body>
 </html>

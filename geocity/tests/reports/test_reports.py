@@ -223,9 +223,21 @@ class ReportsTests(ReportsTestsBase):
                     # "is_new_page": bool,
                     "title": "Section amend property",
                     "title_size": "h3",
+                    "show_form_name": True,
+                    # "undesired_properties": string,
                 }
             },
             12: {
+                SectionAmendProperty: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section amend property",
+                    "title_size": "h3",
+                    "show_form_name": False,
+                    # "undesired_properties": string,
+                }
+            },
+            13: {
                 SectionStatus: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -233,7 +245,7 @@ class ReportsTests(ReportsTestsBase):
                     "title_size": "h3",
                 }
             },
-            13: {
+            14: {
                 SectionCreditor: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -241,18 +253,20 @@ class ReportsTests(ReportsTestsBase):
                     "title_size": "h3",
                 }
             },
-            14: {
+            15: {
                 SectionRecipient: {
                     "padding_top": 20,
                     # "is_new_page": bool,
                     "is_recommended": True,
+                    "uses_dynamic_recipient": True,
                 }
             },
-            15: {
+            16: {
                 SectionRecipient: {
                     "padding_top": 50,
                     # "is_new_page": bool,
                     "is_recommended": False,
+                    "uses_dynamic_recipient": False,
                 }
             },
         }

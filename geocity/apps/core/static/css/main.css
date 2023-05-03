@@ -239,6 +239,14 @@ h5 {
   font-size: 1.1em;
 }
 
+.bold {
+  font-weight: bold;
+}
+
+.login-policy {
+  padding-top: 8px;
+}
+
 .progress-nav {
   display: flex;
   justify-content: center;

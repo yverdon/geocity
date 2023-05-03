@@ -10,13 +10,14 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/contactform.css' %}">
 {% endblock %}
 {% block scripts %}
-  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
+  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.js' %}"></script>
   <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
+  <script src="{% static 'js/user_profile_edit.js' %}"></script>
 {% endblock %}
 {% block content-fluid %}
 <div class="container">
   <br>
-  <h3>{% trans "Mon compte" %}</h3>
+  <h3>{% translate "Mon compte" %}</h3>
   <hr>
   <form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
     {% csrf_token %}
@@ -26,8 +27,15 @@
     {% if user_profile_form %}
       {% bootstrap_form user_profile_form layout='horizontal'%}
     {% endif %}
-    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary mr-3" value="Enregistrer" %}
-    <a href="{% url 'submissions:submissions_list' %}">{% trans "Annuler" %}</a>
+    <div class="form-group required row">
+      <label class="col-md-3 col-form-label" for="id_chk_accept_policy">{% translate "Conditions d'utilisation" %}</label>
+      <div class="col-md-9 login-policy">
+        <input type="checkbox" id="chk_accept_policy" name="chk_accept_policy">
+        <label for="chk_accept_policy">{% translate "J'ai lu et accepte les" %} <b><a href="{{config.GENERAL_CONDITIONS_URL}}" target="_blank" rel="noreferrer">{% translate "conditions d'utilisation" %}</a></b> {% translate "et la" %} <b><a href="{{config.PRIVACY_POLICY_URL}}" target="_blank" rel="noreferrer">{% translate "politique de confidentialité" %}</a></b>.</label><br>
+      </div>
+    </div>
+    {% bootstrap_button "Confirmer" button_type="submit" id="user_profile_edit" button_class="btn-primary mr-3" value="Enregistrer" name="disabled"%}
+    <a href="{% url 'submissions:submissions_list' %}">{% translate "Annuler" %}</a>
   </form>
   <br>
 </div>

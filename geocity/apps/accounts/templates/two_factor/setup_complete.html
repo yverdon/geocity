@@ -3,31 +3,31 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% block title %}{% trans "Enable Two-Factor Authentication" %}{% endblock %}</h1>
+  <h1>{% block title %}{% translate "Enable Two-Factor Authentication" %}{% endblock %}</h1>
 
-  <p>{% blocktrans trimmed %}Congratulations, you've successfully enabled two-factor
-      authentication.{% endblocktrans %}</p>
+  <p>{% blocktranslate trimmed %}Congratulations, you've successfully enabled two-factor
+      authentication.{% endblocktranslate %}</p>
 
   {% if not phone_methods %}
     <p class="d-flex flex-column flex-md-row">
       <a href="{% url 'two_factor:profile' %}"
-        class="btn btn-primary m-1">{% trans "Back to Account Security" %}</a>
+        class="btn btn-primary m-1">{% translate "Back to Account Security" %}</a>
       <a class="btn btn-primary m-1" href="{% url 'submissions:submissions_list' %}" role="button">
-        {% trans "Voir mes demandes" %}
+        {% translate "Voir mes demandes" %}
       </a>
       <a class="btn btn-primary m-1" href="{% url 'submissions:submission_select_administrative_entity'%}" role="button">
-        <i class="fa fa-plus"></i> {% trans "Créer une nouvelle demande" %}
+        <i class="fa fa-plus"></i> {% translate "Créer une nouvelle demande" %}
       </a>
     </p>
   {% else %}
-    <p>{% blocktrans trimmed %}However, it might happen that you don't have access to
+    <p>{% blocktranslate trimmed %}However, it might happen that you don't have access to
       your primary token device. To enable account recovery, add a phone
-      number.{% endblocktrans %}</p>
+      number.{% endblocktranslate %}</p>
 
     <a href="{% url 'two_factor:profile' %}"
-        class="float-right btn btn-link">{% trans "Back to Account Security" %}</a>
+        class="float-right btn btn-link">{% translate "Back to Account Security" %}</a>
     <p><a href="{% url 'two_factor:phone_create' %}"
-        class="btn btn-success">{% trans "Add Phone Number" %}</a></p>
+        class="btn btn-success">{% translate "Add Phone Number" %}</a></p>
   {% endif %}
 
 {% endblock %}

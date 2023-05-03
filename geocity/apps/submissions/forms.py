@@ -80,7 +80,7 @@ def get_field_cls_for_field(field):
 
 
 def regroup_by_ofs_id(entities):
-    return groupby(entities.order_by("ofs_id"), lambda entity: entity.ofs_id)
+    return groupby(entities.order_by("ofs_id", "name"), lambda entity: entity.ofs_id)
 
 
 def disable_form(form, editable_fields=None):
@@ -823,7 +823,7 @@ class SubmissionContactForm(forms.ModelForm):
         fields = ["contact_type"]
         widgets = {
             "contact_type": forms.Select(
-                attrs={"readonly": "readonly", "class": "hide-arrow"}
+                attrs={"readonly": True, "hidden": True, "class": "hide-arrow"}
             ),
         }
 
@@ -1016,10 +1016,18 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         """
         Return a list of tuples `(Form, List[Field])` for each form and their fields.
         """
+
         return [
             (
                 form,
-                [self[self.get_field_name(form.id, field.id)] for field in fields],
+                [
+                    (
+                        self[self.get_field_name(form.id, field.id)],
+                        field.is_visible_by_author,
+                        field.is_visible_by_validators,
+                    )
+                    for field in fields
+                ],
             )
             for form, fields in self.instance.get_amend_custom_fields_by_form()
         ]
@@ -1147,7 +1155,7 @@ class GeometryWidget(geoforms.OSMWidget):
                 "libs/js/openlayers6/ol.js",
                 "libs/js/proj4js/proj4-src.js",
                 "customWidgets/GeometryWidget/geometrywidget.js",
-                "libs/js/jquery-ui-custom/jquery-ui.js",
+                "libs/js/jquery-ui-custom/jquery-ui.min.js",
             ),
         )
 
@@ -1419,15 +1427,13 @@ class SubmissionValidationForm(forms.ModelForm):
         model = models.SubmissionValidation
         fields = [
             "validation_status",
-            "comment_before",
-            "comment_during",
-            "comment_after",
+            "comment",
+            "comment_is_visible_by_author",
         ]
         widgets = {
             "validation_status": forms.RadioSelect(),
-            "comment_before": forms.Textarea(attrs={"rows": 3}),
-            "comment_during": forms.Textarea(attrs={"rows": 3}),
-            "comment_after": forms.Textarea(attrs={"rows": 3}),
+            "comment": forms.Textarea(attrs={"rows": 3}),
+            "comment_is_visible_by_author": forms.CheckboxInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1909,3 +1915,15 @@ def get_submission_forms(submission):
     ]
 
     return forms_infos
+
+
+class SubmissionValidationsForm(forms.ModelForm):
+    class Meta:
+        model = models.SubmissionValidation
+        fields = ["department", "comment", "comment_is_visible_by_author"]
+
+    def __init__(self, *args, **kwargs):
+        super(SubmissionValidationsForm, self).__init__(*args, **kwargs)
+        if self.instance.id:
+            self.fields["department"].widget.attrs["readonly"] = True
+            self.fields["department"].widget.attrs["hidden"] = True

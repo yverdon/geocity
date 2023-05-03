@@ -1,17 +1,17 @@
-{% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+{% load i18n %}{% autoescape off %}{% blocktranslate %}Bonjour {{ name }}{% endblocktranslate %},
 
-{% trans "Nous vous confirmons le remboursement de votre demande." %}
+{% translate "Nous vous confirmons le remboursement de votre demande." %}
 
-{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
+{% translate "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
 
-{% trans "Veuillez trouver ci-joint les détails du remboursement." %}
+{% translate "Veuillez trouver ci-joint les détails du remboursement." %}
 
-{% trans "Avec nos meilleures salutations," %}
+{% translate "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}
 {% else %}
 {{ administrative_entity.name }}
 {% endif %}
 
-{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
+{% translate "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}

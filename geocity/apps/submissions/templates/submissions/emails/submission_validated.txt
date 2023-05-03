@@ -1,15 +1,15 @@
-{% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
+{% load i18n %}{% autoescape off %}{% translate "Bonjour," %}
 
-{% trans "Les services chargés de la validation d'une demande ont donné leur préavis." %}
+{% translate "Les services chargés de la validation d'une demande ont donné leur préavis." %}
 
-{% trans "Vous pouvez consulter la demande et la classer sur le lien suivant" %}: {{ submission_url }}
+{% translate "Vous pouvez consulter la demande et la classer sur le lien suivant" %}: {{ submission_url }}
 
-{% trans "Avec nos meilleures salutations," %}
+{% translate "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}
 {% else %}
 {{ administrative_entity.name }}
 {% endif %}
 
-{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
+{% translate "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}

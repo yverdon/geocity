@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 
 from geocity.apps.accounts.models import PermitDepartment
 from geocity.apps.submissions import forms, models, permissions
+from geocity.apps.submissions.contact_type_choices import *
 
 register = template.Library()
 
@@ -33,7 +34,7 @@ def basename(value):
 
 
 def get_contacts_summary(submission):
-    contact_types = dict(models.CONTACT_TYPE_CHOICES)
+    contact_types = dict(CONTACT_TYPE_CHOICES)
 
     contacts = [
         (
@@ -56,6 +57,7 @@ def submission_summary(context, submission):
     forms_infos = forms.get_submission_forms(submission)
     contacts = get_contacts_summary(submission)
     requires_payment = submission.requires_payment()
+    submission_price = submission.get_submission_price()
     documents = submission.get_complementary_documents(user=context.request.user)
     is_validator = permissions.has_permission_to_validate_submission(
         context.request.user, submission
@@ -85,6 +87,16 @@ def submission_summary(context, submission):
                 + submission.author.last_name
             )
 
+    selected_price = (
+        {
+            "text": submission_price.text,
+            "amount": submission_price.amount,
+            "currency": submission_price.currency,
+        }
+        if submission_price
+        else None
+    )
+
     return {
         "user": context.request.user,
         "author": submission.author,
@@ -94,6 +106,7 @@ def submission_summary(context, submission):
         "documents": documents,
         "geo_time_formset": geo_time_formset,
         "requires_payment": requires_payment,
+        "selected_price": selected_price,
         "is_validator": is_validator,
     }
 

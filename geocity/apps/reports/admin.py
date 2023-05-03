@@ -139,8 +139,8 @@ class ReportAdmin(
     ]
     search_fields = [
         "name",
-        "layout",
-        "integrator",
+        "layout__name",
+        "integrator__name",
     ]
 
     class Media:

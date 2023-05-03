@@ -16,6 +16,7 @@ from geocity.apps.accounts.models import *
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
+from geocity.apps.submissions.contact_type_choices import *
 from geocity.apps.submissions.models import *
 
 # import fixturize file
@@ -461,11 +462,9 @@ class Command(BaseCommand):
         another_department = PermitDepartment.objects.get(
             group__name=f"{entity}-validator"
         )
-        comment_before_default = (
-            "Ce projet n'est pas admissible, veuillez l'améliorer.",
-        )
-        comment_during_default = ("Les améliorations ont été prise en compte.",)
-        comment_after_default = ("Excellent projet qui bénéficiera à la communauté.",)
+        comment = """Avant : Ce projet n'est pas admissible, veuillez l'améliorer.
+Pendant : Les améliorations ont été prise en compte.
+Après : Excellent projet qui bénéficiera à la communauté."""
 
         for user_iteration in range(user_iterations):
             username = f"{entity}-user-{user_iteration}"
@@ -487,9 +486,7 @@ class Command(BaseCommand):
                 submission,
                 department,
                 validation_status,
-                comment_before_default,
-                comment_during_default,
-                comment_after_default,
+                comment,
             )
 
             # Submission to Classify with mixed objects requiring and not requiring validation document
@@ -504,9 +501,7 @@ class Command(BaseCommand):
                 submission,
                 department,
                 validation_status,
-                comment_before_default,
-                comment_during_default,
-                comment_after_default,
+                comment,
             )
 
             # Submission to Classify with validation document required
@@ -520,9 +515,7 @@ class Command(BaseCommand):
                 submission,
                 department,
                 validation_status,
-                comment_before_default,
-                comment_during_default,
-                comment_after_default,
+                comment,
             )
 
             # Submission to Classify with validation document required (with another Form)
@@ -536,9 +529,7 @@ class Command(BaseCommand):
                 submission,
                 department,
                 validation_status,
-                comment_before_default,
-                comment_during_default,
-                comment_after_default,
+                comment,
             )
 
             # Submission with pending validations
@@ -564,15 +555,11 @@ class Command(BaseCommand):
                 department,
                 validation_status,
                 text,
-                text,
-                text,
             )
             self.create_submission_validation(
                 submission,
                 another_department,
                 validation_status,
-                text,
-                text,
                 text,
             )
 
@@ -834,7 +821,10 @@ class Command(BaseCommand):
 
         # Create permit_department
         self.create_permit_department(
-            group, administrative_entity, integrator=integrator_group
+            group,
+            administrative_entity,
+            is_backoffice=True,
+            integrator=integrator_group,
         )
 
         # Set permissions
@@ -845,6 +835,7 @@ class Command(BaseCommand):
         secretariat_permissions = Permission.objects.filter(
             codename__in=[
                 "amend_submission",
+                "edit_submission_validations",
                 "classify_submission",
             ],
             content_type=self.submission_ct,
@@ -1032,17 +1023,13 @@ class Command(BaseCommand):
         submission,
         department,
         validation_status=SubmissionValidation.STATUS_REQUESTED,
-        comment_before="",
-        comment_during="",
-        comment_after="",
+        comment="",
     ):
         SubmissionValidation.objects.get_or_create(
             submission=submission,
             department=department,
             validation_status=validation_status,
-            comment_before=comment_before,
-            comment_during=comment_during,
-            comment_after=comment_after,
+            comment=comment,
         )
 
     def create_submission_amend_field(

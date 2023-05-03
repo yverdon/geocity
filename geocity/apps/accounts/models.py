@@ -13,7 +13,6 @@ from django.db import models
 from django.db.models import BooleanField, Count, ExpressionWrapper, Q, UniqueConstraint
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
@@ -216,7 +215,7 @@ class AdministrativeEntityManager(models.Manager):
             .filter(
                 departments__group__in=user.groups.all(),
             )
-            .order_by("ofs_id", "-name")
+            .order_by("ofs_id", "name")
         )
 
 
@@ -297,7 +296,7 @@ class AdministrativeEntity(models.Model):
 
     sites = models.ManyToManyField(
         Site,
-        related_name="+",
+        related_name="administrative_entity",
         verbose_name=_("Détails du Site"),
     )
     directive = AdministrativeEntityFileField(
@@ -569,11 +568,6 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = _("3.2 Consultation de l'auteur")
         verbose_name_plural = _("3.2 Consultation des auteurs")
-
-    def get_absolute_url(self):
-        # FIXME this URL name doesn’t exist, but that was already the case before the
-        # phoenix migration. Should we remove this?
-        return reverse("accounts:genericauthorview", args=[str(self.id)])
 
     def __str__(self):
 

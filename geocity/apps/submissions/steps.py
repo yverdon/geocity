@@ -136,7 +136,15 @@ def get_forms_step(
     if not user.has_perm("submissions.view_private_form"):
         candidate_forms = candidate_forms.filter(is_public=True)
 
-    if candidate_forms.count() <= 1:
+    if not candidate_forms.count():
+        return None
+
+    if candidate_forms.count() == 1 and all(
+        [
+            not candidate_form.has_exceeded_maximum_submissions()
+            for candidate_form in candidate_forms
+        ]
+    ):
         return None
 
     return Step(

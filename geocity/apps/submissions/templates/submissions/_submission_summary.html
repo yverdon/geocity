@@ -9,13 +9,16 @@
         <h4 class="workObjectHeader"> {{ form }} </h4>
         <div class="container">
           <dl class="properties-list">
+            {% if selected_price %}
+              <dt> {% translate "Tarif" %} </dt>
+              <dd> {{ selected_price.text }} ({{ selected_price.amount }} {{ selected_price.currency }}) </dd>
+            {% endif %}
             {% for field in fields %}
               {% if field.label %}
                 <dt> {{ field.label }} </dt>
                 <dd> {{ field.value|human_field_value|linebreaksbr }} </dd>
               {% else %}
-                <dt style="white-space: nowrap;">{{ field.repr|safe }}</dt>
-                <dd></dd>
+                <div class="w-100">{{ field.repr|safe }}</div>
               {% endif %}
             {% endfor %}
 
@@ -23,10 +26,10 @@
               <dt>{{ field.label }}</dt>
               <dd>
                 {% if not field.value %}
-                  <em>{% trans "Information non fournie" %}</em>
+                  <em>{% translate "Information non fournie" %}</em>
                 {% else %}
                   <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
-                  <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{% trans "Télécharger le document" %}</a>
+                  <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{% translate "Télécharger le document" %}</a>
                 {% endif %}
               </dd>
             {% endfor %}
@@ -35,7 +38,7 @@
 
         {% if amend_custom_fields %}
           <div class="container">
-            <h5>{% trans "Informations du service responsable" %}</h5>
+            <h5>{% translate "Informations du service responsable" %}</h5>
             {% for field_value in amend_custom_fields %}
               {% if field_value.field.is_visible_by_author or field_value.field.is_visible_by_validators and is_validator %}
                 <dl class="properties-list">
@@ -56,17 +59,15 @@
     <div class="row">
       <div class="col">
         <div class="container">
-          <h4>{% trans "Contacts" %}</h4>
+          <h4>{% translate "Contacts" %}</h4>
+          {% if requires_payment %}
             <dl>
-              {% if requires_payment %}
-                <dt>Destinataire de la facture</dt>
-                <dd> {{ creditor }} </dd>
-              {% endif %}
+              <dt>Destinataire de la facture</dt>
+              <dd> {{ creditor }} </dd>
             </dl>
-        </div>
-
+          {% endif %}
           {% for contact_type, contact_infos in contacts %}
-          <h5>{{ contact_type }}</h5>
+            <h5>{{ contact_type }}</h5>
             <div class="row">
               <div class="col">
                 <div class="grid-container">
@@ -74,8 +75,8 @@
                     {% if field_value %}
                     <div class="grid-element">
                       <dl>
-                         <dt> {{ field_label }} </dt>
-                         <dd> {{ field_value }} </dd>
+                        <dt> {{ field_label }} </dt>
+                        <dd> {{ field_value }} </dd>
                       </dl>
                     </div>
                     {% endif %}
@@ -84,7 +85,7 @@
               </div>
             </div>
           {% endfor %}
-
+        </div>
       </div>
     </div>
 
@@ -106,12 +107,12 @@
 
         {% for document in documents %}
           <dl class="mb-4">
-            <dt>{% trans "Nom" %}</dt>
+            <dt>{% translate "Nom" %}</dt>
             <dd>
                 <div class="pl-0 col-10">
                   {{ document.document }}
                   {% if document.is_public %}
-                    <span class="badge badge-pill badge-pill-55 badge-success">{% trans "Publique" %}</span>
+                    <span class="badge badge-pill badge-pill-55 badge-success">{% translate "Publique" %}</span>
                   {% endif %}
                 </div>
                 <div class="col-2 text-right">
@@ -127,13 +128,13 @@
                 </div>
             </dd>
 
-            <dt>{% trans "Statut" %}</dt>
+            <dt>{% translate "Statut" %}</dt>
             <dd>{{ document.get_status_display }}</dd>
 
-            <dt>{% trans "Description" %}</dt>
+            <dt>{% translate "Description" %}</dt>
             <dd>{{ document.description }}</dd>
 
-            <dt>{% trans "Type" %}</dt>
+            <dt>{% translate "Type" %}</dt>
             <dd>{{ document.document_type }}</dd>
           </dl>
           {% if not forloop.last %}

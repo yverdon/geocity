@@ -19,6 +19,7 @@ from polymorphic.models import PolymorphicModel
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.submissions.contact_type_choices import *
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -218,6 +219,16 @@ class Heading(models.TextChoices):
     H6 = "h6", _("Titre 6")
 
 
+def padding_top_field(default=0):
+    return models.PositiveIntegerField(
+        _("Espace vide au dessus"),
+        default=default,
+        help_text=_(
+            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
+        ),
+    )
+
+
 class Section(PolymorphicModel):
     class Meta:
         verbose_name = _("Paragraphe")
@@ -228,13 +239,6 @@ class Section(PolymorphicModel):
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
     order = models.PositiveIntegerField(_("Ordre du paragraphe"), null=True, blank=True)
-    padding_top = models.PositiveIntegerField(
-        _("Espace vide au dessus"),
-        default=0,
-        help_text=_(
-            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
-        ),
-    )
     is_new_page = models.BooleanField(
         _("Nouvelle page"),
         default=False,
@@ -258,6 +262,7 @@ class Section(PolymorphicModel):
 
 
 class SectionMap(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Localisation·s", blank=True, max_length=2000
     )
@@ -360,6 +365,7 @@ class SectionParagraph(Section):
         LEFT = "left", _("Gauche")
         RIGHT = "right", _("Droite")
 
+    padding_top = padding_top_field()
     title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
     title_size = models.CharField(
         _("Taille des titres"),
@@ -386,7 +392,7 @@ class SectionParagraph(Section):
         _("Contenu"),
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/" target="_blank">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
             )
         ),
     )
@@ -418,6 +424,7 @@ class SectionParagraph(Section):
 
 
 class SectionContact(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Contact·s", blank=True, max_length=2000
     )
@@ -436,6 +443,7 @@ class SectionContact(Section):
 
 
 class SectionAuthor(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Auteur·e de la demande", blank=True, max_length=2000
     )
@@ -462,6 +470,7 @@ class SectionDetail(Section):
         (STYLE_1, _("champ (tab) valeur")),
     )
 
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Propriété·s de la demande", blank=True, max_length=2000
     )
@@ -513,6 +522,7 @@ class SectionDetail(Section):
 
 
 class SectionPlanning(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Planning", blank=True, max_length=2000
     )
@@ -531,11 +541,14 @@ class SectionPlanning(Section):
 
 
 class SectionHorizontalRule(Section):
+    padding_top = padding_top_field()
+
     class Meta:
         verbose_name = _("Ligne horizontale")
 
 
 class SectionValidation(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Commentaire·s des services", blank=True, max_length=2000
     )
@@ -554,6 +567,7 @@ class SectionValidation(Section):
 
 
 class SectionAmendProperty(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Commentaire·s du secrétariat", blank=True, max_length=2000
     )
@@ -566,12 +580,33 @@ class SectionAmendProperty(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
+    show_form_name = models.BooleanField(
+        _("Afficher le nom du formulaire"),
+        default=True,
+        help_text=_(
+            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
+        ),
+    )
+    undesired_properties = models.CharField(
+        _("Nom de champs a masquer"),
+        max_length=2000,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Liste de champs à masquer, séparés par des points virgules ';' correspondant aux titre des champs (ex: hauteur;largeur)"
+        ),
+    )
+
+    @property
+    def list_undesired_properties(self):
+        return self.undesired_properties.split(",")
 
     class Meta:
         verbose_name = _("Commentaire·s du secrétariat")
 
 
 class SectionStatus(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Statut de la demande", blank=True, max_length=2000
     )
@@ -590,6 +625,7 @@ class SectionStatus(Section):
 
 
 class SectionCreditor(Section):
+    padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Adresse de facturation", blank=True, max_length=2000
     )
@@ -608,19 +644,40 @@ class SectionCreditor(Section):
 
 
 class SectionRecipient(Section):
+    padding_top = padding_top_field(default=40)
     is_recommended = models.BooleanField(
         _("Recommandée"),
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-
-    # TODO: Find a way to fix this, to make padding_top at 40 by default only for SectionRecipient
-    def __init__(self, *args, **kwargs):
-        self._meta.get_field("padding_top").default = 40
-        super().__init__(*args, **kwargs)
+    uses_dynamic_recipient = models.BooleanField(
+        _("Destinataire dynamique"),
+        default=True,
+        help_text=_(
+            "Si le demande est saisie au nom d'une autre personne (requérant) celui-ci sera utilisé"
+        ),
+    )
 
     class Meta:
         verbose_name = _("Destinataire")
+
+    def _get_dynamic_recipient(self, request, base_context):
+        contacts = base_context["request_data"]["properties"]["contacts"]
+        contact_type_requestor = None
+        requestor = dict(CONTACT_TYPE_CHOICES)[CONTACT_TYPE_REQUESTOR]
+        if requestor in contacts:
+            contact_type_requestor = contacts[requestor]
+
+        author = base_context["request_data"]["properties"]["author"]
+        dynamic_recipient = contact_type_requestor if contact_type_requestor else author
+        return dynamic_recipient
+
+    def prepare_context(self, request, base_context):
+        # Return updated context
+        return {
+            **super().prepare_context(request, base_context),
+            "dynamic_recipient": self._get_dynamic_recipient(request, base_context),
+        }
 
 
 class HeaderFooter(PolymorphicModel):
@@ -729,7 +786,7 @@ class HeaderFooterParagraph(HeaderFooter):
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
         result = (
-            BeautifulSoup(mark_safe(rendered_html))
+            BeautifulSoup(mark_safe(rendered_html), features="html5lib")
             .get_text()
             .replace("\r", "\A ")
             .replace("\n", "\A ")

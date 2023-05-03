@@ -9,14 +9,18 @@
         <div class="flex_container">
             <div class="flex_item-100">
                 {% for form, commentaires in request_data.properties.amend_fields.items %}
-                    <h3>{{form}}</h3>
+                    {% if section.show_form_name %}
+                        <h3>{{ form }}</h3>
+                    {% endif %}
                     {% for key, commentaire in commentaires.items %}
-                        <span class="bold">{{key}} : </span>{{commentaire}}<br>
+                        {% if not key in section.undesired_properties %}
+                            <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">{{key}} : </span>{{commentaire}}</div><br>
+                        {% endif %}
                     {% endfor %}
                 {% endfor %}
             </div>
         </div>
     {% else %}
-        <p>Aucun contact pour cette demande</p>
+        <p>Aucun commentaire du secrétariat pour cette demande</p>
     {% endif %}
 {% endblock %}

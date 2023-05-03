@@ -6,7 +6,7 @@
 
 {% block content %}
 
-  <h3>{% trans "Demande de prolongation de permis" %}</h3>
+  <h3>{% translate "Demande de prolongation de permis" %}</h3>
   <hr>
   <form method="post">
     {% csrf_token %}
@@ -15,8 +15,8 @@
 
     {% buttons %}
     <div class="text-right">
-      <a href="{% url 'submissions:submissions_list' %}" class="mr-2">{% trans "Retour à la liste des demandes" %}</a>
-      <button class="btn btn-primary">{% trans "Enregistrer" %}</button>
+      <a href="{% url 'submissions:submissions_list' %}" class="mr-2">{% translate "Retour à la liste des demandes" %}</a>
+      <button class="btn btn-primary">{% translate "Enregistrer" %}</button>
     </div>
     {% endbuttons %}
   </form>

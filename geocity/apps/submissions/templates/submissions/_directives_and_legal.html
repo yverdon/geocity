@@ -3,14 +3,14 @@
 
 {% if directives %}
   <div id="legal-infos">
-    <h5>{% trans "Informations importantes" %}</h5>
+    <h5>{% translate "Informations importantes" %}</h5>
     {% for directive_file, directive_description, additional_information in directives %}
       <div{% if not forloop.last %} class="mb-3"{% endif %}>
         {% if directive_file and directive_description %}
           <span class="directive_description">{{ directive_description }}</span>:
           <i class="fa fa-download" aria-hidden="true"></i>
           <a class="directive_file" href="{{ directive_file.url }}" target="_blank"
-            rel="noreferrer">{% trans "Télécharger la directive" %}</a>
+            rel="noreferrer">{% translate "Télécharger le document" %}</a>
           <br>
         {% endif %}
         {% if additional_information %}
