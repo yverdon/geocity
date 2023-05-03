@@ -480,7 +480,12 @@ class SubmissionDetailView(View):
             )
             return None
 
-        form = forms.SubmissionValidationForm(instance=validation, data=data)
+        form = forms.SubmissionValidationForm(
+            instance=validation,
+            data=data,
+            user=self.request.user,
+            submission=self.submission,
+        )
         if not permissions.can_validate_submission(self.request.user, self.submission):
             forms.disable_form(form)
 

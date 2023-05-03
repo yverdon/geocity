@@ -1410,6 +1410,24 @@ class SubmissionValidationDepartmentSelectionForm(forms.Form):
 
 
 class SubmissionValidationForm(forms.ModelForm):
+    def __init__(self, user, submission, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if permissions.has_permission_to_validate_submission(
+            user, submission
+        ) and not permissions.has_permission_to_edit_submission_validations(
+            user, submission
+        ):
+            self.fields["comment_is_visible_by_author"].disabled = True
+
+        self.fields["validation_status"].choices = [
+            (
+                value,
+                label,
+            )
+            for value, label in self.fields["validation_status"].choices
+        ]
+
     class Meta:
         model = models.SubmissionValidation
         fields = [
@@ -1422,17 +1440,6 @@ class SubmissionValidationForm(forms.ModelForm):
             "comment": forms.Textarea(attrs={"rows": 3}),
             "comment_is_visible_by_author": forms.CheckboxInput(),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields["validation_status"].choices = [
-            (
-                value,
-                label,
-            )
-            for value, label in self.fields["validation_status"].choices
-        ]
 
 
 class SubmissionValidationPokeForm(forms.Form):
