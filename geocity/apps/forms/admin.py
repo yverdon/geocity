@@ -6,10 +6,9 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import (
-    IntegratorFilterMixin,
-    MapCustomChoiceField,
     LEGAL_TEXT_EXAMPLE,
     IntegratorFilterMixin,
+    MapCustomChoiceField,
     filter_for_user,
 )
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
@@ -559,6 +558,7 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     get__tags.short_description = _("Mots-clés")
     get__tags.admin_order_field = "tags__name"
 
+
 @admin.register(models.MapWidgetConfiguration)
 class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
@@ -569,8 +569,7 @@ class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "configuration",
         "integrator",
     ]
-    
+
     class Media:
         css = {"all": ("css/admin/map_widget_configurator.css",)}
         js = ("js/admin/map_widget_configurator.js",)
-
