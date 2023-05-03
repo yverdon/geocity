@@ -563,6 +563,10 @@ class Submission(models.Model):
         self.save()
 
     @property
+    def is_classified(self):
+        return self.status in [self.STATUS_APPROVED, self.STATUS_REJECTED]
+
+    @property
     def is_archived(self):
         return self.status == self.STATUS_ARCHIVED
 
