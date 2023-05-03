@@ -55,7 +55,7 @@ django==4.2
     #   django-taggit
     #   django-two-factor-auth
     #   djangorestframework
-django-admin-sortable2==2.1.5
+django-admin-sortable2==2.1.8
     # via -r requirements.in
 django-allauth==0.54.0
     # via -r requirements.in
@@ -75,7 +75,7 @@ django-crispy-forms==1.14.0
     # via -r requirements.in
 django-cron==0.6.0
     # via -r requirements.in
-django-filter==23.1
+django-filter==23.2
     # via -r requirements.in
 django-formtools==2.4
     # via django-two-factor-auth
@@ -107,7 +107,7 @@ django-tables2==2.5.3
     # via
     #   -r requirements.in
     #   django-tables2-column-shifter
-django-tables2-column-shifter==2.1.1
+django-tables2-column-shifter==2.2.0
     # via -r requirements.in
 django-taggit==3.1.0
     # via -r requirements.in
@@ -152,7 +152,7 @@ packaging==23.1
     # via docker
 pdf2image==1.16.3
     # via -r requirements.in
-phonenumbers==8.13.10
+phonenumbers==8.13.11
     # via django-two-factor-auth
 pillow==9.5.0
     # via
@@ -179,7 +179,7 @@ pyyaml==6.0
     # via -r requirements.in
 qrcode==7.4.2
     # via django-two-factor-auth
-requests==2.28.2
+requests==2.29.0
     # via
     #   -r requirements.in
     #   django-allauth
