@@ -1413,9 +1413,7 @@ class SubmissionValidationForm(forms.ModelForm):
     def __init__(self, user, submission, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if permissions.has_permission_to_validate_submission(
-            user, submission
-        ) and not permissions.has_permission_to_edit_submission_validations(
+        if not permissions.has_permission_to_edit_submission_validations(
             user, submission
         ):
             self.fields["comment_is_visible_by_author"].disabled = True
