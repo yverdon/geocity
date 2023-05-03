@@ -580,6 +580,26 @@ class SectionAmendProperty(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
+    show_form_name = models.BooleanField(
+        _("Afficher le nom du formulaire"),
+        default=True,
+        help_text=_(
+            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
+        ),
+    )
+    undesired_properties = models.CharField(
+        _("Nom de champs a masquer"),
+        max_length=2000,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Liste de champs à masquer, séparés par des points virgules ';' correspondant aux titre des champs (ex: hauteur;largeur)"
+        ),
+    )
+
+    @property
+    def list_undesired_properties(self):
+        return self.undesired_properties.split(",")
 
     class Meta:
         verbose_name = _("Commentaire·s du secrétariat")

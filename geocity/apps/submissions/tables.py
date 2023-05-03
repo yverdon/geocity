@@ -140,6 +140,12 @@ class GenericSubmissionTable(ColumnShiftTable):
         verbose_name=_("Entité administrative"),
         orderable=False,
     )
+    selected_price = tables.TemplateColumn(
+        verbose_name=_("Tarif"),
+        template_name="tables/_submission_selected_price.html",
+        attrs=ATTRIBUTES,
+        orderable=False,
+    )
 
     def value_starts_at_min(self, record, value):
         return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
@@ -176,6 +182,7 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_html",
             "administrative_entity",
         )
@@ -193,6 +200,7 @@ class OwnSubmissionsExportTable(GenericSubmissionTable):
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_str",
             "administrative_entity",
         )
@@ -253,6 +261,7 @@ class DepartmentSubmissionsHTMLTable(
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_html",
             "administrative_entity",
         ]
@@ -279,6 +288,7 @@ class DepartmentSubmissionsExportTable(GenericDepartmentSubmissionsTable):
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_str",
             "administrative_entity",
         ]
