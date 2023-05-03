@@ -471,6 +471,13 @@ class Form(models.Model):
 
     def has_exceeded_maximum_submissions(self):
         from ..submissions.models import Submission
+        from ..submissions.payments.models import Transaction
+
+        # Submissions taken into account for the maximum number of submissions:
+        # - All submissions that are not in statuses draft, rejected or archived
+        #   (i.e. submitted)
+        # - All submissions that have a transaction that is unpaid and not expired
+        #   (i.e. user is in the process of paying, but hasn't finished yet)
 
         return (
             self.max_submissions
@@ -483,7 +490,10 @@ class Form(models.Model):
                             Submission.STATUS_ARCHIVED,
                         ]
                     )
-                    | Q(price__transactions__authorization_timeout_on__gt=now())
+                    | Q(
+                        price__transactions__authorization_timeout_on__gt=now(),
+                        price__transactions__status=Transaction.STATUS_UNPAID,
+                    )
                 )
                 .distinct()
                 .count()
