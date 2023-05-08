@@ -1313,7 +1313,10 @@ def submission_fields(request, submission_id):
             instance=submission, data=request.POST, enable_required=False
         )
         prices_form_valid = True
-        if requires_online_payment:
+        if (
+            requires_online_payment
+            and submission.status == models.Submission.STATUS_DRAFT
+        ):
             prices_form = forms.FormsPriceSelectForm(
                 instance=submission, data=request.POST
             )
