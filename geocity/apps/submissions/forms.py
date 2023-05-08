@@ -1497,6 +1497,8 @@ class SubmissionProlongationForm(forms.ModelForm):
 
 
 class SubmissionClassifyForm(forms.ModelForm):
+    required_css_class = "required"
+
     # Status field is set as initial value when instantiating the form in the view
     status = forms.ChoiceField(
         choices=(
