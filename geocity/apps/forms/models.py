@@ -322,7 +322,7 @@ class Form(models.Model):
     )
     administrative_entities = models.ManyToManyField(
         AdministrativeEntity,
-        verbose_name=_("entités administratives"),
+        verbose_name=_("entité administrative"),
         related_name="forms",
     )
     can_always_update = models.BooleanField(
