@@ -197,7 +197,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "document_enabled",
         "publication_enabled",
         "permanent_publication_enabled",
-        "max_submissions",
+        "max_submissions_nb_submissions",
         "max_submissions_message",
     ]
     list_filter = ["administrative_entities"]
@@ -298,6 +298,16 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Formulaire")
+
+    def max_submissions_nb_submissions(self, obj):
+        return (
+            f"{obj.max_submissions} ({obj.nb_submissions_taken_into_account_for_maximum_submissions} demandes)"
+            if obj.max_submissions
+            else "-"
+        )
+
+    max_submissions_nb_submissions.admin_order_field = "max_submissions"
+    max_submissions_nb_submissions.short_description = _("Nombre maximum de demandes")
 
     def get_queryset(self, request):
         qs = (
