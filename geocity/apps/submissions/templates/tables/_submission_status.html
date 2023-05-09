@@ -11,7 +11,7 @@
     {% if record.status == 2 or record.status == 4 or record.status == 6 %}
       <i class="fa fa-circle status{{record.status}}"></i> {{ record.get_status_display }}
     {% else %}
-      <i class="fa fa-circle status{{record.status}}"></i> {% translate "Validée par les services" %}
+      <i class="fa fa-circle status{{record.status}}"></i> {% translate "Préavis donné par les services" %}
     {% endif %}
   {% endif %}
 {% else %}

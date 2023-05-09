@@ -480,7 +480,12 @@ class SubmissionDetailView(View):
             )
             return None
 
-        form = forms.SubmissionValidationForm(instance=validation, data=data)
+        form = forms.SubmissionValidationForm(
+            instance=validation,
+            data=data,
+            user=self.request.user,
+            submission=self.submission,
+        )
         if not permissions.can_validate_submission(self.request.user, self.submission):
             forms.disable_form(form)
 
@@ -1308,7 +1313,10 @@ def submission_fields(request, submission_id):
             instance=submission, data=request.POST, enable_required=False
         )
         prices_form_valid = True
-        if requires_online_payment:
+        if (
+            requires_online_payment
+            and submission.status == models.Submission.STATUS_DRAFT
+        ):
             prices_form = forms.FormsPriceSelectForm(
                 instance=submission, data=request.POST
             )
