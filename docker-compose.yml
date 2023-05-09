@@ -98,6 +98,13 @@ services:
         # networks:
         #     - isolated
 
+    # Builder for the external statics than must be built
+    external-statics:
+        image: external_statics
+        build:
+            context: services/external_statics
+        working_dir: /app/geocity-wc-map
+
 
 networks:
     # Use this for containers that should only be able to communicate with Django
