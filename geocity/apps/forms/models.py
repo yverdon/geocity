@@ -470,7 +470,7 @@ class Form(models.Model):
         )
 
     @property
-    def nb_submissions_taken_into_account_for_maximum_submissions(self):
+    def nb_submissions_taken_into_account_for_max_submissions(self):
         from ..submissions.models import Submission
         from ..submissions.payments.models import Transaction
 
@@ -499,8 +499,9 @@ class Form(models.Model):
         )
 
     def has_exceeded_maximum_submissions(self):
-        return self.max_submissions and (
-            self.nb_submissions_taken_into_account_for_maximum_submissions
+        return (
+            self.max_submissions
+            and self.nb_submissions_taken_into_account_for_max_submissions
             >= self.max_submissions
         )
 
