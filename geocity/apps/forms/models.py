@@ -469,7 +469,8 @@ class Form(models.Model):
             or self.has_geometry_polygon
         )
 
-    def has_exceeded_maximum_submissions(self):
+    @property
+    def nb_submissions_taken_into_account_for_max_submissions(self):
         from ..submissions.models import Submission
         from ..submissions.payments.models import Transaction
 
@@ -480,24 +481,27 @@ class Form(models.Model):
         #   (i.e. user is in the process of paying, but hasn't finished yet)
 
         return (
-            self.max_submissions
-            and (
-                self.submissions.filter(
-                    ~Q(
-                        status__in=[
-                            Submission.STATUS_DRAFT,
-                            Submission.STATUS_REJECTED,
-                            Submission.STATUS_ARCHIVED,
-                        ]
-                    )
-                    | Q(
-                        price__transactions__authorization_timeout_on__gt=now(),
-                        price__transactions__status=Transaction.STATUS_UNPAID,
-                    )
+            self.submissions.filter(
+                ~Q(
+                    status__in=[
+                        Submission.STATUS_DRAFT,
+                        Submission.STATUS_REJECTED,
+                        Submission.STATUS_ARCHIVED,
+                    ]
                 )
-                .distinct()
-                .count()
+                | Q(
+                    price__transactions__authorization_timeout_on__gt=now(),
+                    price__transactions__status=Transaction.STATUS_UNPAID,
+                )
             )
+            .distinct()
+            .count()
+        )
+
+    def has_exceeded_maximum_submissions(self):
+        return (
+            self.max_submissions
+            and self.nb_submissions_taken_into_account_for_max_submissions
             >= self.max_submissions
         )
 
