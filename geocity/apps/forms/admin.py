@@ -27,7 +27,7 @@ def form_administrative_entities(obj):
     )
 
 
-form_administrative_entities.short_description = _("Entités administratives")
+form_administrative_entities.short_description = _("Entité administrative")
 
 
 def get_forms_field(user):
