@@ -190,7 +190,10 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
 
 
 class OwnSubmissionsExportTable(GenericSubmissionTable):
-    forms_str = tables.Column(verbose_name=_("Objets et types de demandes"))
+    forms_str = tables.TemplateColumn(
+        verbose_name=_("Objets et types de demandes"),
+        template_name="tables/_submission_forms_str.html",
+    )
 
     class Meta:
         model = models.Submission
@@ -268,13 +271,14 @@ class DepartmentSubmissionsHTMLTable(
 
 
 class DepartmentSubmissionsExportTable(GenericDepartmentSubmissionsTable):
-    forms_str = tables.Column(verbose_name=_("Objets et types de demandes"))
+    forms_str = tables.TemplateColumn(
+        verbose_name=_("Objets et types de demandes"),
+        template_name="tables/_submission_forms_str.html",
+    )
 
     if settings.AUTHOR_IBAN_VISIBLE:
         author_iban = tables.TemplateColumn(
             verbose_name=_("IBAN"),
-            attrs=ATTRIBUTES,
-            orderable=False,
             template_name="tables/_submission_author_iban.html",
         )
 

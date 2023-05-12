@@ -27,7 +27,7 @@ def form_administrative_entities(obj):
     )
 
 
-form_administrative_entities.short_description = _("Entités administratives")
+form_administrative_entities.short_description = _("Entité administrative")
 
 
 def get_forms_field(user):
@@ -197,8 +197,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "document_enabled",
         "publication_enabled",
         "permanent_publication_enabled",
-        "max_submissions",
-        "max_submissions_message",
+        "max_submissions_nb_submissions",
+        "get_max_submissions_message",
     ]
     list_filter = ["administrative_entities"]
     search_fields = [
@@ -298,6 +298,25 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Formulaire")
+
+    def max_submissions_nb_submissions(self, obj):
+        nb_submissions_str = _("demandes actuellement")
+        return (
+            f"{obj.max_submissions} ({obj.nb_submissions_taken_into_account_for_max_submissions} {nb_submissions_str})"
+            if obj.max_submissions
+            else "-"
+        )
+
+    max_submissions_nb_submissions.admin_order_field = "max_submissions"
+    max_submissions_nb_submissions.short_description = _("Nombre maximum de demandes")
+
+    def get_max_submissions_message(self, obj):
+        return obj.max_submissions_message if obj.max_submissions else "-"
+
+    get_max_submissions_message.admin_order_field = "max_submissions_message"
+    get_max_submissions_message.short_description = _(
+        "Message lorsque le nombre maximal est atteint"
+    )
 
     def get_queryset(self, request):
         qs = (
