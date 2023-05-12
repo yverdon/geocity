@@ -80,6 +80,7 @@ class SubmissionQuerySet(models.QuerySet):
         annotate_with = dict(
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
+            forms_number=Count("forms"),
             permit_duration_max=Max("forms__permit_duration"),
             remaining_validations=Count("validations__department", distinct=True)
             - Count(
@@ -110,6 +111,9 @@ class SubmissionQuerySet(models.QuerySet):
 
         if ignore_archived:
             qs = qs.filter(~Q(status=Submission.STATUS_ARCHIVED))
+
+        if not user.is_superuser:
+            qs = qs.filter(forms_number__gt=0)
 
         if not user.is_authenticated:
             return qs.none()
