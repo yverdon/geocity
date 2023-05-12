@@ -652,13 +652,13 @@ class SubmissionDetailView(View):
         validation = form.save()
 
         if validation.validation_status == models.SubmissionValidation.STATUS_APPROVED:
-            validation_message = _("La demande a bien été validée.")
+            validation_message = _("Le préavis positif a été enregistré.")
         elif (
             validation.validation_status == models.SubmissionValidation.STATUS_REJECTED
         ):
-            validation_message = _("La demande a bien été refusée.")
+            validation_message = _("Le préavis négatif a été enregistré.")
         else:
-            validation_message = _("Les commentaires ont été enregistrés.")
+            validation_message = _("Le commentaire a été enregistré.")
 
         try:
 
