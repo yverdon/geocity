@@ -303,6 +303,8 @@ class DepartmentAdminForm(forms.ModelForm):
             "is_backoffice",
             "is_integrator_admin",
             "mandatory_2fa",
+            "uses_generic_email",
+            "generic_email",
             "integrator_email_domains",
             "integrator_emails_exceptions",
             "integrator",
@@ -359,6 +361,9 @@ class DepartmentAdminForm(forms.ModelForm):
             )
 
         return self.cleaned_data
+
+    class Media:
+        js = ("js/admin/form_department.js",)
 
 
 # Inline for group & department (1to1)

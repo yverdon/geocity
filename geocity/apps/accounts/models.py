@@ -166,6 +166,19 @@ class PermitDepartment(models.Model):
         ),
         default=False,
     )
+    uses_generic_email = models.BooleanField(
+        _("Ne notifier qu'une adresse email générique"),
+        help_text=_(
+            "Cocher si une adresse email générique doit être utilisée au lieu de l'adresse personnelle"
+        ),
+        default=False,
+    )
+    generic_email = models.CharField(
+        _("Email générique"),
+        help_text=_("Email générique pour tous les membres du groupe"),
+        blank=True,
+        max_length=254,
+    )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(

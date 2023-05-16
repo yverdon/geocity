@@ -846,15 +846,20 @@ class Submission(models.Model):
         return required_info
 
     def get_secretary_email(self):
-        department = self.administrative_entity.departments.filter(is_backoffice=True)
-        secretary_group_users = User.objects.filter(
-            Q(
-                groups__permit_department__in=department,
-                userprofile__notify_per_email=True,
+        departments = self.administrative_entity.departments.filter(is_backoffice=True)
+        departments_with_generic_email = departments.filter(
+            uses_generic_email=True
+        ).filter(uses_generic_email__isnull=False)
+        if departments_with_generic_email:
+            return [department.generic_email for department in departments]
+        else:
+            secretary_group_users = User.objects.filter(
+                Q(
+                    groups__permit_department__in=departments,
+                    userprofile__notify_per_email=True,
+                )
             )
-        )
-
-        return [user.email for user in secretary_group_users]
+            return [user.email for user in secretary_group_users]
 
     def get_complementary_documents(self, user):
         qs = self.complementary_documents.all().order_by("pk").distinct()
