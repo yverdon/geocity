@@ -173,11 +173,10 @@ class PermitDepartment(models.Model):
         ),
         default=False,
     )
-    generic_email = models.CharField(
+    generic_email = models.EmailField(
         _("Email générique"),
         help_text=_("Email générique pour tous les membres du groupe"),
         blank=True,
-        max_length=254,
     )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
