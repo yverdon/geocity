@@ -26,6 +26,10 @@ MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
     "Un utilisateur ne peut être membre que d'un seul groupe 'Intégrateur'"
 )
 
+MULTIPLE_VALIDATOR_FOR_SAME_ENTITY_ERROR_MESSAGE = _(
+    "Un utilisateur ne pas être dans plusieurs groupes de 'validateurs' de la même entité administrative"
+)
+
 LEGAL_TEXT_EXAMPLE = """
                         <h5>Exemple de texte relatif à la protection des données</h5>
                         <hr>
@@ -109,6 +113,17 @@ class UserAdminForm(UserChangeForm):
 
         if len(edited_user_integrator_groups) > 1:
             raise forms.ValidationError(MULTIPLE_INTEGRATOR_ERROR_MESSAGE)
+
+        validator_number = groups.filter(permit_department__is_validator=True).count()
+        validator_number_for_same_entity = (
+            groups.filter(permit_department__is_validator=True)
+            .distinct("permit_department__administrative_entity")
+            .count()
+        )
+        if validator_number > validator_number_for_same_entity:
+            raise forms.ValidationError(
+                MULTIPLE_VALIDATOR_FOR_SAME_ENTITY_ERROR_MESSAGE
+            )
         return groups
 
 
