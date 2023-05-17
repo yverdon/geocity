@@ -6,6 +6,7 @@ __pycache__/
 /print/*.qgs~
 gunicorn_log.log
 geocity/protected-static/
+geocity/apps/core/static/libs/js/advanced-geometry-edition/
 env.yaml
 /docker-compose.override.yml
 /permit_requests_uploads
