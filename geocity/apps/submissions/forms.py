@@ -930,8 +930,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     tup
                     for tup in models.Submission.STATUS_CHOICES
                     if any(i in tup for i in models.Submission.AMENDABLE_STATUSES)
-                    or models.Submission.STATUS_APPROVED in tup
-                    or models.Submission.STATUS_REJECTED in tup
                     or STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
             else:

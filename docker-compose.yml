@@ -99,11 +99,14 @@ services:
         #     - isolated
 
     # Builder for the external statics than must be built
-    external-statics:
+    statics_builder:
         image: external_statics
         build:
             context: services/external_statics
         working_dir: /app/geocity-wc-map
+        volumes:
+            - static_root:/static_root
+        command: "cp -R /app/geocity-wc-map/dist /static_root/libs/js/advanced-geometry-edition"
 
 
 networks:
