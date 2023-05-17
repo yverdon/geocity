@@ -9,4 +9,4 @@ RUN git clone https://github.com/MediaComem/geocity-wc-map.git
 WORKDIR /app/geocity-wc-map
 
 RUN npm ci
-RUN npm build
+RUN npm run build
