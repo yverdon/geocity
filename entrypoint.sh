@@ -11,9 +11,5 @@ if [ "$ENV" == "PROD" ]; then
     scripts/migrate.sh
 fi
 
-if [ "$ENV" == "DEV" ]; then
-    cp -R /static_root/libs/js/advanced-geometry-edition /code/geocity/apps/core/static/libs/js
-fi
-
 # Run the command
 exec $@

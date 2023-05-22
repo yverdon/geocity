@@ -1,45 +1,43 @@
 # Overrides for development
 
-version: "3.5"
-
 volumes:
-    pgdata:
+  pgdata:
 
 services:
-    web:
-        build:
-            args:
-                ENV: DEV
-        environment:
-            ENV: DEV
-        # Runserver for live reload
-        command: "python3 manage.py runserver 0.0.0.0:9000"
-        volumes:
-            # Mount code for live reload
-            - .:/code
-            # For dev, set the temp folder in the main code directory, for convenience
-            - ./_dev_volumes/private_documents:/private_documents
-            - ./_dev_volumes/archive:/archive
-        depends_on:
-            - "postgres"
-        ports:
-            - "${DJANGO_DOCKER_PORT}:9000"
+  web:
+    build:
+      args:
+        ENV: DEV
+    environment:
+      ENV: DEV
+    # Runserver for live reload
+    command: "python3 manage.py runserver 0.0.0.0:9000"
+    volumes:
+      # Mount code for live reload
+      - .:/code
+      # For dev, set the temp folder in the main code directory, for convenience
+      - ./_dev_volumes/private_documents:/private_documents
+      - ./_dev_volumes/archive:/archive
+    depends_on:
+      - "postgres"
+    ports:
+      - "${DJANGO_DOCKER_PORT}:9000"
 
-    postgres:
-        image: postgis/postgis:13-3.2
-        restart: unless-stopped
-        environment:
-            - POSTGRES_USER=${PGUSER}
-            - POSTGRES_PASSWORD=${PGPASSWORD}
-            - POSTGRES_DB=${PGDATABASE}
-        ports:
-            - "${POSTGRES_DOCKER_PORT}:5432"
-        volumes:
-            - pgdata:/var/lib/postgresql/data
+  postgres:
+    image: postgis/postgis:13-3.2
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
+    ports:
+      - "${POSTGRES_DOCKER_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-    mailhog:
-        container_name: mailhog
-        image: mailhog/mailhog
-        ports:
-            - 1025:1025 # smtp server
-            - 8025:8025 # web ui
+  mailhog:
+    container_name: mailhog
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui

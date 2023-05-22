@@ -15,4 +15,5 @@ RUN echo "cloning advanced map plugin..." \
 
 RUN cd /app/geocity-wc-map \
   && npm ci \
-  && npm run build
+  && npm run build \
+  && echo "static files for advanced mapping build successfully!"
