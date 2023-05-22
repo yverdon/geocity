@@ -11,7 +11,7 @@ RUN apt-get -yq update \
   git
 
 RUN echo "cloning advanced map plugin..." \
-  && git clone https://github.com/MediaComem/geocity-wc-map.git
+  && git clone https://github.com/yverdon/geocity-wc-map.git
 
 RUN cd /app/geocity-wc-map \
   && npm ci \
