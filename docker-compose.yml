@@ -16,7 +16,7 @@ services:
     volumes:
       - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
       - ${ARCHIVE_DIR}:/archive
-      - static_root:/static_map/geocity-wc-map/
+      - static_root:/static_root/geocity-wc-map/
       # to allow to spawn new QGIS containers
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
