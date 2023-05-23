@@ -177,6 +177,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             "application_description": config.APPLICATION_DESCRIPTION,
             "general_conditions_url": config.GENERAL_CONDITIONS_URL,
             "privacy_policy_url": config.PRIVACY_POLICY_URL,
+            "legal_notice_url": config.LEGAL_NOTICE_URL,
             "contact_url": config.CONTACT_URL,
             "background_image": None,
         }

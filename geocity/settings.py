@@ -229,8 +229,9 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
         "ANONYMOUS_REQUEST_SENT_BODY",
-        "PRIVACY_POLICY_URL",
         "GENERAL_CONDITIONS_URL",
+        "PRIVACY_POLICY_URL",
+        "LEGAL_NOTICE_URL",
         "CONTACT_URL",
     ),
     "Theme Options": (
@@ -287,6 +288,11 @@ CONSTANCE_CONFIG = {
     "PRIVACY_POLICY_URL": (
         "",
         "Lien vers la politique de confidentialité",
+        str,
+    ),
+    "LEGAL_NOTICE_URL": (
+        "",
+        "Lien vers les mentions légales",
         str,
     ),
     "CONTACT_URL": (
