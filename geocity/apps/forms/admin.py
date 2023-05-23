@@ -276,7 +276,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "expiration_reminder",
                     "days_before_reminder",
                     "geo_widget_option",
-                    "map_widget_configuration",  # TODO: hide below field if a config is selected here
+                    "map_widget_configuration",
                     "geometry_types",
                     "wms_layers",
                     "wms_layers_order",

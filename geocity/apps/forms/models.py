@@ -490,7 +490,6 @@ class Form(models.Model):
         (GEO_WIDGET_GENERIC, _("Générique")),
         (GEO_WIDGET_ADVANCED, _("Avancée")),
     )
-    # TODO: show/hide depending fields depending on admin choice
     geo_widget_option = models.IntegerField(
         _("Choix de l'interface de saisie cartographique"),
         choices=GEO_WIDGET_CHOICES,

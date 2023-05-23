@@ -11,6 +11,4 @@ def map_widget_configuration(request, form_id):
         map_widget_configuration_form__pk=form_id
     )
 
-    # TODO: get existing configuration for administrative entity and override JSON with specific keys
-
     return JsonResponse(form_map_widget_configuration.configuration, safe=False)
