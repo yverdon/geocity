@@ -79,7 +79,6 @@ class FormAdminForm(forms.ModelForm):
         widget=forms.Select,
         label=_("Choix de l'interface de saisie cartographique"),
         required=False,
-        # default=models.Form.GEO_WIDGET_GENERIC,
     )
 
     map_widget_configuration = get_map_config()
@@ -156,6 +155,15 @@ class FormAdminForm(forms.ModelForm):
                 geometry_type,
                 geometry_type in self.cleaned_data["geometry_types"],
             )
+
+        # Advanced geometry widget only supports point geometry, this has to be set programatically
+        if (
+            int(self.cleaned_data["geo_widget_option"])
+            == models.Form.GEO_WIDGET_ADVANCED
+        ):
+            self.instance.has_geometry_point = True
+            self.instance.has_geometry_line = False
+            self.instance.has_geometry_polygon = False
 
         return super().save(*args, **kwargs)
 
@@ -584,8 +592,8 @@ class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         super().__init__(*args, **kwargs)
 
     list_display = [
+        "id",
         "name",
-        "configuration",
         "integrator",
     ]
 

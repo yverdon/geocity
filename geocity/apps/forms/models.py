@@ -338,6 +338,10 @@ class MapWidgetConfiguration(models.Model):
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
+    class Meta:
+        verbose_name = _("1.8 Module cartographique avancé")
+        verbose_name_plural = _("1.8 Modules cartographiques avancés")
+
 
 class Form(models.Model):
     """

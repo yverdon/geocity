@@ -11,19 +11,19 @@ const baseSchema = {
                   "title": "Modes d’interaction avec la carte",
                   "choices": [
                     {
-                      "title": "Création",
+                      "title": "Création (ajouter un point libre)",
                       "value": "create",
                     },
                     {
-                      "title": "Sélection",
+                      "title": "Sélection (sélectionner un point existant, à partir d'un WFS",
                       "value": "select"
                     },
                     {
-                      "title": "Cible",
+                      "title": "Cible (ajoute d'un point libre, mobile-first",
                       "value": "target"
                     },
                     {
-                      "title": "Mixte",
+                      "title": "Mixte (Création + Sélection)",
                       "value": "mix"
                     }
                   ],
