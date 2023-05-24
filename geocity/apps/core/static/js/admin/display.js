@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementsByClassName('field-geometry_types')[0].classList.remove('hide')
       document.getElementsByClassName('field-wms_layers')[0].classList.remove('hide')
       document.getElementsByClassName('field-wms_layers_order')[0].classList.remove('hide')
+      document.getElementsByClassName('field-can_have_multiple_ranges')[0].classList.remove('hide')
     }
 
     if (state == 2) {
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementsByClassName('field-geometry_types')[0].classList.add('hide')
       document.getElementsByClassName('field-wms_layers')[0].classList.add('hide')
       document.getElementsByClassName('field-wms_layers_order')[0].classList.add('hide')
+      document.getElementsByClassName('field-can_have_multiple_ranges')[0].classList.add('hide')
     }
   }
 

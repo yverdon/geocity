@@ -49,8 +49,8 @@ SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 # LIMIT MAX CONNEXIONS ATTEMPTS
 AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
 # Lock out by combination of ip AND User
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = os.getenv(
-    "AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP", False
+AXES_LOCKOUT_PARAMETERS = os.getenv(
+    "AXES_LOCKOUT_PARAMETERS", ["ip_address", ["username"]]
 )
 AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
@@ -231,8 +231,9 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
         "ANONYMOUS_REQUEST_SENT_BODY",
-        "PRIVACY_POLICY_URL",
         "GENERAL_CONDITIONS_URL",
+        "PRIVACY_POLICY_URL",
+        "LEGAL_NOTICE_URL",
         "CONTACT_URL",
     ),
     "Theme Options": (
@@ -289,6 +290,11 @@ CONSTANCE_CONFIG = {
     "PRIVACY_POLICY_URL": (
         "",
         "Lien vers la politique de confidentialité",
+        str,
+    ),
+    "LEGAL_NOTICE_URL": (
+        "",
+        "Lien vers les mentions légales",
         str,
     ),
     "CONTACT_URL": (

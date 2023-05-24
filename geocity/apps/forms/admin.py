@@ -156,7 +156,12 @@ class FormAdminForm(forms.ModelForm):
                 geometry_type in self.cleaned_data["geometry_types"],
             )
 
-        # Advanced geometry widget only supports point geometry, this has to be set programatically
+        """Advanced geometry widget supports
+            - Only points
+            - Only one item (no multiple time & map)
+            Thus we hide/show related fields and set values programatically
+        """
+
         if (
             int(self.cleaned_data["geo_widget_option"])
             == models.Form.GEO_WIDGET_ADVANCED
@@ -164,6 +169,8 @@ class FormAdminForm(forms.ModelForm):
             self.instance.has_geometry_point = True
             self.instance.has_geometry_line = False
             self.instance.has_geometry_polygon = False
+
+            self.instance.can_have_multiple_ranges = False
 
         return super().save(*args, **kwargs)
 

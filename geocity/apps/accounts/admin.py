@@ -654,7 +654,6 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
         self.fields["sites"] = get_sites_field(user)
-        self.fields["map_widget_configuration"] = get_map_config()
 
     class Meta:
         model = models.AdministrativeEntityForAdminSite
@@ -677,7 +676,6 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "signature_sheet",
             "signature_sheet_description",
             "additional_searchtext_for_address_field",
-            "map_widget_configuration",
             "geom",
             "integrator",
         ]
@@ -757,7 +755,6 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "general_informations",
                     "phone",
                     "additional_searchtext_for_address_field",
-                    "map_widget_configuration",
                     "geom",
                     "integrator",
                 )
@@ -861,10 +858,6 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         if db_field.name == "integrator":
             kwargs["queryset"] = Group.objects.filter(
                 permit_department__is_integrator_admin=True,
-            )
-        if db_field.name == "map_widget_configuration":
-            kwargs["queryset"] = filter_for_user(
-                request.user, MapWidgetConfiguration.objects.all()
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
