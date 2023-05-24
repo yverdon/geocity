@@ -599,8 +599,8 @@ class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         super().__init__(*args, **kwargs)
 
     list_display = [
-        "id",
         "name",
+        "id",
         "integrator",
     ]
 
