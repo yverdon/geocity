@@ -37,7 +37,7 @@ pyyaml
 uritemplate
 django-crispy-forms==1.14.0
 django-cron
-django-axes
+django-axes[ipware]
 pdf2image
 django-simple-captcha
 django-rest-knox
