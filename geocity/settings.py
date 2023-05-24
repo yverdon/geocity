@@ -50,7 +50,7 @@ SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
 # Lock out by combination of ip AND User
 AXES_LOCKOUT_PARAMETERS = os.getenv(
-    "AXES_LOCKOUT_PARAMETERS", ["ip_address", ["username"]]
+    "AXES_LOCKOUT_PARAMETERS", [["ip_address", "username"]]
 )
 AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
