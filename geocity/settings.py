@@ -282,7 +282,7 @@ CONSTANCE_CONFIG = {
     ),
     "GENERAL_CONDITIONS_URL": (
         "",
-        "Lien vers les conditions générales",
+        "Lien vers les conditions générales d'utilisation",
         str,
     ),
     "PRIVACY_POLICY_URL": (
