@@ -140,6 +140,12 @@ class GenericSubmissionTable(ColumnShiftTable):
         verbose_name=_("Entité administrative"),
         orderable=False,
     )
+    selected_price = tables.TemplateColumn(
+        verbose_name=_("Tarif"),
+        template_name="tables/_submission_selected_price.html",
+        attrs=ATTRIBUTES,
+        orderable=False,
+    )
 
     def value_starts_at_min(self, record, value):
         return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
@@ -176,6 +182,7 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_html",
             "administrative_entity",
         )
@@ -183,7 +190,10 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
 
 
 class OwnSubmissionsExportTable(GenericSubmissionTable):
-    forms_str = tables.Column(verbose_name=_("Objets et types de demandes"))
+    forms_str = tables.TemplateColumn(
+        verbose_name=_("Objets et types de demandes"),
+        template_name="tables/_submission_forms_str.html",
+    )
 
     class Meta:
         model = models.Submission
@@ -193,6 +203,7 @@ class OwnSubmissionsExportTable(GenericSubmissionTable):
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_str",
             "administrative_entity",
         )
@@ -253,19 +264,21 @@ class DepartmentSubmissionsHTMLTable(
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_html",
             "administrative_entity",
         ]
 
 
 class DepartmentSubmissionsExportTable(GenericDepartmentSubmissionsTable):
-    forms_str = tables.Column(verbose_name=_("Objets et types de demandes"))
+    forms_str = tables.TemplateColumn(
+        verbose_name=_("Objets et types de demandes"),
+        template_name="tables/_submission_forms_str.html",
+    )
 
     if settings.AUTHOR_IBAN_VISIBLE:
         author_iban = tables.TemplateColumn(
             verbose_name=_("IBAN"),
-            attrs=ATTRIBUTES,
-            orderable=False,
             template_name="tables/_submission_author_iban.html",
         )
 
@@ -279,6 +292,7 @@ class DepartmentSubmissionsExportTable(GenericDepartmentSubmissionsTable):
             "status",
             "starts_at_min",
             "ends_at_max",
+            "selected_price",
             "forms_str",
             "administrative_entity",
         ]

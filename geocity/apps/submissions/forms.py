@@ -80,7 +80,7 @@ def get_field_cls_for_field(field):
 
 
 def regroup_by_ofs_id(entities):
-    return groupby(entities.order_by("ofs_id"), lambda entity: entity.ofs_id)
+    return groupby(entities.order_by("ofs_id", "name"), lambda entity: entity.ofs_id)
 
 
 def disable_form(form, editable_fields=None):
@@ -930,8 +930,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     tup
                     for tup in models.Submission.STATUS_CHOICES
                     if any(i in tup for i in models.Submission.AMENDABLE_STATUSES)
-                    or models.Submission.STATUS_APPROVED in tup
-                    or models.Submission.STATUS_REJECTED in tup
                     or STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
             else:
@@ -1410,6 +1408,22 @@ class SubmissionValidationDepartmentSelectionForm(forms.Form):
 
 
 class SubmissionValidationForm(forms.ModelForm):
+    def __init__(self, user, submission, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if not permissions.has_permission_to_edit_submission_validations(
+            user, submission
+        ):
+            self.fields["comment_is_visible_by_author"].disabled = True
+
+        self.fields["validation_status"].choices = [
+            (
+                value,
+                label,
+            )
+            for value, label in self.fields["validation_status"].choices
+        ]
+
     class Meta:
         model = models.SubmissionValidation
         fields = [
@@ -1422,17 +1436,6 @@ class SubmissionValidationForm(forms.ModelForm):
             "comment": forms.Textarea(attrs={"rows": 3}),
             "comment_is_visible_by_author": forms.CheckboxInput(),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields["validation_status"].choices = [
-            (
-                value,
-                label,
-            )
-            for value, label in self.fields["validation_status"].choices
-        ]
 
 
 class SubmissionValidationPokeForm(forms.Form):
@@ -1492,6 +1495,8 @@ class SubmissionProlongationForm(forms.ModelForm):
 
 
 class SubmissionClassifyForm(forms.ModelForm):
+    required_css_class = "required"
+
     # Status field is set as initial value when instantiating the form in the view
     status = forms.ChoiceField(
         choices=(

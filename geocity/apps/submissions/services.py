@@ -59,33 +59,11 @@ def submit_submission(submission, request):
         # to calculate the dates automatically
         submission.set_dates_for_renewable_forms()
 
-        users_to_notify = set(
-            get_user_model()
-            .objects.filter(
-                Q(
-                    groups__permit_department__administrative_entity=submission.administrative_entity,
-                    email__isnull=False,
-                    groups__permit_department__is_integrator_admin=False,
-                ),
-                Q(
-                    Q(
-                        groups__permit_department__is_validator=False,
-                    )
-                    | Q(
-                        groups__permit_department__is_validator=True,
-                        groups__permit_department__is_backoffice=True,
-                    )
-                ),
-                Q(userprofile__notify_per_email=True),
-            )
-            .values_list("email", flat=True)
-        )
-
         data = {
             "subject": "{} ({})".format(
                 _("Nouvelle demande/annonce"), submission.get_forms_names_list()
             ),
-            "users_to_notify": users_to_notify,
+            "users_to_notify": submission.get_secretary_email(),
             "template": "submission_submitted.txt",
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,

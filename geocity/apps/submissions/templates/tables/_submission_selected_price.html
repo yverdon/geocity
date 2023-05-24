@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load submissions_extras %}
+
+{% if record.get_submission_price %}
+  {{ record.get_submission_price.text }} ({{ record.get_submission_price.amount }} {{ record.get_submission_price.currency }})
+{% else %}
+  —
+{% endif %}

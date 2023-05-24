@@ -276,7 +276,13 @@ class SubmissionDetailView(View):
                 "can_classify": permissions.can_classify_submission(
                     self.request.user, self.submission
                 ),
+                "has_permission_to_classify_submission": permissions.has_permission_to_classify_submission(
+                    self.request.user, self.submission
+                ),
                 "can_validate_submission": can_validate_submission,
+                "has_permission_to_validate_submission": permissions.has_permission_to_validate_submission(
+                    self.request.user, self.submission
+                ),
                 "has_permission_to_edit_submission_validations": permissions.has_permission_to_edit_submission_validations(
                     self.request.user, self.submission
                 ),
@@ -474,7 +480,12 @@ class SubmissionDetailView(View):
             )
             return None
 
-        form = forms.SubmissionValidationForm(instance=validation, data=data)
+        form = forms.SubmissionValidationForm(
+            instance=validation,
+            data=data,
+            user=self.request.user,
+            submission=self.submission,
+        )
         if not permissions.can_validate_submission(self.request.user, self.submission):
             forms.disable_form(form)
 
@@ -599,7 +610,6 @@ class SubmissionDetailView(View):
                 services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
-
             return redirect(
                 "submissions:submission_detail",
                 submission_id=self.submission.pk,
@@ -618,7 +628,14 @@ class SubmissionDetailView(View):
             _("La demande #%s a bien été transmise pour validation.")
             % self.submission.pk,
         )
-        return redirect("submissions:submissions_list")
+
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
 
     def handle_validation_form_submission(self, form):
         validation_object = models.SubmissionValidation.objects.filter(
@@ -635,13 +652,13 @@ class SubmissionDetailView(View):
         validation = form.save()
 
         if validation.validation_status == models.SubmissionValidation.STATUS_APPROVED:
-            validation_message = _("La demande a bien été validée.")
+            validation_message = _("Le préavis positif a été enregistré.")
         elif (
             validation.validation_status == models.SubmissionValidation.STATUS_REJECTED
         ):
-            validation_message = _("La demande a bien été refusée.")
+            validation_message = _("Le préavis négatif a été enregistré.")
         else:
-            validation_message = _("Les commentaires ont été enregistrés.")
+            validation_message = _("Le commentaire a été enregistré.")
 
         try:
 
@@ -686,7 +703,13 @@ class SubmissionDetailView(View):
 
         messages.success(self.request, validation_message)
 
-        return redirect("submissions:submissions_list")
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
 
     def handle_poke(self, form):
         validations = form.save()
@@ -1290,7 +1313,10 @@ def submission_fields(request, submission_id):
             instance=submission, data=request.POST, enable_required=False
         )
         prices_form_valid = True
-        if requires_online_payment:
+        if (
+            requires_online_payment
+            and submission.status == models.Submission.STATUS_DRAFT
+        ):
             prices_form = forms.FormsPriceSelectForm(
                 instance=submission, data=request.POST
             )

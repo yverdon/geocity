@@ -76,17 +76,17 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 			<td>
 			<p>&nbsp;</p>
 
-			<p>{{ transaction_data.line_text }} : {{request_data.properties.submission_submission_price.text}}</p>
+			<p>{{ transaction_data.line_text }} : {{request_data.properties.submission_price.text}}</p>
 
 			<p>&nbsp;</p>
 			</td>
 			<td>&nbsp;</td>
-			<td style="text-align:right">{{request_data.properties.submission_submission_price.amount}}</td>
+			<td style="text-align:right">{{request_data.properties.submission_price.amount}}</td>
 		</tr>
 		<tr>
 			<td><strong>Montant pay&eacute;</strong></td>
 			<td>&nbsp;</td>
-			<td style="text-align:right"><strong>{{request_data.properties.submission_submission_price.amount}}</strong></td>
+			<td style="text-align:right"><strong>{{request_data.properties.submission_price.amount}}</strong></td>
 		</tr>
 	</tbody>
 </table>
@@ -160,17 +160,17 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 			<td>
 			<p>&nbsp;</p>
 
-			<p>{{ transaction_data.line_text }} : {{request_data.properties.submission_submission_price.text}}</p>
+			<p>{{ transaction_data.line_text }} : {{request_data.properties.submission_price.text}}</p>
 
 			<p>&nbsp;</p>
 			</td>
 			<td>&nbsp;</td>
-			<td style="text-align:right">-{{request_data.properties.submission_submission_price.amount}}</td>
+			<td style="text-align:right">-{{request_data.properties.submission_price.amount}}</td>
 		</tr>
 		<tr>
 			<td><strong>Montant rembours&eacute;</strong></td>
 			<td>&nbsp;</td>
-			<td style="text-align:right"><strong>-{{request_data.properties.submission_submission_price.amount}}</strong></td>
+			<td style="text-align:right"><strong>-{{request_data.properties.submission_price.amount}}</strong></td>
 		</tr>
 	</tbody>
 </table>

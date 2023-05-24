@@ -166,6 +166,18 @@ class PermitDepartment(models.Model):
         ),
         default=False,
     )
+    uses_generic_email = models.BooleanField(
+        _("Ne notifier qu'une adresse email générique"),
+        help_text=_(
+            "Cocher si une adresse email générique doit être utilisée au lieu de l'adresse personnelle"
+        ),
+        default=False,
+    )
+    generic_email = models.EmailField(
+        _("Email générique"),
+        help_text=_("Email générique pour tous les membres du groupe"),
+        blank=True,
+    )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(
@@ -215,7 +227,7 @@ class AdministrativeEntityManager(models.Manager):
             .filter(
                 departments__group__in=user.groups.all(),
             )
-            .order_by("ofs_id", "-name")
+            .order_by("ofs_id", "name")
         )
 
 

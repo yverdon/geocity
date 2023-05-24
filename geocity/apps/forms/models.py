@@ -109,7 +109,7 @@ class FormQuerySet(models.QuerySet):
                 pk__in=self.values_list("administrative_entities", flat=True),
                 forms__is_anonymous=False,
             )
-            .order_by("ofs_id", "-name")
+            .order_by("ofs_id", "name")
             .distinct()
         )
 
@@ -322,7 +322,7 @@ class Form(models.Model):
     )
     administrative_entities = models.ManyToManyField(
         AdministrativeEntity,
-        verbose_name=_("entités administratives"),
+        verbose_name=_("entité administrative"),
         related_name="forms",
     )
     can_always_update = models.BooleanField(
@@ -469,7 +469,8 @@ class Form(models.Model):
             or self.has_geometry_polygon
         )
 
-    def has_exceeded_maximum_submissions(self):
+    @property
+    def nb_submissions_taken_into_account_for_max_submissions(self):
         from ..submissions.models import Submission
         from ..submissions.payments.models import Transaction
 
@@ -495,9 +496,15 @@ class Form(models.Model):
                         price__transactions__status=Transaction.STATUS_UNPAID,
                     )
                 )
-                .distinct()
-                .count()
             )
+            .distinct()
+            .count()
+        )
+
+    def has_exceeded_maximum_submissions(self):
+        return (
+            self.max_submissions
+            and self.nb_submissions_taken_into_account_for_max_submissions
             >= self.max_submissions
         )
 

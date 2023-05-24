@@ -478,6 +478,7 @@ def search_geo_times(date_or_partial_date, submissions_qs, limit=None):
 
 
 def search_submissions(search_str, limit, submissions_qs):
+    search_str = search_str.strip()
     search_date = extract_date(search_str)
 
     # The `pg_trgm.strict_word_similarity_threshold` setting is used by the
