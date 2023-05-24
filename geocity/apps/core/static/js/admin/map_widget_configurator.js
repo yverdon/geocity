@@ -19,7 +19,7 @@ const baseSchema = {
                       "value": "select"
                     },
                     {
-                      "title": "Cible (ajoute d'un point libre, mobile-first",
+                      "title": "Cible (ajoute d'un point libre, usage préférentiel sur mobile)",
                       "value": "target"
                     },
                     {
