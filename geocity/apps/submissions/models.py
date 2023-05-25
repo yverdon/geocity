@@ -482,7 +482,7 @@ class Submission(models.Model):
         if settings.SITE_DOMAIN:
             site_domain = settings.SITE_DOMAIN
         else:
-            id = relative_url.split("/")[-2]
+            id = relative_url.split("/")[2]
             submission = Submission.objects.get(id=id)
             site_domain = submission.get_site(use_default=False)
 
