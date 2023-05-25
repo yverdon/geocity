@@ -15,7 +15,6 @@ from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
-from geocity.apps.forms.models import MapWidgetConfiguration
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
@@ -635,16 +634,6 @@ def get_sites_field(user):
 class MapCustomChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return obj.name
-
-
-def get_map_config():
-    qs = MapWidgetConfiguration.objects.all()
-
-    return MapCustomChoiceField(
-        queryset=qs,
-        widget=forms.Select,
-        label=_("Configuration de la carte avancée"),
-    )
 
 
 class AdministrativeEntityAdminForm(forms.ModelForm):
