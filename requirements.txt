@@ -60,7 +60,7 @@ django-admin-sortable2==2.1.8
     # via -r requirements.in
 django-allauth==0.54.0
     # via -r requirements.in
-django-axes==6.0.1
+django-axes==5.41.1
     # via -r requirements.in
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.in
@@ -80,6 +80,8 @@ django-filter==23.2
     # via -r requirements.in
 django-formtools==2.4.1
     # via django-two-factor-auth
+django-ipware==5.0.0
+    # via django-axes
 django-jazzmin==2.6.0
     # via -r requirements.in
 django-js-asset==2.0.0

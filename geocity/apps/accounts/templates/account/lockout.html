@@ -32,11 +32,11 @@
           {% endif %}
           {% if config.GENERAL_CONDITIONS_URL %}
             &nbsp;|&nbsp;
-            <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% translate "Conditions" %}</a>
+            <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer" title="{% translate "Conditions générales d'utilisation" %}">{% translate "Conditions" %}</a>
           {% endif %}
           {% if config.PRIVACY_POLICY_URL %}
             &nbsp;|&nbsp;
-            <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer">{% translate "Confidentialité" %}</a>
+            <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer" title="{% translate "Politique de confidentialité" %}">{% translate "Confidentialité" %}</a>
           {% endif %}
           {% if config.LEGAL_NOTICE_URL %}
             &nbsp;|&nbsp;
