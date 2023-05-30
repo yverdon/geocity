@@ -107,7 +107,7 @@ class FormAdminForm(forms.ModelForm):
     @property
     def media(self):
         return forms.Media(
-            css={"all": ("css/admin/display.css",)},
+            css={"all": ("css/main.css",)},
             js=("js/admin/form.js", "js/admin/display.js"),
         )
 
