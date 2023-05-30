@@ -631,11 +631,6 @@ def get_sites_field(user):
     )
 
 
-class MapCustomChoiceField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        return obj.name
-
-
 class AdministrativeEntityAdminForm(forms.ModelForm):
     """Form class to configure an administrative entity (commune, organisation)"""
 

@@ -342,6 +342,9 @@ class MapWidgetConfiguration(models.Model):
         verbose_name = _("1.8 Module cartographique avancé")
         verbose_name_plural = _("1.8 Modules cartographiques avancés")
 
+    def __str__(self):
+        return self.name
+
 
 class Form(models.Model):
     """

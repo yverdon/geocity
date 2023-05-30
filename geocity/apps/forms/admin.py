@@ -8,11 +8,9 @@ from django.utils.translation import gettext_lazy as _
 from geocity.apps.accounts.admin import (
     LEGAL_TEXT_EXAMPLE,
     IntegratorFilterMixin,
-    MapCustomChoiceField,
     filter_for_user,
 )
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
-from geocity.apps.forms.models import MapWidgetConfiguration
 
 from . import models
 
@@ -59,15 +57,6 @@ class FormAdminForm(forms.ModelForm):
         LINE = "has_geometry_line", _("Ligne")
         POLYGON = "has_geometry_polygon", _("Polygone")
 
-    def get_map_config():
-        qs = MapWidgetConfiguration.objects.all()
-
-        return MapCustomChoiceField(
-            queryset=qs,
-            widget=forms.Select,
-            label=_("Configuration de la carte avancée"),
-        )
-
     geometry_types = forms.MultipleChoiceField(
         choices=GeometryTypes.choices,
         widget=forms.CheckboxSelectMultiple,
@@ -80,8 +69,6 @@ class FormAdminForm(forms.ModelForm):
         label=_("Choix de l'interface de saisie cartographique"),
         required=False,
     )
-
-    map_widget_configuration = get_map_config()
 
     class Meta:
         model = models.Form
