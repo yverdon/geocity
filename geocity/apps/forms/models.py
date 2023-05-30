@@ -673,6 +673,18 @@ class Form(models.Model):
                             )
                         }
                     )
+        # FIXME
+        if (
+            self.geo_widget_option == self.GEO_WIDGET_ADVANCED
+            and not AdministrativeEntity.is_single_form_submissions
+        ):
+            raise ValidationError(
+                {
+                    "geo_widget_option": _(
+                        "L'entité administrative ne doit autoriser qu'un seul formulaire à la fois pour l'utilisation de ce module"
+                    )
+                }
+            )
 
 
 class FormField(models.Model):
