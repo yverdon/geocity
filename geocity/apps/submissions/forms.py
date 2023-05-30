@@ -1105,10 +1105,10 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             if submission.administrative_entity.expeditor_email
             else settings.DEFAULT_FROM_EMAIL
         )
-        is_awaiting_supplement = (
+
+        if (
             submission.status == models.Submission.STATUS_AWAITING_SUPPLEMENT
-        )
-        if is_awaiting_supplement:
+        ):  # is_awaiting_supplement
             submission_url = submission.get_absolute_url(
                 reverse(
                     "submissions:submission_fields",
