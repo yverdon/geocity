@@ -24,6 +24,7 @@ from geocity.apps.submissions.contact_type_choices import *
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
 
+# FIXME : Problem with this date, fix it
 now = datetime.now()
 date = [
     now.strftime("%d.%m.%Y"),

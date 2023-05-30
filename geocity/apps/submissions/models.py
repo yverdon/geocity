@@ -482,8 +482,9 @@ class Submission(models.Model):
         if settings.SITE_DOMAIN:
             site_domain = settings.SITE_DOMAIN
         else:
-            id = relative_url.split("/")[2]
-            submission = Submission.objects.get(id=id)
+            url_split = relative_url.split("/")
+            submission_id = url_split.index("submissions") + 1
+            submission = Submission.objects.get(id=submission_id)
             site_domain = submission.get_site(use_default=False)
 
         return f"{protocol}://{site_domain}{port}{relative_url}"
