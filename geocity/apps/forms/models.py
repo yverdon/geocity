@@ -673,7 +673,7 @@ class Form(models.Model):
                             )
                         }
                     )
-        # FIXME
+
         if (
             self.geo_widget_option == self.GEO_WIDGET_ADVANCED
             and not AdministrativeEntity.is_single_form_submissions
@@ -681,7 +681,7 @@ class Form(models.Model):
             raise ValidationError(
                 {
                     "geo_widget_option": _(
-                        "L'entité administrative ne doit autoriser qu'un seul formulaire à la fois pour l'utilisation de ce module"
+                        'L\'option "Autoriser uniquement un objet par demande" doit être cochée pour activer ce paramètre'
                     )
                 }
             )
