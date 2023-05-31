@@ -85,6 +85,7 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             )
             .prefetch_related(forms_prefetch)
             .select_related("submission__administrative_entity")
+            .select_related("submission__price")
         )
 
         return qs.order_by("starts_at")
