@@ -1106,6 +1106,22 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             else settings.DEFAULT_FROM_EMAIL
         )
 
+        if (
+            submission.status == models.Submission.STATUS_AWAITING_SUPPLEMENT
+        ):  # is_awaiting_supplement
+            submission_url = submission.get_absolute_url(
+                reverse(
+                    "submissions:submission_fields",
+                    kwargs={"submission_id": submission.pk},
+                )
+            )
+        else:
+            submission_url = submission.get_absolute_url(
+                reverse(
+                    "submissions:submission_detail",
+                    kwargs={"submission_id": submission.pk},
+                )
+            )
         services.send_email(
             template="submission_changed.txt",
             sender=sender,
@@ -1121,12 +1137,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     if self.cleaned_data.get("reason")
                     else ""
                 ),
-                "submission_url": submission.get_absolute_url(
-                    reverse(
-                        "submissions:submission_detail",
-                        kwargs={"submission_id": submission.pk},
-                    )
-                ),
+                "submission_url": submission_url,
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
             },
