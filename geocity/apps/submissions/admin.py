@@ -97,6 +97,7 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "created_at",
+        "sent_date",
         "status",
         "author",
         "get_forms",
