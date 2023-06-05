@@ -683,7 +683,7 @@ class Form(models.Model):
                 "admin:forms_administrativeentityforadminsite_change",
                 kwargs={"object_id": self.administrative_entities.first().pk},
             )
-            print(url)
+
             raise ValidationError(
                 {
                     "geo_widget_option": mark_safe(
