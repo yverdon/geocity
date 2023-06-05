@@ -11,7 +11,11 @@ from geocity import geometry
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
-from geocity.apps.submissions.models import Submission, SubmissionGeoTime
+from geocity.apps.submissions.models import (
+    Submission,
+    SubmissionGeoTime,
+    SubmissionInquiry,
+)
 
 from . import permissions, serializers
 
@@ -72,6 +76,10 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             ).select_related("category"),
         )
 
+        submission_inquiry_prefetch = Prefetch(
+            "submission__inquiry", queryset=SubmissionInquiry.objects.all()
+        )
+
         qs = (
             SubmissionGeoTime.objects.filter(base_filter)
             .filter(
@@ -86,6 +94,7 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             .prefetch_related(forms_prefetch)
             .select_related("submission__administrative_entity")
             .select_related("submission__price")
+            .prefetch_related(submission_inquiry_prefetch)
         )
 
         return qs.order_by("starts_at")
