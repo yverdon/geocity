@@ -10,6 +10,7 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -673,15 +674,22 @@ class Form(models.Model):
                             )
                         }
                     )
-
         if (
             self.geo_widget_option == self.GEO_WIDGET_ADVANCED
-            and not AdministrativeEntity.is_single_form_submissions
+            and not self.administrative_entities.first().is_single_form_submissions
         ):
+
+            url = reverse(
+                "admin:forms_administrativeentityforadminsite_change",
+                kwargs={"object_id": self.administrative_entities.first().pk},
+            )
+            print(url)
             raise ValidationError(
                 {
-                    "geo_widget_option": _(
-                        'L\'option "Autoriser uniquement un objet par demande" doit être cochée pour activer ce paramètre'
+                    "geo_widget_option": mark_safe(
+                        _(
+                            f'L\'option "Autoriser uniquement un objet par demande" doit être cochée sur <a href="{url}" target="_blank"><b>l\'entité administrative</b></a> pour activer ce paramètre'
+                        )
                     )
                 }
             )
