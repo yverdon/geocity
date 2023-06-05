@@ -16,6 +16,7 @@ from geocity.apps.submissions.models import (
     Submission,
     SubmissionComplementaryDocument,
     SubmissionGeoTime,
+    SubmissionInquiry,
 )
 from geocity.apps.submissions.payments.models import SubmissionPrice
 from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
@@ -238,6 +239,7 @@ class SubmissionInquirySerializer(serializers.ModelSerializer):
     documents = SubmissionComplementaryDocumentSerializer(read_only=True, many=True)
 
     class Meta:
+        model = SubmissionInquiry
         fields = (
             "id",
             "start_date",
