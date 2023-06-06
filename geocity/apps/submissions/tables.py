@@ -209,6 +209,7 @@ class OwnSubmissionsExportTable(GenericSubmissionTable):
         fields = (
             "id",
             "created_at",
+            "sent_date",
             "status",
             "starts_at_min",
             "ends_at_max",
