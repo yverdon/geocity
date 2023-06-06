@@ -67,7 +67,6 @@ DEFAULT_PILOT_PERMISSION_CODENAMES = [
     "read_submission",
     "amend_submission",
     "classify_submission",
-    "view_private_submission",
     "can_generate_pdf",
 ]
 
