@@ -1548,7 +1548,7 @@ class SubmissionInquiry(models.Model):
         null=False,
         on_delete=models.CASCADE,
         verbose_name=_("Demande"),
-        related_name="inquiry",
+        related_name="inquiries",
     )
     submitter = models.ForeignKey(
         User,
