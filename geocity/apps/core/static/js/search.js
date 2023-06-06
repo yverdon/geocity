@@ -203,7 +203,7 @@
       resultLinkElement.setAttribute("href", submission.url);
       resultLinkElement.appendChild(matchFieldElement);
       if (match.type != 'sent_date') {
-        resultLinkElement.appendChild(document.createTextNode(`Demande du ${submission.createdAt}`));
+        resultLinkElement.appendChild(document.createTextNode(`Demande du ${submission.sentDate}`));
         resultLinkElement.appendChild(document.createElement("br"));
       }
       if (match.type != 'author') {

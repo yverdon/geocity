@@ -76,7 +76,7 @@ def match_type_label(match_type):
     return {
         MatchType.AUTHOR: _("Auteur‧e"),
         MatchType.FIELD: _("Propriété"),
-        MatchType.sent_date: _("Date de création"),
+        MatchType.SENT_DATE: _("Date de création"),
         MatchType.CONTACT: _("Contact"),
         MatchType.TIME: _("Date"),
         MatchType.TRANSACTION: _("ID de transaction"),
@@ -526,7 +526,7 @@ def search_result_to_json(result):
             ),
             "author": result.author_name,
             "status": result.submission_status,
-            "createdAt": result.submission_sent_date.strftime("%d.%m.%Y"),
+            "sentDate": result.submission_sent_date.strftime("%d.%m.%Y"),
         },
         "match": {
             "fieldLabel": result.field_label,
