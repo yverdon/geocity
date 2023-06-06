@@ -47,3 +47,4 @@ docker
 django-polymorphic
 postfinancecheckout
 tzdata
+pandas

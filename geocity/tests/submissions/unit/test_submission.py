@@ -11,5 +11,5 @@ class PermitRequestTest(GeocityTestCase):
 
         status = models.Submission.STATUS_CHOICES[submission.status][1]
         date = dateformat.format(submission.created_at, "d.m.Y H:i")
-        expected = f"ID,Date de création,Date d'envoi,État,Début,Fin,Tarif,Objets et types de demandes,Entité administrative\r\n{submission.id},{date},{status},,"
+        expected = f"ID,Date de création,Date d'envoi,État,Début,Fin,Tarif,Objets et types de demandes,Entité administrative\r\n{submission.id},{date},{status}"
         self.assertIn(expected, submission.to_csv())
