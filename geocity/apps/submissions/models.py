@@ -213,7 +213,6 @@ class Submission(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
-    # TODO: rename on next API break => (last_sent_at)
     sent_date = models.DateTimeField(_("date du dernier envoi"), null=True)
     forms = models.ManyToManyField(
         Form,
