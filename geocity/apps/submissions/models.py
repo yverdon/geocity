@@ -137,6 +137,16 @@ class SubmissionQuerySet(models.QuerySet):
         return qs
 
 
+class CurrentInquiryManager(models.Manager):
+    def get_queryset(self):
+        today = datetime.today()
+        return (
+            super()
+            .get_queryset()
+            .filter(inquiries__start_date__lte=today, inquiries__end_date__gte=today)
+        )
+
+
 class Submission(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
@@ -263,6 +273,7 @@ class Submission(models.Model):
     )
 
     history = HistoricalRecords()
+    current_inquiry = CurrentInquiryManager()
 
     objects = SubmissionQuerySet().as_manager()
 
@@ -513,13 +524,6 @@ class Submission(models.Model):
             return
         self.status = self.STATUS_INQUIRY_IN_PROGRESS
         self.save()
-
-    @property
-    def current_inquiry(self):
-        today = datetime.today()
-        return SubmissionInquiry.objects.filter(
-            submission=self, start_date__lte=today, end_date__gte=today
-        ).first()
 
     def get_forms_names_list(self):
         return ", ".join(
@@ -1548,6 +1552,7 @@ class SubmissionInquiry(models.Model):
         null=False,
         on_delete=models.CASCADE,
         verbose_name=_("Demande"),
+        related_name="inquiries",
     )
     submitter = models.ForeignKey(
         User,
@@ -1559,13 +1564,6 @@ class SubmissionInquiry(models.Model):
     class Meta:
         verbose_name = _("2.3 Enquête publique")
         verbose_name_plural = _("2.3 Enquêtes publiques")
-
-    @classmethod
-    def get_current_inquiry(cls, submission):
-        today = datetime.today()
-        return cls.objects.filter(
-            submission=submission, start_date__lte=today, end_date__gte=today
-        ).first()
 
 
 class SubmissionComplementaryDocument(models.Model):
