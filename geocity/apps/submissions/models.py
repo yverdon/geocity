@@ -137,16 +137,6 @@ class SubmissionQuerySet(models.QuerySet):
         return qs
 
 
-class CurrentInquiryManager(models.Manager):
-    def get_queryset(self):
-        today = datetime.today()
-        return (
-            super()
-            .get_queryset()
-            .filter(inquiries__start_date__lte=today, inquiries__end_date__gte=today)
-        )
-
-
 class Submission(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
@@ -273,7 +263,6 @@ class Submission(models.Model):
     )
 
     history = HistoricalRecords()
-    current_inquiry = CurrentInquiryManager()
 
     objects = SubmissionQuerySet().as_manager()
 
@@ -524,6 +513,19 @@ class Submission(models.Model):
             return
         self.status = self.STATUS_INQUIRY_IN_PROGRESS
         self.save()
+
+    @property
+    def current_inquiry(self):
+        """
+        Try to return the current inquiry from the pre-fetched and filtered
+        inquiries (needs to be added to the queryset).
+        """
+        if (
+            hasattr(self, "current_inquiry_filtered")
+            and len(self.current_inquiry_filtered) > 0
+        ):
+            return self.current_inquiry_filtered[0]
+        return None
 
     def get_forms_names_list(self):
         return ", ".join(
