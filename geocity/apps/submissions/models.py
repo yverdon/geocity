@@ -521,10 +521,10 @@ class Submission(models.Model):
         inquiries (needs to be added to the queryset).
         """
         if (
-            hasattr(self, "current_inquiry_filtered")
-            and len(self.current_inquiry_filtered) > 0
+            hasattr(self, "current_inquiries_filtered")
+            and len(self.current_inquiries_filtered) > 0
         ):
-            return self.current_inquiry_filtered[0]
+            return self.current_inquiries_filtered[0]
         return None
 
     def get_forms_names_list(self):
