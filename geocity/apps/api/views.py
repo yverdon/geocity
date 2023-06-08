@@ -247,9 +247,12 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             )
             .prefetch_related(forms_prefetch)
             .prefetch_related(geotime_prefetch)
-            .prefetch_related("selected_forms")
-            .prefetch_related(current_inquiry_prefetch)
-            .select_related("administrative_entity")
+            .prefetch_related("selected_forms", "contacts")
+            .select_related(
+                "administrative_entity",
+                "author",
+                "price",
+            )
         )
 
         return qs
