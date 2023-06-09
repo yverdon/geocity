@@ -1,5 +1,7 @@
 import os
 
+from django.conf import settings
+
 from .admin_jazzmin_settings import JAZZMIN_SETTINGS  # noqa
 
 # Set environment mode
@@ -647,7 +649,7 @@ CKEDITOR_CONFIGS = {
 
 def show_toolbar(request):
     """Shows the debug toolbar when DEBUG is enabled."""
-    return DEBUG
+    return settings.DEBUG
 
 
 DEBUG_TOOLBAR_CONFIG = {
