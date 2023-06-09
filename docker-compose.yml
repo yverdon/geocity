@@ -1,105 +1,113 @@
-version: "3.5"
-
 volumes:
-    static_root:
+  static_root:
 
 services:
-    web: # Name of this container should not be changed
-        image: gms_web
-        restart: unless-stopped
-        build:
-            context: ./
-            args:
-                ENV: PROD
-        entrypoint: /code/entrypoint.sh
-        command: "gunicorn geocity.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
-        volumes:
-            - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
-            - ${ARCHIVE_DIR}:/archive
-            - static_root:/static_root
-            # to allow to spawn new QGIS containers
-            - /var/run/docker.sock:/var/run/docker.sock
-        environment:
-            ENV: PROD
-            CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE: ${CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE}
-            DJANGO_DOCKER_PORT: ${DJANGO_DOCKER_PORT}
-            STATIC_URL: ${STATIC_URL}
-            PREFIX_URL: ${PREFIX_URL}
-            PGDATABASE: ${PGDATABASE}
-            PGUSER: ${PGUSER}
-            PGPASSWORD: ${PGPASSWORD}
-            PGHOST: ${PGHOST}
-            PGPORT: ${PGPORT}
-            SECRET_KEY: ${SECRET_KEY}
-            EMAIL_HOST: ${EMAIL_HOST}
-            EMAIL_PORT: ${EMAIL_PORT}
-            EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-            EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
-            EMAIL_USE_TLS: ${EMAIL_USE_TLS}
-            EMAIL_TO_CONSOLE: ${EMAIL_TO_CONSOLE}
-            DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
-            PAGINATE_BY: ${PAGINATE_BY}
-            MIN_START_DELAY: ${MIN_START_DELAY}
-            OL_MAP_HEIGHT: ${OL_MAP_HEIGHT}
-            WMTS_GETCAP: ${WMTS_GETCAP}
-            WMTS_LAYER: ${WMTS_LAYER}
-            WMTS_GETCAP_ALTERNATIVE: ${WMTS_GETCAP_ALTERNATIVE}
-            WMTS_LAYER_ALTERNATIVE: ${WMTS_LAYER_ALTERNATIVE}
-            PRIVATE_DOCUMENTS_DIR: ${PRIVATE_DOCUMENTS_DIR}
-            ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-            ALLOWED_CORS: ${ALLOWED_CORS}
-            ENABLE_2FA: ${ENABLE_2FA}
-            AUTH_PROVIDER_GEOMAPFISH_URL: ${AUTH_PROVIDER_GEOMAPFISH_URL}
-            AUTH_PROVIDER_DOOTIX_URL: ${AUTH_PROVIDER_DOOTIX_URL}
-            SESSION_COOKIE_AGE: ${SESSION_COOKIE_AGE}
-            SESSION_SAVE_EVERY_REQUEST: ${SESSION_SAVE_EVERY_REQUEST}
-            SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE}
-            SECURE_PROXY_SSL_HEADER: ${SECURE_PROXY_SSL_HEADER}
-            AXES_FAILURE_LIMIT: ${AXES_FAILURE_LIMIT}
-            AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP: ${AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP}
-            AXES_COOLOFF_TIME: ${AXES_COOLOFF_TIME}
-            DRF_THROTTLE_RATE_PERMITS_API: ${DRF_THROTTLE_RATE_PERMITS_API}
-            DRF_THROTTLE_RATE_PERMITS_DETAILS_API: ${DRF_THROTTLE_RATE_PERMITS_DETAILS_API}
-            DRF_THROTTLE_RATE_EVENTS_API: ${DRF_THROTTLE_RATE_EVENTS_API}
-            DRF_THROTTLE_RATE_SEARCH_API: ${DRF_THROTTLE_RATE_SEARCH_API}
-            ALLOW_REMOTE_USER_AUTH: ${ALLOW_REMOTE_USER_AUTH}
-            LOCATIONS_SEARCH_API: ${LOCATIONS_SEARCH_API}
-            LOCATIONS_SEARCH_API_DETAILS: ${LOCATIONS_SEARCH_API_DETAILS}
-            ISOLATED_NETWORK_NAME: ${ISOLATED_NETWORK_NAME}
-            DEFAULT_SITE: ${DEFAULT_SITE}
-            AUTHOR_IBAN_VISIBLE: ${AUTHOR_IBAN_VISIBLE}
-            PAYMENT_PROCESSING_TEST_ENVIRONMENT: ${PAYMENT_PROCESSING_TEST_ENVIRONMENT}
-            PAYMENT_CURRENCY: ${PAYMENT_CURRENCY}
-        ports:
-            - "${DJANGO_DOCKER_PORT}:9000"
-        networks:
-            - isolated
-            - default
+  web: # Name of this container should not be changed
+    image: gms_web
+    restart: unless-stopped
+    build:
+      context: ./
+      args:
+        ENV: PROD
+    depends_on:
+      - statics_builder
+    entrypoint: /code/entrypoint.sh
+    command: "gunicorn geocity.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
+    volumes:
+      - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+      - ${ARCHIVE_DIR}:/archive
+      - static_root:/static_root/geocity-wc-map/
+      # to allow to spawn new QGIS containers
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ENV: PROD
+      CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE:
+      DJANGO_DOCKER_PORT:
+      STATIC_URL:
+      PREFIX_URL:
+      PGDATABASE:
+      PGUSER:
+      PGPASSWORD:
+      PGHOST:
+      PGPORT:
+      SECRET_KEY:
+      EMAIL_HOST:
+      EMAIL_PORT:
+      EMAIL_HOST_USER:
+      EMAIL_HOST_PASSWORD:
+      EMAIL_USE_TLS:
+      EMAIL_TO_CONSOLE:
+      DEFAULT_FROM_EMAIL:
+      PAGINATE_BY:
+      MIN_START_DELAY:
+      OL_MAP_HEIGHT:
+      WMTS_GETCAP:
+      WMTS_LAYER:
+      WMTS_GETCAP_ALTERNATIVE:
+      WMTS_LAYER_ALTERNATIVE:
+      PRIVATE_DOCUMENTS_DIR:
+      ALLOWED_HOSTS:
+      ALLOWED_CORS:
+      ENABLE_2FA:
+      AUTH_PROVIDER_GEOMAPFISH_URL:
+      AUTH_PROVIDER_DOOTIX_URL:
+      SESSION_COOKIE_AGE:
+      SESSION_SAVE_EVERY_REQUEST:
+      SESSION_COOKIE_SAMESITE:
+      SECURE_PROXY_SSL_HEADER:
+      AXES_FAILURE_LIMIT:
+      AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP:
+      AXES_COOLOFF_TIME:
+      DRF_THROTTLE_RATE_PERMITS_API:
+      DRF_THROTTLE_RATE_PERMITS_DETAILS_API:
+      DRF_THROTTLE_RATE_EVENTS_API:
+      DRF_THROTTLE_RATE_SEARCH_API:
+      ALLOW_REMOTE_USER_AUTH:
+      LOCATIONS_SEARCH_API:
+      LOCATIONS_SEARCH_API_DETAILS:
+      ISOLATED_NETWORK_NAME:
+      DEFAULT_SITE:
+      AUTHOR_IBAN_VISIBLE:
+      PAYMENT_PROCESSING_TEST_ENVIRONMENT:
+      PAYMENT_CURRENCY:
+    ports:
+      - "${DJANGO_DOCKER_PORT}:9000"
+    networks:
+      - isolated
+      - default
 
-    # Builder for the geocity_qgis image.
-    qgis:
-        image: geocity_qgis
-        build:
-            context: services/qgis
-        # This service is only there for building, containers are instantaited on demand by Django.
-        # Runtime config below is therefore ignored.
-        command: echo "built"
-        # networks:
-        #     - isolated
+  # Builder for the geocity_qgis image.
+  qgis:
+    image: geocity_qgis
+    build:
+      context: services/qgis
+    # This service is only there for building, containers are instantaited on demand by Django.
+    # Runtime config below is therefore ignored.
+    command: echo "built"
+    # networks:
+    #   - isolated
 
-    # Builder for the geocity_pdf image
-    pdf:
-        image: geocity_pdf
-        build:
-            context: services/pdf
-        # This service is only there for building, containers are instantaited on demand by Django.
-        # Runtime config below is therefore ignored.
-        command: echo "built"
-        # networks:
-        #     - isolated
+  # Builder for the geocity_pdf image
+  pdf:
+    image: geocity_pdf
+    build:
+      context: services/pdf
+    # This service is only there for building, containers are instantaited on demand by Django.
+    # Runtime config below is therefore ignored.
+    command: echo "built"
+    # networks:
+    #   - isolated
 
+  # Builder for the external statics than must be built
+  statics_builder:
+    image: external_statics
+    build:
+      context: services/external_statics
+    working_dir: /app/geocity-wc-map
+    volumes:
+      - static_root:/app/geocity-wc-map/dist/
 
 networks:
-    # Use this for containers that should only be able to communicate with Django
-    isolated:
-        name: ${ISOLATED_NETWORK_NAME}
+  # Use this for containers that should only be able to communicate with Django
+  isolated:
+    name: ${ISOLATED_NETWORK_NAME}

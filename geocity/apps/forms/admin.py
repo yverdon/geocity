@@ -63,6 +63,12 @@ class FormAdminForm(forms.ModelForm):
         label=_("Types de géométrie autorisés"),
         required=False,
     )
+    geo_widget_option = forms.ChoiceField(
+        choices=models.Form.GEO_WIDGET_CHOICES,
+        widget=forms.Select,
+        label=_("Choix de l'interface de saisie cartographique"),
+        required=False,
+    )
 
     class Meta:
         model = models.Form
@@ -85,8 +91,12 @@ class FormAdminForm(forms.ModelForm):
             "wms_layers_order": "Ordre de(s) la(les) couche(s) dans la carte. 1: au-dessus",
         }
 
-    class Media:
-        js = ("js/admin/form.js",)
+    @property
+    def media(self):
+        return forms.Media(
+            css={"all": ("css/main.css",)},
+            js=("js/admin/form.js", "js/admin/display.js"),
+        )
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -132,6 +142,22 @@ class FormAdminForm(forms.ModelForm):
                 geometry_type,
                 geometry_type in self.cleaned_data["geometry_types"],
             )
+
+        """Advanced geometry widget supports
+            - Only points
+            - Only one item (no multiple time & map)
+            Thus we hide/show related fields and set values programatically
+        """
+
+        if (
+            int(self.cleaned_data["geo_widget_option"])
+            == models.Form.GEO_WIDGET_ADVANCED
+        ):
+            self.instance.has_geometry_point = True
+            self.instance.has_geometry_line = False
+            self.instance.has_geometry_polygon = False
+
+            self.instance.can_have_multiple_ranges = False
 
         return super().save(*args, **kwargs)
 
@@ -251,6 +277,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "permit_duration",
                     "expiration_reminder",
                     "days_before_reminder",
+                    "geo_widget_option",
+                    "map_widget_configuration",
                     "geometry_types",
                     "wms_layers",
                     "wms_layers_order",
@@ -345,6 +373,11 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         if db_field.name == "category":
             qs = models.FormCategory.objects.all()
             kwargs["queryset"] = filter_for_user(user, qs)
+
+        if db_field.name == "map_widget_configuration":
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.MapWidgetConfiguration.objects.all()
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -545,3 +578,19 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     get__tags.short_description = _("Mots-clés")
     get__tags.admin_order_field = "tags__name"
+
+
+@admin.register(models.MapWidgetConfiguration)
+class FormMapWidgetConfigurationAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    list_display = [
+        "name",
+        "id",
+        "integrator",
+    ]
+
+    class Media:
+        css = {"all": ("css/admin/map_widget_configurator.css",)}
+        js = ("js/admin/map_widget_configurator.js",)
