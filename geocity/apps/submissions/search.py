@@ -76,7 +76,7 @@ def match_type_label(match_type):
     return {
         MatchType.AUTHOR: _("Auteur‧e"),
         MatchType.FIELD: _("Propriété"),
-        MatchType.SENT_DATE: _("Date de création"),
+        MatchType.SENT_DATE: _("Date d'envoi"),
         MatchType.CONTACT: _("Contact"),
         MatchType.TIME: _("Date"),
         MatchType.TRANSACTION: _("ID de transaction"),
