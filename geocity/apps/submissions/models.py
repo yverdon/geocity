@@ -519,13 +519,14 @@ class Submission(models.Model):
         """
         Try to return the current inquiry from the pre-fetched and filtered
         inquiries (needs to be added to the queryset).
+
         """
-        if (
-            hasattr(self, "current_inquiries_filtered")
-            and len(self.current_inquiries_filtered) > 0
-        ):
-            return self.current_inquiries_filtered[0]
-        else:  # Check on SubmissionInquiry, it's perf leek for API if "current_inquiries_filtered" is not found https://github.com/yverdon/geocity/pull/833/files
+
+        if hasattr(self, "current_inquiries_filtered"):
+            if len(self.current_inquiries_filtered) > 0:
+                return self.current_inquiries_filtered[0]
+            return None
+        else:  # Check on SubmissionInquiry, it's perf leek for API if "current_inquiries_filtered" is not found
             today = datetime.today()
             return SubmissionInquiry.objects.filter(
                 submission=self, start_date__lte=today, end_date__gte=today
