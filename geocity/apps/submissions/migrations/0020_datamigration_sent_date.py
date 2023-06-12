@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             row.save(update_fields=["sent_date"])
 
     dependencies = [
-        ("submissions", "0018_change_sent_date_into_field"),
+        ("submissions", "0019_change_sent_date_into_field"),
     ]
 
     operations = [
