@@ -76,6 +76,7 @@ django==4.2.1
     #   django-formtools
     #   django-jazzmin
     #   django-js-asset
+    #   django-jsonform
     #   django-oauth-toolkit
     #   django-otp
     #   django-phonenumber-field
@@ -129,6 +130,10 @@ django-js-asset==2.0.0
     # via
     #   -r requirements.txt
     #   django-ckeditor
+django-jsoneditor==0.2.4
+    # via -r requirements.txt
+django-jsonform==2.15.0
+    # via -r requirements.txt
 django-oauth-toolkit==2.2.0
     # via -r requirements.txt
 django-otp==1.2.0
@@ -243,6 +248,7 @@ packaging==23.1
     # via
     #   -r requirements.txt
     #   build
+    #   django-jsoneditor
     #   docker
 pandas==2.0.2
     # via -r requirements.txt

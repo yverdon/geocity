@@ -243,8 +243,10 @@ class Command(BaseCommand):
         for form_category, objs in form_categories:
 
             # Used to manage specific cases on forms
-            if form_category.startswith("RENEWAL_REMINDER") or form_category.startswith(
-                "NO_GEOM_NOR_TIME"
+            if (
+                form_category.startswith("RENEWAL_REMINDER")
+                or form_category.startswith("NO_GEOM_NOR_TIME")
+                or form_category.startswith("ADVANCED_MAP_PLUGIN")
             ):
                 # Remove first word
                 form_category_name = form_category.split(" ", 1)[1]
@@ -322,6 +324,8 @@ class Command(BaseCommand):
             permit_duration=result.get("permit_duration"),
             expiration_reminder=result.get("expiration_reminder"),
             days_before_reminder=result.get("days_before_reminder"),
+            map_widget_configuration=result.get("map_widget_configuration"),
+            geo_widget_option=result.get("geo_widget_option"),
         )
         form_obj.administrative_entities.add(administrative_entity)
         form_order += 1
@@ -337,6 +341,8 @@ class Command(BaseCommand):
         permit_duration = None
         expiration_reminder = False
         days_before_reminder = None
+        map_widget_configuration = None
+        geo_widget_option = Form.GEO_WIDGET_GENERIC
 
         # Configure specific form in order to illustrate full potential of Geocity
         # Check if form has RENEWAL_REMINDER or NO_GEOM_NOR_TIME
@@ -354,6 +360,13 @@ class Command(BaseCommand):
             has_geometry_line = False
             has_geometry_polygon = False
             needs_date = False
+        elif form_category.startswith("ADVANCED_MAP_PLUGIN"):
+
+            map_widget_configuration, _ = MapWidgetConfiguration.objects.get_or_create(
+                name="Sélection d'objets",
+                configuration=advanced_map_config,
+            )
+            geo_widget_option = Form.GEO_WIDGET_ADVANCED
 
         result = {
             "has_geometry_point": has_geometry_point,
@@ -364,6 +377,8 @@ class Command(BaseCommand):
             "permit_duration": permit_duration,
             "expiration_reminder": expiration_reminder,
             "days_before_reminder": days_before_reminder,
+            "map_widget_configuration": map_widget_configuration,
+            "geo_widget_option": geo_widget_option,
         }
         return result
 

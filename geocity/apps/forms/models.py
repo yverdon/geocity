@@ -10,9 +10,11 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from django_jsonform.models.fields import JSONField
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -302,6 +304,49 @@ class FormPrice(models.Model):
         ordering = ("order", "price")
 
 
+class MapWidgetConfiguration(models.Model):
+    ITEMS_SCHEMA = {
+        "type": "object",
+        "keys": {
+            "mode": {
+                "type": "object",
+                "keys": {
+                    "type": {
+                        "type": "string",
+                        "title": "Modes d’interaction avec la carte",
+                        "choices": [
+                            {
+                                "title": "Création",
+                                "value": "create",
+                            },
+                            {"title": "Sélection", "value": "select"},
+                            {"title": "Cible", "value": "target"},
+                            {"title": "Mixte", "value": "mix"},
+                        ],
+                        "widget": "radio",
+                    }
+                },
+            },
+        },
+    }
+    name = models.CharField(_("Nom de la configuration"), max_length=255)
+    configuration = JSONField(schema=ITEMS_SCHEMA)
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+
+    class Meta:
+        verbose_name = _("1.8 Module cartographique avancé")
+        verbose_name_plural = _("1.8 Modules cartographiques avancés")
+
+    def __str__(self):
+        return self.name
+
+
 class Form(models.Model):
     """
     Represents a Form configuration object.
@@ -446,6 +491,25 @@ class Form(models.Model):
         ),
         null=True,
         blank=True,
+    )
+    GEO_WIDGET_GENERIC = 1
+    GEO_WIDGET_ADVANCED = 2
+    GEO_WIDGET_CHOICES = (
+        (GEO_WIDGET_GENERIC, _("Générique")),
+        (GEO_WIDGET_ADVANCED, _("Avancée")),
+    )
+    geo_widget_option = models.IntegerField(
+        _("Choix de l'interface de saisie cartographique"),
+        choices=GEO_WIDGET_CHOICES,
+        default=GEO_WIDGET_GENERIC,
+    )
+    map_widget_configuration = models.ForeignKey(
+        MapWidgetConfiguration,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="map_widget_configuration_form",
+        verbose_name=_("Configuration de la carte avancée"),
     )
     # All objects
     objects = FormQuerySet().as_manager()
@@ -610,6 +674,25 @@ class Form(models.Model):
                             )
                         }
                     )
+        if (
+            self.geo_widget_option == self.GEO_WIDGET_ADVANCED
+            and not self.administrative_entities.first().is_single_form_submissions
+        ):
+
+            url = reverse(
+                "admin:forms_administrativeentityforadminsite_change",
+                kwargs={"object_id": self.administrative_entities.first().pk},
+            )
+
+            raise ValidationError(
+                {
+                    "geo_widget_option": mark_safe(
+                        _(
+                            f'L\'option "Autoriser uniquement un objet par demande" doit être cochée sur <a href="{url}" target="_blank"><b>l\'entité administrative</b></a> pour activer ce paramètre'
+                        )
+                    )
+                }
+            )
 
 
 class FormField(models.Model):
