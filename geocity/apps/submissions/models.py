@@ -519,7 +519,6 @@ class Submission(models.Model):
         """
         Try to return the current inquiry from the pre-fetched and filtered
         inquiries (needs to be added to the queryset).
-
         """
 
         if hasattr(self, "current_inquiries_filtered"):
