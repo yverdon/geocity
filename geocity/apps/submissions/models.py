@@ -525,7 +525,11 @@ class Submission(models.Model):
             and len(self.current_inquiries_filtered) > 0
         ):
             return self.current_inquiries_filtered[0]
-        return None
+        else:  # Check on SubmissionInquiry, it's perf leek for API if "current_inquiries_filtered" is not found https://github.com/yverdon/geocity/pull/833/files
+            today = datetime.today()
+            return SubmissionInquiry.objects.filter(
+                submission=self, start_date__lte=today, end_date__gte=today
+            ).first()
 
     def get_forms_names_list(self):
         return ", ".join(
