@@ -119,6 +119,11 @@ class GenericSubmissionTable(ColumnShiftTable):
         attrs=ATTRIBUTES,
         orderable=True,
     )
+    sent_date = tables.Column(
+        verbose_name=_("Date d'envoi"),
+        attrs=ATTRIBUTES,
+        orderable=True,
+    )
     status = tables.TemplateColumn(
         verbose_name=_("État"),
         template_name="tables/_submission_status.html",
@@ -156,6 +161,9 @@ class GenericSubmissionTable(ColumnShiftTable):
     def value_created_at(self, record, value):
         return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
 
+    def value_sent_date(self, record, value):
+        return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
+
 
 class SelectableSubmissionTable(ColumnShiftTable):
     check = SubmissionCheckboxColumn(accessor="id", verbose_name="Sélectionner")
@@ -179,6 +187,7 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
             "check",
             "id",
             "created_at",
+            "sent_date",
             "status",
             "starts_at_min",
             "ends_at_max",
@@ -200,6 +209,7 @@ class OwnSubmissionsExportTable(GenericSubmissionTable):
         fields = (
             "id",
             "created_at",
+            "sent_date",
             "status",
             "starts_at_min",
             "ends_at_max",
@@ -261,6 +271,7 @@ class DepartmentSubmissionsHTMLTable(
             "author_fullname",
             "author_details",
             "created_at",
+            "sent_date",
             "status",
             "starts_at_min",
             "ends_at_max",
@@ -289,6 +300,7 @@ class DepartmentSubmissionsExportTable(GenericDepartmentSubmissionsTable):
             "author_fullname",
             "author_details",
             "created_at",
+            "sent_date",
             "status",
             "starts_at_min",
             "ends_at_max",

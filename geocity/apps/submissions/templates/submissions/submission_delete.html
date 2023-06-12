@@ -11,7 +11,7 @@
     <ul>
       <li>{% translate "Requérant:"%} {{ submission.author.first_name }}, {{ submission.author.last_name}}
       </li>
-      <li>{% translate "Demande du:"%} {{ submission.created_at }}</li>
+      <li>{% translate "Demande du:"%} {{ submission.sent_date }}</li>
     </ul>
     {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Confirmer" %}
     <a class="ml-2" href="{% url 'submissions:submissions_list' %}">{% translate "Annuler" %}</a>
