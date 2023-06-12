@@ -1,4 +1,6 @@
+import collections
 import enum
+import json
 import logging
 import os
 import tempfile
@@ -6,6 +8,7 @@ import urllib.parse
 import zipfile
 from datetime import date, datetime, timedelta
 
+import pandas
 import PIL
 import requests
 from django.conf import settings
@@ -24,7 +27,6 @@ from django.utils.dateparse import parse_date
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-from django_tables2.export import TableExport
 from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
@@ -211,6 +213,7 @@ class Submission(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
+    sent_date = models.DateTimeField(_("date du dernier envoi"), null=True)
     forms = models.ManyToManyField(
         Form,
         through="SelectedForm",
@@ -586,13 +589,17 @@ class Submission(models.Model):
         return SubmissionComplementaryDocument.objects.filter(submission=self).all()
 
     def to_csv(self):
-        from .tables import OwnSubmissionsExportTable
+        from ..api.serializers import SubmissionPrintSerializer
 
-        table = OwnSubmissionsExportTable(data=Submission.objects.filter(id=self.id))
+        ordered_dict = SubmissionPrintSerializer(self).data
+        ordered_dict.move_to_end("geometry")
+        data_dict = dict(ordered_dict)
+        data_str = json.dumps(data_dict)
+        result = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
 
-        exporter = TableExport(export_format=TableExport.CSV, table=table)
+        pd_dataframe = pandas.json_normalize(result)
 
-        return exporter.export()
+        return pd_dataframe.to_csv(None, sep=";")
 
     def requires_payment(self):
         return any(form.requires_payment for form in self.forms.all())
@@ -1165,16 +1172,6 @@ class Submission(models.Model):
         ]
         history.sort(reverse=True)
         return history
-
-    @property
-    def sent_date(self):
-        # Return the last sent date because the submission can be resent if it was incomplete
-        last_sent_history = (
-            self.history.filter(status=Submission.STATUS_SUBMITTED_FOR_VALIDATION)
-            .order_by("history_date")
-            .last()
-        )
-        return last_sent_history.history_date if last_sent_history is not None else None
 
     def get_last_transaction(self):
         if self.get_transactions() is None:

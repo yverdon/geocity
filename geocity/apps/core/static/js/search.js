@@ -165,7 +165,7 @@
         "actor": "fa-user",
         "author": "fa-user",
         "property": "fa-pencil-square",
-        "created_at": "fa-calendar-plus-o",
+        "sent_date": "fa-calendar-plus-o",
         "time": "fa-calendar",
       }
       const icon = document.createElement("i");
@@ -202,8 +202,8 @@
       resultLinkElement.setAttribute("class", "d-block media-body");
       resultLinkElement.setAttribute("href", submission.url);
       resultLinkElement.appendChild(matchFieldElement);
-      if (match.type != 'created_at') {
-        resultLinkElement.appendChild(document.createTextNode(`Demande du ${submission.createdAt}`));
+      if (match.type != 'sent_date') {
+        resultLinkElement.appendChild(document.createTextNode(`Demande du ${submission.sentDate}`));
         resultLinkElement.appendChild(document.createElement("br"));
       }
       if (match.type != 'author') {

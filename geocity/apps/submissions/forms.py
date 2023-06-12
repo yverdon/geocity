@@ -30,7 +30,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.fields import AddressWidget
+from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
@@ -1106,15 +1106,14 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             else settings.DEFAULT_FROM_EMAIL
         )
 
-        if (
-            submission.status == models.Submission.STATUS_AWAITING_SUPPLEMENT
-        ):  # is_awaiting_supplement
+        if submission.status == models.Submission.STATUS_AWAITING_SUPPLEMENT:
             submission_url = submission.get_absolute_url(
                 reverse(
                     "submissions:submission_fields",
                     kwargs={"submission_id": submission.pk},
                 )
             )
+            request_submission_edit_text = True
         else:
             submission_url = submission.get_absolute_url(
                 reverse(
@@ -1122,6 +1121,8 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     kwargs={"submission_id": submission.pk},
                 )
             )
+            request_submission_edit_text = False
+
         services.send_email(
             template="submission_changed.txt",
             sender=sender,
@@ -1140,6 +1141,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 "submission_url": submission_url,
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
+                "request_submission_edit_text": request_submission_edit_text,
             },
         )
 
@@ -1247,9 +1249,10 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             del self.fields["geom"]
 
         else:
-            self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
-                self.submission
-            )
+            options = self.get_widget_options(self.submission)
+            if options["geo_widget_option"][0] == 2:
+                self.fields["geom"].widget = GeometryWidgetAdvanced()
+            self.fields["geom"].widget.attrs["options"] = options
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
@@ -1291,6 +1294,16 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         has_geom_line = any(form.has_geometry_line for form in forms_set)
         has_geom_polygon = any(form.has_geometry_polygon for form in forms_set)
 
+        map_widget_configuration = [
+            form.map_widget_configuration.configuration
+            for form in forms
+            if form.map_widget_configuration != None
+        ]
+
+        geo_widget_option = [
+            form.geo_widget_option for form in forms if form.geo_widget_option != None
+        ]
+
         ftsearch_additional_searchtext_for_address_field = (
             submission.administrative_entity.additional_searchtext_for_address_field
             if submission
@@ -1312,6 +1325,8 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "map_width": "100%",
             "map_height": 400,
             "default_center": [2539057, 1181111],
+            "map_widget_configuration": map_widget_configuration,
+            "geo_widget_option": geo_widget_option,
             "default_zoom": 10,
             "display_raw": False,
             "edit_geom": has_geom,

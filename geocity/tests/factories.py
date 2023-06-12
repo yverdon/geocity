@@ -432,6 +432,7 @@ class SubmissionFactory(factory.django.DjangoModelFactory):
 
     administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
     author = factory.SubFactory(UserFactory)
+    sent_date = factory.Faker("date_time", tzinfo=timezone.utc)
 
 
 class PostFinanceTransactionFactory(factory.django.DjangoModelFactory):

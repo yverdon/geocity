@@ -15,6 +15,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "paymentsettings",
         "price",
         "formprice",
+        "mapwidgetconfiguration",
     ],
     "submissions": [
         "submissionamendfield",

@@ -291,7 +291,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
     forms_names = FormsNames(source="forms", read_only=True)
     current_inquiry = SubmissionInquirySerializer(read_only=True)
     price = SubmissionPriceSerializer(read_only=True)
-    sent_date = SentDateSerializer(read_only=True)  # perf leak 3
+    sent_date = SentDateSerializer(read_only=True)
 
     class Meta:
         model = Submission

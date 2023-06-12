@@ -1637,7 +1637,7 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
                     queryset=Form.objects.select_related("category"),
                 )
             )
-            .order_by("-created_at")
+            .order_by("-sent_date")
         )
 
         if form_filter is not None:
