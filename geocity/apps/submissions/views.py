@@ -423,17 +423,13 @@ class SubmissionDetailView(View):
         ):
             return None
 
-        current_inquiry = models.SubmissionInquiry.get_current_inquiry(
-            submission=self.submission
-        )
-
         form = forms.SubmissionInquiryForm(
             data=data,
             submission=self.submission,
-            instance=current_inquiry,
+            instance=self.submission.current_inquiry,
         )
 
-        if current_inquiry:
+        if self.submission.current_inquiry:
             forms.disable_form(form, editable_fields=[form.fields["documents"].label])
 
         return form

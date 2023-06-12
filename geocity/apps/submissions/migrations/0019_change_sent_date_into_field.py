@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0017_alter_submission_options_and_more"),
+        ("submissions", "0018_add_missing_related_name"),
     ]
 
     operations = [
