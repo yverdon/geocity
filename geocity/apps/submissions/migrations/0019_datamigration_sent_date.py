@@ -12,8 +12,8 @@ class Migration(migrations.Migration):
         for row in Submission.objects.all():
 
             last_sent_history = (
-                HistoricalModel.objects.filter(id=row.id)
-                .exclude(status=1)
+                HistoricalModel.objects.filter(id=row.id, status=1)
+                .exclude(status=0)
                 .order_by("history_date")
                 .last()
             )
