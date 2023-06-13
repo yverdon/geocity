@@ -162,6 +162,8 @@ INSTALLED_APPS = [
     "captcha",
     "ckeditor",
     "jazzmin",
+    "jsoneditor",
+    "django_jsonform",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -282,7 +284,7 @@ CONSTANCE_CONFIG = {
     ),
     "GENERAL_CONDITIONS_URL": (
         "",
-        "Lien vers les conditions générales",
+        "Lien vers les conditions générales d'utilisation",
         str,
     ),
     "PRIVACY_POLICY_URL": (
@@ -544,6 +546,10 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
+if DEBUG:
+    STATICFILES_DIRS = [
+        "/static_map/",
+    ]
 
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"

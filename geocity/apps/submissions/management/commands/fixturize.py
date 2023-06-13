@@ -243,8 +243,10 @@ class Command(BaseCommand):
         for form_category, objs in form_categories:
 
             # Used to manage specific cases on forms
-            if form_category.startswith("RENEWAL_REMINDER") or form_category.startswith(
-                "NO_GEOM_NOR_TIME"
+            if (
+                form_category.startswith("RENEWAL_REMINDER")
+                or form_category.startswith("NO_GEOM_NOR_TIME")
+                or form_category.startswith("ADVANCED_MAP_PLUGIN")
             ):
                 # Remove first word
                 form_category_name = form_category.split(" ", 1)[1]
@@ -322,6 +324,8 @@ class Command(BaseCommand):
             permit_duration=result.get("permit_duration"),
             expiration_reminder=result.get("expiration_reminder"),
             days_before_reminder=result.get("days_before_reminder"),
+            map_widget_configuration=result.get("map_widget_configuration"),
+            geo_widget_option=result.get("geo_widget_option"),
         )
         form_obj.administrative_entities.add(administrative_entity)
         form_order += 1
@@ -337,6 +341,8 @@ class Command(BaseCommand):
         permit_duration = None
         expiration_reminder = False
         days_before_reminder = None
+        map_widget_configuration = None
+        geo_widget_option = Form.GEO_WIDGET_GENERIC
 
         # Configure specific form in order to illustrate full potential of Geocity
         # Check if form has RENEWAL_REMINDER or NO_GEOM_NOR_TIME
@@ -354,6 +360,13 @@ class Command(BaseCommand):
             has_geometry_line = False
             has_geometry_polygon = False
             needs_date = False
+        elif form_category.startswith("ADVANCED_MAP_PLUGIN"):
+
+            map_widget_configuration, _ = MapWidgetConfiguration.objects.get_or_create(
+                name="Sélection d'objets",
+                configuration=advanced_map_config,
+            )
+            geo_widget_option = Form.GEO_WIDGET_ADVANCED
 
         result = {
             "has_geometry_point": has_geometry_point,
@@ -364,6 +377,8 @@ class Command(BaseCommand):
             "permit_duration": permit_duration,
             "expiration_reminder": expiration_reminder,
             "days_before_reminder": days_before_reminder,
+            "map_widget_configuration": map_widget_configuration,
+            "geo_widget_option": geo_widget_option,
         }
         return result
 
@@ -451,6 +466,8 @@ class Command(BaseCommand):
 Pendant : Les améliorations ont été prise en compte.
 Après : Excellent projet qui bénéficiera à la communauté."""
 
+        sent_date = timezone.now()
+
         for user_iteration in range(user_iterations):
             username = f"{entity}-user-{user_iteration}"
             user = User.objects.get(username=username)
@@ -463,7 +480,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with no validation document required
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, form_no_validation_document)
             validation_status = SubmissionValidation.STATUS_APPROVED
@@ -477,7 +494,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with mixed objects requiring and not requiring validation document
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, first_form)
             self.create_selected_form(submission, form_no_validation_document)
@@ -492,7 +509,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with validation document required
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, first_form)
             validation_status = SubmissionValidation.STATUS_APPROVED
@@ -506,7 +523,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with validation document required (with another Form)
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, last_form)
             validation_status = SubmissionValidation.STATUS_APPROVED
@@ -520,7 +537,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission with pending validations
             status = Submission.STATUS_AWAITING_VALIDATION
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, last_form)
             self.create_submission_validation(submission, department)
@@ -528,7 +545,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with mixed objects with lots of text for print demo
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             selected_form_1 = self.create_selected_form(submission, first_form)
             selected_form_2 = self.create_selected_form(
@@ -983,12 +1000,15 @@ Après : Excellent projet qui bénéficiera à la communauté."""
     # Submissions
     # /////////////////////////////////////
 
-    def create_submission(self, status, administrative_entity, user, is_public=False):
+    def create_submission(
+        self, status, administrative_entity, user, is_public=False, sent_date=None
+    ):
         submission = Submission.objects.create(
             status=status,
             administrative_entity=administrative_entity,
             author=user,
             is_public=is_public,
+            sent_date=sent_date,
         )
 
         SubmissionGeoTime.objects.create(

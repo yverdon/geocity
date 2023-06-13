@@ -34,7 +34,7 @@ class TestSubmissionInquiry(GeocityTestCase):
     @classmethod
     def assertInquiryCreated(cls, inquiry, expected_data):
         if inquiry.pk is None:
-            raise AssertionError("Give inquiry doesn't have an ID")
+            raise AssertionError("Given inquiry doesn't have an ID")
 
         if not inquiry.start_date.strftime("%d.%m.%Y") == expected_data["start_date"]:
             raise AssertionError(

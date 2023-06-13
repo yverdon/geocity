@@ -15,6 +15,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "paymentsettings",
         "price",
         "formprice",
+        "mapwidgetconfiguration",
     ],
     "submissions": [
         "submissionamendfield",
@@ -67,7 +68,6 @@ DEFAULT_PILOT_PERMISSION_CODENAMES = [
     "read_submission",
     "amend_submission",
     "classify_submission",
-    "view_private_submission",
     "can_generate_pdf",
 ]
 

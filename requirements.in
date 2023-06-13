@@ -18,6 +18,8 @@ requests
 # Required by django-tables2, which doesn't list it in their requirements
 tablib[xlsx]
 whitenoise
+django-jsoneditor
+django-jsonform
 django-admin-sortable2
 django-simple-history
 djangorestframework
@@ -47,3 +49,4 @@ docker
 django-polymorphic
 postfinancecheckout
 tzdata
+pandas

@@ -11,7 +11,11 @@ from geocity import geometry
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
-from geocity.apps.submissions.models import Submission, SubmissionGeoTime
+from geocity.apps.submissions.models import (
+    Submission,
+    SubmissionGeoTime,
+    SubmissionInquiry,
+)
 
 from . import permissions, serializers
 
@@ -72,6 +76,15 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             ).select_related("category"),
         )
 
+        today = datetime.datetime.today()
+        current_inquiry_prefetch = Prefetch(
+            "submission__inquiries",
+            queryset=SubmissionInquiry.objects.filter(
+                start_date__lte=today, end_date__gte=today
+            ),
+            to_attr="current_inquiries_filtered",
+        )
+
         qs = (
             SubmissionGeoTime.objects.filter(base_filter)
             .filter(
@@ -84,7 +97,9 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                 | Q(submission__status=Submission.STATUS_INQUIRY_IN_PROGRESS)
             )
             .prefetch_related(forms_prefetch)
+            .prefetch_related(current_inquiry_prefetch)
             .select_related("submission__administrative_entity")
+            .select_related("submission__price")
         )
 
         return qs.order_by("starts_at")
@@ -212,6 +227,15 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             queryset=Form.objects.select_related("category"),
         )
 
+        today = datetime.datetime.today()
+        current_inquiry_prefetch = Prefetch(
+            "inquiries",
+            queryset=SubmissionInquiry.objects.filter(
+                start_date__lte=today, end_date__gte=today
+            ),
+            to_attr="current_inquiries_filtered",
+        )
+
         qs = (
             Submission.objects.filter(base_filter)
             .filter(
@@ -223,8 +247,12 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             )
             .prefetch_related(forms_prefetch)
             .prefetch_related(geotime_prefetch)
-            .prefetch_related("selected_forms")
-            .select_related("administrative_entity")
+            .prefetch_related("selected_forms", "contacts")
+            .select_related(
+                "administrative_entity",
+                "author",
+                "price",
+            )
         )
 
         return qs

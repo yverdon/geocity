@@ -24,12 +24,6 @@ from geocity.apps.submissions.contact_type_choices import *
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
 
-now = datetime.now()
-date = [
-    now.strftime("%d.%m.%Y"),
-    now.strftime("%d/%m/%Y, %H:%M:%S"),
-]  # https://www.programiz.com/python-programming/datetime/strftime
-
 
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
@@ -402,6 +396,11 @@ class SectionParagraph(Section):
 
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
+        now = datetime.now()
+        date = [
+            now.strftime("%d.%m.%Y"),
+            now.strftime("%d/%m/%Y, %H:%M:%S"),
+        ]  # https://www.programiz.com/python-programming/datetime/strftime
         inner_context = {
             # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],

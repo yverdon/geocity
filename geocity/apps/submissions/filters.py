@@ -56,11 +56,19 @@ class BaseSubmissionFilterSet(django_filters.FilterSet):
         queryset=_get_forms_queryset_for_current_user,
         label=_("Objet de la demande"),
     )
-
     created_at = django_filters.DateFilter(
         field_name="created_at",
         lookup_expr="date",
         label=_("Date de création le"),
+        widget=DatePickerInput(
+            attrs={"placeholder": "ex: 15/02/2019"},
+            options={"format": "DD/MM/YYYY", "locale": "fr"},
+        ),
+    )
+    sent_date = django_filters.DateFilter(
+        field_name="sent_date",
+        lookup_expr="date",
+        label=_("Date d'envoi"),
         widget=DatePickerInput(
             attrs={"placeholder": "ex: 15/02/2019"},
             options={"format": "DD/MM/YYYY", "locale": "fr"},
