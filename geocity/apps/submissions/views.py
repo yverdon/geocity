@@ -24,7 +24,7 @@ from django.core.exceptions import (
 )
 from django.core.serializers import serialize
 from django.db import transaction
-from django.db.models import Prefetch, Q, Sum
+from django.db.models import F, Prefetch, Q, Sum
 from django.forms import formset_factory, modelformset_factory
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.http.response import HttpResponseNotFound
@@ -1637,7 +1637,10 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
                     queryset=Form.objects.select_related("category"),
                 )
             )
-            .order_by("-sent_date")
+            .order_by(
+                F("sent_date").desc(nulls_last=True),
+                F("created_at").desc(nulls_last=True),
+            )
         )
 
         if form_filter is not None:
