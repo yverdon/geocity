@@ -466,6 +466,8 @@ class Command(BaseCommand):
 Pendant : Les améliorations ont été prise en compte.
 Après : Excellent projet qui bénéficiera à la communauté."""
 
+        sent_date = timezone.now()
+
         for user_iteration in range(user_iterations):
             username = f"{entity}-user-{user_iteration}"
             user = User.objects.get(username=username)
@@ -478,7 +480,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with no validation document required
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, form_no_validation_document)
             validation_status = SubmissionValidation.STATUS_APPROVED
@@ -492,7 +494,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with mixed objects requiring and not requiring validation document
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, first_form)
             self.create_selected_form(submission, form_no_validation_document)
@@ -507,7 +509,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with validation document required
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, first_form)
             validation_status = SubmissionValidation.STATUS_APPROVED
@@ -521,7 +523,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with validation document required (with another Form)
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, last_form)
             validation_status = SubmissionValidation.STATUS_APPROVED
@@ -535,7 +537,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission with pending validations
             status = Submission.STATUS_AWAITING_VALIDATION
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             self.create_selected_form(submission, last_form)
             self.create_submission_validation(submission, department)
@@ -543,7 +545,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             # Submission to Classify with mixed objects with lots of text for print demo
             status = Submission.STATUS_PROCESSING
             submission = self.create_submission(
-                status, administrative_entity, user, is_public=True
+                status, administrative_entity, user, is_public=True, sent_date=sent_date
             )
             selected_form_1 = self.create_selected_form(submission, first_form)
             selected_form_2 = self.create_selected_form(
@@ -998,13 +1000,15 @@ Après : Excellent projet qui bénéficiera à la communauté."""
     # Submissions
     # /////////////////////////////////////
 
-    def create_submission(self, status, administrative_entity, user, is_public=False):
+    def create_submission(
+        self, status, administrative_entity, user, is_public=False, sent_date=None
+    ):
         submission = Submission.objects.create(
             status=status,
             administrative_entity=administrative_entity,
             author=user,
             is_public=is_public,
-            sent_date=timezone.now(),
+            sent_date=sent_date,
         )
 
         SubmissionGeoTime.objects.create(
