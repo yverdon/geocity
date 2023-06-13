@@ -54,6 +54,7 @@ class PartialDate:
 class MatchType(enum.Enum):
     AUTHOR = "author"
     FIELD = "field"
+    CREATED_AT = "created_at"
     SENT_DATE = "sent_date"
     CONTACT = "contact"
     TIME = "time"
@@ -64,6 +65,7 @@ class MatchType(enum.Enum):
 class SearchResult:
     submission_id: int
     submission_status: int
+    submission_created_at: datetime.date
     submission_sent_date: datetime.date
     author_name: str
     field_label: Optional[str]
@@ -76,6 +78,7 @@ def match_type_label(match_type):
     return {
         MatchType.AUTHOR: _("Auteur‧e"),
         MatchType.FIELD: _("Propriété"),
+        MatchType.CREATED_AT: _("Date de création"),
         MatchType.SENT_DATE: _("Date d'envoi"),
         MatchType.CONTACT: _("Contact"),
         MatchType.TIME: _("Date"),
@@ -206,11 +209,12 @@ def search_contacts(search_str, submissions_qs, limit=None):
             "author_full_name",
             "submission_id",
             "submission__status",
+            "submission__created_at",
             "submission__sent_date",
             "score",
             "scored_field",
         )
-        .order_by("-score", "-submission__sent_date")
+        .order_by("-score", "-submission__sent_date", "-submission__created_at")
     )
 
     if limit is not None:
@@ -220,6 +224,7 @@ def search_contacts(search_str, submissions_qs, limit=None):
         SearchResult(
             submission_id=result["submission_id"],
             submission_status=result["submission__status"],
+            submission_created_at=result["submission__created_at"],
             submission_sent_date=result["submission__sent_date"],
             author_name=result["author_full_name"],
             field_label=fields_label[result["scored_field"]],
@@ -262,13 +267,18 @@ def search_fields(search_str, submissions_qs, limit=None):
         .values(
             "selected_form__submission_id",
             "selected_form__submission__status",
+            "selected_form__submission__created_at",
             "selected_form__submission__sent_date",
             "author_full_name",
             "field__name",
             "txt_value",
             "score",
         )
-        .order_by("-score", "-selected_form__submission__sent_date")
+        .order_by(
+            "-score",
+            "-selected_form__submission__sent_date",
+            "-selected_form__submission__created_at",
+        )
     )
 
     if limit is not None:
@@ -278,6 +288,7 @@ def search_fields(search_str, submissions_qs, limit=None):
         SearchResult(
             submission_id=result["selected_form__submission_id"],
             submission_status=result["selected_form__submission__status"],
+            submission_created_at=result["selected_form__submission__created_at"],
             submission_sent_date=result["selected_form__submission__sent_date"],
             author_name=result["author_full_name"],
             field_label=result["field__name"],
@@ -312,8 +323,15 @@ def search_transactions(search_str, submissions_qs, limit=None):
         )
         # Actual search (by equality, not by trigram similarity)
         .filter(price__transactions__merchant_reference=search_str)
-        .values("id", "status", "author_full_name", "sent_date", "transaction_ids")
-        .order_by("-sent_date")
+        .values(
+            "id",
+            "status",
+            "author_full_name",
+            "created_at",
+            "sent_date",
+            "transaction_ids",
+        )
+        .order_by("-sent_date", "-created_at")
     )
 
     if limit is not None:
@@ -323,6 +341,7 @@ def search_transactions(search_str, submissions_qs, limit=None):
         SearchResult(
             submission_id=result["id"],
             submission_status=result["status"],
+            submission_created_at=result["created_at"],
             submission_sent_date=result["sent_date"],
             author_name=result["author_full_name"],
             field_label="Transactions IDs",
@@ -353,8 +372,8 @@ def search_authors(search_str, submissions_qs, limit=None):
             ],
             search_str,
         )
-        .values("id", "status", "score", "author_full_name", "sent_date")
-        .order_by("-score", "-sent_date")
+        .values("id", "status", "score", "author_full_name", "created_at", "sent_date")
+        .order_by("-score", "-sent_date", "-created_at")
     )
 
     if limit is not None:
@@ -364,12 +383,44 @@ def search_authors(search_str, submissions_qs, limit=None):
         SearchResult(
             submission_id=result["id"],
             submission_status=result["status"],
+            submission_created_at=result["created_at"],
             submission_sent_date=result["sent_date"],
             author_name=result["author_full_name"],
             field_label=None,
             field_value=result["author_full_name"],
             score=result["score"],
             match_type=MatchType.AUTHOR,
+        )
+        for result in qs
+    ]
+
+
+def search_submission_created_at(date_or_partial_date, submissions_qs, limit=None):
+    qs = (
+        submissions_qs.filter(**date_to_filters("created_at", date_or_partial_date))
+        .annotate(
+            author_full_name=Concat(
+                "author__first_name",
+                Value(" "),
+                "author__last_name",
+            ),
+        )
+        .values("id", "status", "author_full_name", "created_at")
+        .order_by("-created_at")
+    )
+
+    if limit is not None:
+        qs = qs[:limit]
+    return [
+        SearchResult(
+            submission_id=result["id"],
+            submission_status=result["status"],
+            submission_created_at=result["created_at"],
+            author_name=result["author_full_name"],
+            field_label=None,
+            field_value=result["created_at"].strftime("%d.%m.%Y"),
+            score=1,
+            match_type=MatchType.CREATED_AT,
         )
         for result in qs
     ]
@@ -450,13 +501,14 @@ def search_geo_times(date_or_partial_date, submissions_qs, limit=None):
         .values(
             "submission_id",
             "submission__status",
+            "submission__created_at",
             "submission__sent_date",
             "matching_date",
             "matching_date_field",
             "author_full_name",
         )
         .annotate(nb_per_submission=Count("submission_id"))
-        .order_by("-submission__sent_date")
+        .order_by("-submission__sent_date", "-submission__created_at")
     )
 
     if limit is not None:
@@ -466,6 +518,7 @@ def search_geo_times(date_or_partial_date, submissions_qs, limit=None):
         SearchResult(
             submission_id=result["submission_id"],
             submission_status=result["submission__status"],
+            submission_created_at=result["submission__created_at"],
             submission_sent_date=result["submission__sent_date"],
             author_name=result["author_full_name"],
             field_label=field_label(result["matching_date_field"]),
@@ -490,6 +543,13 @@ def search_submissions(search_str, limit, submissions_qs):
         sorted(
             search_contacts(search_str, limit=limit, submissions_qs=submissions_qs)
             + search_fields(search_str, limit=limit, submissions_qs=submissions_qs)
+            + (
+                search_submission_created_at(
+                    search_date, limit=limit, submissions_qs=submissions_qs
+                )
+                if search_date
+                else []
+            )
             + (
                 search_submission_sent_date(
                     search_date, limit=limit, submissions_qs=submissions_qs
@@ -526,6 +586,7 @@ def search_result_to_json(result):
             ),
             "author": result.author_name,
             "status": result.submission_status,
+            "createdAt": result.submission_created_at.strftime("%d.%m.%Y"),
             "sentDate": result.submission_sent_date.strftime("%d.%m.%Y"),
         },
         "match": {
