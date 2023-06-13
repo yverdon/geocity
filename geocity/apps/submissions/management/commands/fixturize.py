@@ -1004,6 +1004,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             administrative_entity=administrative_entity,
             author=user,
             is_public=is_public,
+            sent_date=timezone.now(),
         )
 
         SubmissionGeoTime.objects.create(
