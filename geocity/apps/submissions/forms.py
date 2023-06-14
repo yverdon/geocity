@@ -983,10 +983,32 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
             for form, field in self.get_fields():
                 field_name = self.get_field_name(form.id, field.id)
+                error_message = (
+                    (
+                        _(
+                            "La saisie n'est pas conforme au format demandé (%(placeholder)s)."
+                        )
+                        % {"placeholder": field.placeholder}
+                    )
+                    if field.placeholder
+                    else _("La saisie n'est pas conforme au format demandé.")
+                )
                 self.fields[field_name] = forms.CharField(
                     label=field.name,
                     required=field.is_mandatory,
-                    widget=forms.Textarea(attrs={"rows": 3}),
+                    help_text=field.help_text,
+                    widget=forms.Textarea(
+                        attrs={
+                            "rows": 3,
+                            "placeholder": field.placeholder,
+                        }
+                    ),
+                    validators=[
+                        RegexValidator(
+                            regex=field.regex_pattern,
+                            message=error_message,
+                        )
+                    ],
                 )
 
     def get_field_name(self, form_id, field_id):
