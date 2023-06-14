@@ -1,5 +1,4 @@
 import json
-import re
 from collections import OrderedDict
 from datetime import timedelta
 
@@ -11,6 +10,7 @@ from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
     FieldValue,
@@ -21,17 +21,6 @@ from geocity.apps.submissions.models import (
 )
 from geocity.apps.submissions.payments.models import SubmissionPrice
 from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
-
-
-def transform_string_as_key(string):
-    """Transform a normal string, to something usable without special characters and spaces"""
-    # Delete special characters and spaces
-    string = re.sub("[^a-zA-Z0-9 ]", "", string)
-    # Replace spaces by underscores
-    string = string.replace(" ", "_")
-    # Convert everything to lower
-    string = string.lower()
-    return string
 
 
 def get_field_value_based_on_field(field):
@@ -56,12 +45,14 @@ def get_form_fields(
     obj = value.all()
     form_fields = obj.values(
         "field_values__field__name",
+        "field_values__field__api_name",
         "field_values__field_id",
         "field_values__field__input_type",
         "field_values__value__val",
         "form_id",
         "id",
         "form__name",
+        "form__api_name",
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
         "submission__administrative_entity",
@@ -163,13 +154,11 @@ def get_form_fields(
                 fields_dict.append(property)
         else:
             for field in form_fields:
-                form = f'{field["form__name"]}'
-                form = transform_string_as_key(form)
                 form_category = (
                     f'{field["form__name"]} ({field["form__category__name"]})'
                 )
 
-                fields_dict[form] = {
+                fields_dict[field["form__api_name"]] = {
                     # Put the title
                     "title": {
                         "form": field["form__name"],
@@ -177,7 +166,7 @@ def get_form_fields(
                         "form_category": form_category,
                     },
                     "fields": {
-                        transform_string_as_key(field["field_values__field__name"]): {
+                        field["field_values__field__api_name"]: {
                             "name": field["field_values__field__name"],
                             "value": get_field_value_based_on_field(field).url,
                         }
@@ -201,19 +190,19 @@ def get_amend_properties(value):
     obj = value.all()
     amend_fields = obj.values(
         "amend_fields__field__name",
+        "amend_fields__field__api_name",
         "amend_fields__value",
         "form_id",
         "form__name",
+        "form__api_name",
         "form__category__name",
     )
     amend_properties = {}
 
     for field in amend_fields:
-        amend = f'{field["form__name"]}'
-        amend = transform_string_as_key(amend)
         amend_field = f'{field["form__name"]} ({field["form__category__name"]})'
 
-        amend_properties[amend] = {
+        amend_properties[field["form__api_name"]] = {
             # Put the title
             "title": {
                 "form": field["form__name"],
@@ -221,7 +210,7 @@ def get_amend_properties(value):
                 "form_category": amend_field,
             },
             "fields": {
-                transform_string_as_key(field["amend_fields__field__name"]): {
+                field["amend_fields__field__api_name"]: {
                     "name": field["amend_fields__field__name"],
                     "value": field["amend_fields__value"],
                 }
@@ -410,7 +399,7 @@ class SubmissionContactSerializer(serializers.Serializer):
                     submission_contact.contact, field.name
                 )
             rep[
-                transform_string_as_key(submission_contact.get_contact_type_display())
+                convert_string_to_api_key(submission_contact.get_contact_type_display())
             ] = contact_object
 
         return rep
