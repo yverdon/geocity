@@ -561,6 +561,24 @@ class SubmissionAmendFieldFactory(factory.django.DjangoModelFactory):
 
         self.integrator = extracted
 
+    @factory.post_generation
+    def placeholder(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.placeholder = extracted
+
+    @factory.post_generation
+    def help_text(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.help_text = extracted
+
+    @factory.post_generation
+    def regex_pattern(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.regex_pattern = extracted
+
 
 class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):
     class Meta:

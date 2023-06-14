@@ -1001,6 +1001,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                         attrs={
                             "rows": 3,
                             "placeholder": field.placeholder,
+                            "class": "amend-field-property",
                         }
                     ),
                     validators=[
