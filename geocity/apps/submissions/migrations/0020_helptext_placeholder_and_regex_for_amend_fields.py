@@ -6,23 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0019_datamigration_sent_date'),
+        ("submissions", "0019_datamigration_sent_date"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='submissionamendfield',
-            name='help_text',
-            field=models.CharField(blank=True, max_length=255, verbose_name='information complémentaire'),
+            model_name="submissionamendfield",
+            name="help_text",
+            field=models.CharField(
+                blank=True, max_length=255, verbose_name="information complémentaire"
+            ),
         ),
         migrations.AddField(
-            model_name='submissionamendfield',
-            name='placeholder',
-            field=models.CharField(blank=True, max_length=255, verbose_name='exemple de donnée à saisir'),
+            model_name="submissionamendfield",
+            name="placeholder",
+            field=models.CharField(
+                blank=True, max_length=255, verbose_name="exemple de donnée à saisir"
+            ),
         ),
         migrations.AddField(
-            model_name='submissionamendfield',
-            name='regex_pattern',
-            field=models.CharField(blank=True, help_text='Exemple: ^[0-9]{4}$', max_length=255, verbose_name='regex pattern'),
+            model_name="submissionamendfield",
+            name="regex_pattern",
+            field=models.CharField(
+                blank=True,
+                help_text="Exemple: ^[0-9]{4}$",
+                max_length=255,
+                verbose_name="regex pattern",
+            ),
         ),
     ]
