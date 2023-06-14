@@ -1638,7 +1638,7 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
                 )
             )
             .order_by(
-                F("sent_date").desc(nulls_last=True),
+                F("sent_date").desc(nulls_last=False),
                 F("created_at").desc(nulls_last=True),
             )
         )
