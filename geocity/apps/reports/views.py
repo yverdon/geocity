@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -12,6 +14,17 @@ from geocity.apps.submissions import permissions, services
 
 from .models import Report
 from .services import generate_report_pdf_as_response
+
+
+def transform_string_as_key(string):
+    """Transform a normal string, to something usable without special characters and spaces"""
+    # Delete special characters and spaces
+    string = re.sub("[^a-zA-Z0-9 ]", "", string)
+    # Replace spaces by underscores
+    string = string.replace(" ", "_")
+    # Convert everything to lower
+    string = string.lower()
+    return string
 
 
 # TODO: instead of taking Submission and Form arguments, we should take
@@ -32,7 +45,7 @@ def report_content(request, submission_id, form_id, report_id, **kwargs):
 
     # Prepare the base context for rendering sections
     request_json_data = SubmissionPrintSerializer(submission).data
-    form_key = form.name + (f" ({form.category.name})" if form.category_id else "")
+    form_key = transform_string_as_key(form.name)
     request_props = request_json_data["properties"]["submission_fields"][form_key]
     amend_props = request_json_data["properties"]["amend_fields"][form_key]
     base_section_context = {
