@@ -1,4 +1,5 @@
 import json
+import re
 from collections import OrderedDict
 from datetime import timedelta
 
@@ -22,10 +23,21 @@ from geocity.apps.submissions.payments.models import SubmissionPrice
 from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
-def get_field_value_based_on_field(prop):
+def transform_string_as_key(string):
+    """Transform a normal string, to something usable without special characters and spaces"""
+    # Delete special characters and spaces
+    string = re.sub("[^a-zA-Z0-9 ]", "", string)
+    # Replace spaces by underscores
+    string = string.replace(" ", "_")
+    # Convert everything to lower
+    string = string.lower()
+    return string
+
+
+def get_field_value_based_on_field(field):
     property_object = FieldValue.objects.get(
-        field_id=prop["field_values__field_id"],
-        selected_form_id=prop["id"],
+        field_id=field["field_values__field_id"],
+        selected_form_id=field["id"],
     )
 
     return property_object.get_value()
@@ -42,7 +54,7 @@ def get_form_fields(
     `value` is a query set of SelectedForm objects.
     """
     obj = value.all()
-    wot_props = obj.values(
+    form_fields = obj.values(
         "field_values__field__name",
         "field_values__field_id",
         "field_values__field__input_type",
@@ -56,115 +68,132 @@ def get_form_fields(
         "submission__author",
     )
 
-    wot_properties = dict()
+    fields_dict = dict()
     property = list()
-    last_wot = ""
+    last_field = ""
 
-    if wot_props:
-        # Flat view is used in the api for geocalendar, the WOT shows only the works_object__name and not the type
+    if form_fields:
+        # Flat view is used in the api for geocalendar, the form shows only the works_object__name and not the type
         if value_with_type:
-            wot_properties = list()
+            fields_dict = list()
             key_for_form = _("Formulaire")
-            for prop in wot_props:
-                wot = prop["form__name"] + (
-                    f' ({prop["form__category__name"]})'
-                    if prop["form__category__name"]
+            for field in form_fields:
+                form = field["form__name"] + (
+                    f' ({field["form__category__name"]})'
+                    if field["form__category__name"]
                     else ""
                 )
 
-                # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
-                if property and wot != last_wot:
-                    # Don't add values if there's only the "WOT" without any field
+                # List of a list, to split form in objects. Check if last form changed or never assigned. Means it's first iteration
+                if property and form != last_field:
+                    # Don't add values if there's only the "form" without any field
                     if len(property) > 1:
-                        wot_properties.append(property)
+                        fields_dict.append(property)
 
                     property = []
-                    # WOT
+                    # form
                     property.append(
                         {
                             "key": key_for_form,
-                            "value": wot,
+                            "value": form,
                             "type": "text",
                         }
                     )
 
-                if not last_wot:
+                if not last_field:
                     property.append(
                         {
                             "key": key_for_form,
-                            "value": wot,
+                            "value": form,
                             "type": "text",
                         }
                     )
 
-                last_wot = wot
+                last_field = form
 
                 # Show fields_values only when the current submission__administrative_entity
                 # is one of the administrative_entities associated to the user
                 # or user is the submission__author
                 # or show field_values that are designed as public in a public permit_request
-                if prop["field_values__field__input_type"] == "file" and (
+                if field["field_values__field__input_type"] == "file" and (
                     (
                         administrative_entities_associated_to_user_list
-                        and prop["submission__administrative_entity"]
+                        and field["submission__administrative_entity"]
                         in administrative_entities_associated_to_user_list
                     )
-                    or (current_user and prop["submission__author"] == current_user.id)
-                    or prop[
+                    or (current_user and field["submission__author"] == current_user.id)
+                    or field[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
                 ):
                     # get_property_value return None if file does not exist
-                    file = get_field_value_based_on_field(prop)
+                    file = get_field_value_based_on_field(field)
                     # Check if file exist
                     if file:
-                        # Properties of WOT
+                        # Properties of form
                         property.append(
                             {
-                                "key": prop["field_values__field__name"],
+                                "key": field["field_values__field__name"],
                                 "value": file.url,
-                                "type": prop["field_values__field__input_type"],
+                                "type": field["field_values__field__input_type"],
                             }
                         )
-                elif prop["field_values__value__val"] and (
+                elif field["field_values__value__val"] and (
                     (
                         administrative_entities_associated_to_user_list
-                        and prop["submission__administrative_entity"]
+                        and field["submission__administrative_entity"]
                         in administrative_entities_associated_to_user_list
                     )
-                    or (current_user and prop["submission__author"] == current_user.id)
-                    or prop[
+                    or (current_user and field["submission__author"] == current_user.id)
+                    or field[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
                 ):
-                    # Properties of WOT
+                    # Properties of form
                     property.append(
                         {
-                            "key": prop["field_values__field__name"],
-                            "value": prop["field_values__value__val"],
-                            "type": prop["field_values__field__input_type"],
+                            "key": field["field_values__field__name"],
+                            "value": field["field_values__value__val"],
+                            "type": field["field_values__field__input_type"],
                         }
                     )
-            # Add last wot_properties, or show something when there's only one
-            # Don't add values if there's only the "WOT" without any field
+            # Add last fields_dict, or show something when there's only one
+            # Don't add values if there's only the "form" without any field
             if len(property) > 1:
-                wot_properties.append(property)
+                fields_dict.append(property)
         else:
-            for prop in wot_props:
-                wot = f'{prop["form__name"]} ({prop["form__category__name"]})'
-                wot_properties[wot] = {
-                    prop_i["field_values__field__name"]: get_field_value_based_on_field(
-                        prop_i
-                    ).url
-                    # Check this is a file and the file exist
-                    if prop_i["field_values__field__input_type"] == "file"
-                    and get_field_value_based_on_field(prop_i)
-                    else prop_i["field_values__value__val"]
-                    for prop_i in wot_props
-                    if prop_i["form_id"] == prop["form_id"]
-                    and prop_i["field_values__field__name"]
+            for field in form_fields:
+                form = f'{field["form__name"]}'
+                form = transform_string_as_key(form)
+                form_category = (
+                    f'{field["form__name"]} ({field["form__category__name"]})'
+                )
+
+                fields_dict[form] = {
+                    # Put the title
+                    "title": {
+                        "form": field["form__name"],
+                        "category": field["form__category__name"],
+                        "form_category": form_category,
+                    },
+                    "fields": {
+                        transform_string_as_key(field["field_values__field__name"]): {
+                            "name": field["field_values__field__name"],
+                            "value": get_field_value_based_on_field(field).url,
+                        }
+                        # Check this is a file and the file exist
+                        if field["field_values__field__input_type"] == "file"
+                        and get_field_value_based_on_field(field)
+                        else {
+                            "name": field["field_values__field__name"],
+                            "value": field["field_values__value__val"],
+                        }
+                        for field in form_fields
+                        if field["form_id"] == field["form_id"]
+                        and field["field_values__field__name"]
+                    },
                 }
-    return wot_properties
+    return fields_dict
 
 
 def get_amend_properties(value):
@@ -180,12 +209,26 @@ def get_amend_properties(value):
     amend_properties = {}
 
     for field in amend_fields:
-        amends = f'{field["form__name"]} ({field["form__category__name"]})'
-        amend_properties[amends] = {
-            prop_i["amend_fields__field__name"]: prop_i["amend_fields__value"]
-            for prop_i in amend_fields
-            if prop_i["form_id"] == field["form_id"]
-            and prop_i["amend_fields__field__name"]
+        amend = f'{field["form__name"]}'
+        amend = transform_string_as_key(amend)
+        amend_field = f'{field["form__name"]} ({field["form__category__name"]})'
+
+        amend_properties[amend] = {
+            # Put the title
+            "title": {
+                "form": field["form__name"],
+                "category": field["form__category__name"],
+                "form_category": amend_field,
+            },
+            "fields": {
+                transform_string_as_key(field["amend_fields__field__name"]): {
+                    "name": field["amend_fields__field__name"],
+                    "value": field["amend_fields__value"],
+                }
+                for field in amend_fields
+                if field["form_id"] == field["form_id"]
+                and field["amend_fields__field__name"]
+            },
         }
 
     return amend_properties
@@ -649,7 +692,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     def to_representation(self, value):
         rep = super().to_representation(value)
 
-        # If the WOT has no geometry, we add the centroid of the administrative entity as a square (polygon)
+        # If the form has no geometry, we add the centroid of the administrative entity as a square (polygon)
         if rep["properties"]["geo_envelop"]["geometry"]["coordinates"] == []:
             administrative_entity_id = rep["properties"]["submission"][
                 "administrative_entity"
