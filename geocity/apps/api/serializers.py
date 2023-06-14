@@ -409,7 +409,9 @@ class SubmissionContactSerializer(serializers.Serializer):
                 contact_object[field.name] = getattr(
                     submission_contact.contact, field.name
                 )
-            rep[submission_contact.get_contact_type_display()] = contact_object
+            rep[
+                transform_string_as_key(submission_contact.get_contact_type_display())
+            ] = contact_object
 
         return rep
 
