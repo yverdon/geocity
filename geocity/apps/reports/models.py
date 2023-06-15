@@ -223,6 +223,27 @@ def padding_top_field(default=0):
     )
 
 
+NONE = 0
+FORM = 1
+CATEGORY = 2
+FORM_CATEGORY = 3
+FORM_NAME_DISPLAY = (
+    (NONE, _("Aucun")),
+    (FORM, _("Formulaire")),
+    (CATEGORY, _("Catégorie")),
+    (FORM_CATEGORY, _("Formulaire (Catégorie)")),
+)
+
+
+def form_name():
+    return models.PositiveSmallIntegerField(
+        _("Affichage du nom du formulaire"),
+        choices=FORM_NAME_DISPLAY,
+        default=FORM_CATEGORY,
+        help_text=_("Choix de la valeur à afficher pour le nom du formulaire"),
+    )
+
+
 class Section(PolymorphicModel):
     class Meta:
         verbose_name = _("Paragraphe")
@@ -463,7 +484,6 @@ class SectionAuthor(Section):
 class SectionDetail(Section):
     STYLE_0 = 0
     STYLE_1 = 1
-
     STYLES = (
         (STYLE_0, _("champ : valeur")),
         (STYLE_1, _("champ (tab) valeur")),
@@ -482,13 +502,7 @@ class SectionDetail(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
-    show_form_name = models.BooleanField(
-        _("Afficher le nom du formulaire"),
-        default=True,
-        help_text=_(
-            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
-        ),
-    )
+    form_name = form_name()
     style = models.PositiveSmallIntegerField(
         _("Style"),
         choices=STYLES,
@@ -579,13 +593,7 @@ class SectionAmendProperty(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
-    show_form_name = models.BooleanField(
-        _("Afficher le nom du formulaire"),
-        default=True,
-        help_text=_(
-            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
-        ),
-    )
+    form_name = form_name()
     undesired_properties = models.CharField(
         _("Nom de champs a masquer"),
         max_length=2000,
