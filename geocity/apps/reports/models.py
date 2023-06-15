@@ -687,6 +687,11 @@ class SectionRecipient(Section):
         }
 
 
+class SectionBuildHelper(Section):
+    class Meta:
+        verbose_name = _("Aide")
+
+
 class HeaderFooter(PolymorphicModel):
     class Location(models.TextChoices):
         BOTTOM_CENTER = "@bottom-center", _("Pied de page - Centre")
