@@ -8,10 +8,15 @@ class Migration(migrations.Migration):
     def api_name_from_name(apps, schema_editor):
 
         Form = apps.get_model("forms", "Form")
+        Field = apps.get_model("forms", "Field")
 
         for form in Form.objects.all():
             form.api_name = convert_string_to_api_key(form.name)
             form.save(update_fields=["api_name"])
+
+        for field in Field.objects.all():
+            field.api_name = convert_string_to_api_key(field.name)
+            field.save(update_fields=["api_name"])
 
     dependencies = [
         (
