@@ -40,7 +40,6 @@ from django.views.decorators.http import require_POST
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from django_filters.views import FilterView
-from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin
 
 from geocity.apps.accounts.decorators import (
@@ -73,6 +72,7 @@ from .steps import (
 )
 from .tables import (
     CustomFieldValueAccessibleSubmission,
+    PandasExportMixin,
     TransactionsTable,
     get_custom_dynamic_table,
 )
@@ -1615,7 +1615,7 @@ def submission_media_download(request, property_value_id):
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 @method_decorator(permanent_user_required, name="dispatch")
-class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
+class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "submissions/submissions_list.html"
 
