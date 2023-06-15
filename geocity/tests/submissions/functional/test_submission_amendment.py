@@ -546,6 +546,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         help_text = "my help text"
         placeholder = "my placeholder text"
         regex_pattern = ".*(CHF \d+).*"
+        regex_test_string = "CHF 100.-"
         submission = factories.SubmissionFactory(
             status=submissions_models.Submission.STATUS_APPROVED,
             administrative_entity=self.administrative_entity,
@@ -598,6 +599,8 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+
+        # Check placeholder and help_text are there
         parser = get_parser(response.content)
         self.assertEqual(
             parser.select(".amend-field-property")[0]["placeholder"], placeholder
@@ -608,9 +611,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(parser.select(".amend-field-property")[0]["title"], help_text)
         self.assertEqual(parser.select(".amend-field-property")[1]["title"], help_text)
 
-        # Check that is one string is badly formatted, post fails
+        # Check that it is NOT possible to save a badly formatted string, (is the correct string not saved in DB ?)
         data[f"{forms_pk}_{field_with_regex.pk}"] = "My badly formed input"
-        data[f"{forms_pk}_{field_no_regex.pk}"] = "My badly formed input"
+        data[f"{forms_pk}_{field_no_regex.pk}"] = "Any string accepted"
         response2 = self.client.post(
             reverse(
                 "submissions:submission_detail",
@@ -619,7 +622,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data=data,
             follow=True,
         )
+
         self.assertEqual(response2.status_code, 200)
+
         new_fields_values_qs = (
             submissions_models.SubmissionAmendFieldValue.objects.values_list(
                 "value", flat=True
@@ -631,9 +636,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             new_fields_values_qs,
         )
 
-        # Check that field with regex gets a string correctly formatted, post works
-        data[f"{forms_pk}_{field_with_regex.pk}"] = "CHF 10sss0.-"
-        data[f"{forms_pk}_{field_no_regex.pk}"] = "My badly formed input"
+        # Check that it is possible to save a correctly formatted string (is the correct string saved in DB ?)
+        data[f"{forms_pk}_{field_with_regex.pk}"] = regex_test_string
+        data[f"{forms_pk}_{field_no_regex.pk}"] = "Any string accepted"
         response3 = self.client.post(
             reverse(
                 "submissions:submission_detail",
@@ -642,7 +647,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data=data,
             follow=True,
         )
+
         self.assertEqual(response3.status_code, 200)
+
         new_fields_values_qs = (
             submissions_models.SubmissionAmendFieldValue.objects.values_list(
                 "value", flat=True
@@ -650,7 +657,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         self.assertIn(
-            "My badly formed input",
+            regex_test_string,
             new_fields_values_qs,
         )
 
