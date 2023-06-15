@@ -393,7 +393,6 @@ class PandasExportMixin(ExportMixin):
         if not all(item in visible_submissions_for_user for item in submissions_list):
             raise SuspiciousOperation
 
-        # Get each submission as json
         for submission in self.get_table_data():
 
             ordered_dict = SubmissionPrintSerializer(submission).data
