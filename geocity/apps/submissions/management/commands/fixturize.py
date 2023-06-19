@@ -14,6 +14,7 @@ from django.db import connection, transaction
 from geocity import settings
 from geocity.apps.accounts.models import *
 from geocity.apps.accounts.users import get_integrator_permissions
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.contact_type_choices import *
@@ -306,6 +307,7 @@ class Command(BaseCommand):
 
         form_obj = Form.objects.create(
             name=form,
+            api_name=convert_string_to_api_key(form),
             category=form_category_obj,
             is_public=True,
             notify_services=True,
@@ -433,6 +435,7 @@ class Command(BaseCommand):
         field, created = Field.objects.get_or_create(
             integrator=integrator,
             name=name,
+            api_name=convert_string_to_api_key(name),
             placeholder=placeholder,
             help_text=help_text,
             input_type=input_type,

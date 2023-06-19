@@ -1,12 +1,20 @@
+import collections
+import json
 from datetime import datetime
+from io import BytesIO as IO
 
 import django_tables2 as tables
+import pandas
 from django.conf import settings
+from django.http import FileResponse
 from django.template.defaultfilters import floatformat
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from django_tables2.export.views import ExportMixin
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
+from ..api.serializers import SubmissionPrintSerializer
 from . import models
 from .payments.models import Transaction
 
@@ -363,3 +371,67 @@ class TransactionsTable(tables.Table):
             "status",
         )
         template_name = "django_tables2/bootstrap.html"
+
+
+class PandasExportMixin(ExportMixin):
+    def create_export(self, export_format):
+
+        if not export_format in ["xlsx"]:
+            raise NotImplementedError
+
+        records = {}
+        submissions_qs = self.get_table_data().filter()
+
+        # # Make sure there will be no bypass
+        # submissions_list = submissions_qs.values_list("id", flat=True)
+        # visible_submissions_for_user = models.Submission.objects.filter_for_user(
+        #     self.request.user,
+        # ).values_list("id", flat=True)
+
+        # if not all(item in visible_submissions_for_user for item in submissions_list):
+        #     raise SuspiciousOperation
+
+        for submission in submissions_qs:
+            list_selected_forms = list(
+                submission.selected_forms.values_list("form_id", flat=True)
+            )
+            sheet_name = "_".join(map(str, list_selected_forms))
+            ordered_dict = SubmissionPrintSerializer(submission).data
+            ordered_dict.move_to_end("geometry")
+            data_dict = dict(ordered_dict)
+            data_str = json.dumps(data_dict)
+            record = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
+
+            if sheet_name not in records.keys():
+                records[sheet_name] = record
+            else:
+                record_list = []
+                record_list.append(records[sheet_name])
+                record_list.append(record)
+                records[sheet_name] = record_list
+
+        now = timezone.now()
+
+        if export_format == "xlsx":
+            excel_file = IO()
+            xlwriter = pandas.ExcelWriter(excel_file)
+
+            for key in records:
+                dataframe = pandas.json_normalize(records[key])
+                dataframe.to_excel(xlwriter, sheet_name=key)
+
+            xlwriter.close()
+            excel_file.seek(0)
+            filename = f"geocity_export_{now:%Y-%m-%d}.xlsx"
+
+            content_type = "content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+
+        response = FileResponse(
+            excel_file,
+            filename=filename,
+            as_attachment=False,
+        )
+        response["Content-Type"] = content_type
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        return response
