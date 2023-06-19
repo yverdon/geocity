@@ -16,7 +16,7 @@
                     <div class="flex_item-100"><h3>{{forms.title.form_category}}</h3></div>
                 {% endif %}
                 {% for field_key, field in forms.fields.items %}
-                    {% if not field_key in section.undesired_properties %}
+                    {% if not field.name in section.undesired_properties %}
                         {% if section.style == 0 %}
                             <div class="flex_item-100" style="padding-top:{{section.line_height}}px;"><span class="bold">{{field.name}} : </span>{{field.value}}<br></div>
                         {% elif section.style == 1 %}

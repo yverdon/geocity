@@ -17,7 +17,7 @@
                         <div class="flex_item-100"><h3>{{forms.title.form_category}}</h3></div>
                     {% endif %}
                     {% for comment_key, comment in forms.fields.items %}
-                        {% if not comment_key in section.undesired_properties %}
+                        {% if not comment.name in section.undesired_properties %}
                             <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">{{comment.name}} : </span>{{comment.value}}</div><br>
                         {% endif %}
                     {% endfor %}
