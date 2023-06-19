@@ -181,7 +181,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionDetail: {
                     "padding_top": 20,
                     # "is_new_page": bool,
-                    "title": "Section detail style 1 with form name",
+                    "title": "Section detail style 1 form_name 0",
                     "title_size": "h3",
                     "form_name": 0,
                     "style": 1,
@@ -193,7 +193,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionDetail: {
                     "padding_top": 20,
                     # "is_new_page": bool,
-                    "title": "Section detail style 2 without form name",
+                    "title": "Section detail style 2 form_name 1",
                     "title_size": "h3",
                     "form_name": 1,
                     "style": 2,
@@ -205,7 +205,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionDetail: {
                     "padding_top": 20,
                     # "is_new_page": bool,
-                    "title": "Section detail style 2 without form name",
+                    "title": "Section detail style 2 form_name 2",
                     "title_size": "h3",
                     "form_name": 2,
                     "style": 2,
@@ -217,7 +217,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionDetail: {
                     "padding_top": 20,
                     # "is_new_page": bool,
-                    "title": "Section detail style 2 without form name",
+                    "title": "Section detail style 2 form_name 3",
                     "title_size": "h3",
                     "form_name": 3,
                     "style": 2,
@@ -245,7 +245,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
-                    "title": "Section amend property",
+                    "title": "Section amend property form_name 0",
                     "title_size": "h3",
                     "form_name": 0,
                     # "undesired_properties": string,
@@ -255,7 +255,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
-                    "title": "Section amend property",
+                    "title": "Section amend property form_name 1",
                     "title_size": "h3",
                     "form_name": 1,
                     # "undesired_properties": string,
@@ -265,7 +265,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
-                    "title": "Section amend property",
+                    "title": "Section amend property form_name 2",
                     "title_size": "h3",
                     "form_name": 2,
                     # "undesired_properties": string,
@@ -275,7 +275,7 @@ class ReportsTests(ReportsTestsBase):
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
-                    "title": "Section amend property",
+                    "title": "Section amend property form_name 3",
                     "title_size": "h3",
                     "form_name": 3,
                     # "undesired_properties": string,
