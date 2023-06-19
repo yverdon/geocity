@@ -21,6 +21,7 @@ class SubmissionAmendFieldForm(forms.ModelForm):
         model = models.SubmissionAmendField
         fields = [
             "name",
+            "api_name",
             "is_mandatory",
             "is_visible_by_author",
             "is_visible_by_validators",

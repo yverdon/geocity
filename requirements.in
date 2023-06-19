@@ -50,3 +50,4 @@ django-polymorphic
 postfinancecheckout
 tzdata
 pandas
+Unidecode

@@ -238,6 +238,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "name",
+                    "api_name",
                     "category",
                     "administrative_entities",
                     "can_always_update",
@@ -399,6 +400,7 @@ class FieldAdminForm(forms.ModelForm):
         model = models.Field
         fields = [
             "name",
+            "api_name",
             "placeholder",
             "help_text",
             "input_type",
