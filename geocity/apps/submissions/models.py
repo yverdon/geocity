@@ -15,7 +15,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
@@ -1767,8 +1767,6 @@ class SubmissionAmendField(models.Model):
     def clean(self):
         if self.api_name:
             if self.api_name != convert_string_to_api_key(self.api_name):
-                print(self.api_name)
-                print(convert_string_to_api_key(self.api_name))
                 raise ValidationError(
                     {
                         "api_name": _(
