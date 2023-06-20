@@ -733,6 +733,8 @@ class FormField(models.Model):
 
 
 # Input types
+INPUT_TYPE_DISPLAY_TITLE = "title_output"
+INPUT_TYPE_DISPLAY_TEXT = "text_output"
 INPUT_TYPE_ADDRESS = "address"
 INPUT_TYPE_CHECKBOX = "checkbox"
 INPUT_TYPE_DATE = "date"
@@ -743,10 +745,11 @@ INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
 INPUT_TYPE_TEXT = "text"
-INPUT_TYPE_TITLE = "title"
 
 
 class Field(models.Model):
+    INPUT_TYPE_DISPLAY_TITLE = INPUT_TYPE_DISPLAY_TITLE
+    INPUT_TYPE_DISPLAY_TEXT = INPUT_TYPE_DISPLAY_TEXT
     INPUT_TYPE_TEXT = INPUT_TYPE_TEXT
     INPUT_TYPE_CHECKBOX = INPUT_TYPE_CHECKBOX
     INPUT_TYPE_NUMBER = INPUT_TYPE_NUMBER
@@ -757,10 +760,11 @@ class Field(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
-    INPUT_TYPE_TITLE = INPUT_TYPE_TITLE
 
     # The choices are sorted according to their values
     INPUT_TYPE_CHOICES = (
+        (INPUT_TYPE_DISPLAY_TITLE, _("Titre à afficher")),
+        (INPUT_TYPE_DISPLAY_TEXT, _("Texte à afficher")),
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
         (INPUT_TYPE_LIST_MULTIPLE, _("Choix multiple")),
@@ -771,7 +775,6 @@ class Field(models.Model):
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_TITLE, _("Titre")),
     )
     integrator = models.ForeignKey(
         Group,

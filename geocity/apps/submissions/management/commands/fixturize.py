@@ -1138,7 +1138,8 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                 if (
                     field_obj.input_type == Field.INPUT_TYPE_TEXT
                     or field_obj.input_type == Field.INPUT_TYPE_REGEX
-                    or field_obj.input_type == Field.INPUT_TYPE_TITLE
+                    or field_obj.input_type == Field.INPUT_TYPE_DISPLAY_TITLE
+                    or field_obj.input_type == Field.INPUT_TYPE_DISPLAY_TEXT
                 ):
                     FieldValue.objects.create(
                         field=field_obj,
