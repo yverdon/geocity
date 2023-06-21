@@ -415,13 +415,13 @@ class PandasExportMixin(ExportMixin):
 
         if export_format == "xlsx":
             excel_file = IO()
-            xlwriter = pandas.ExcelWriter(excel_file)
+            excel_writer = pandas.ExcelWriter(excel_file)
 
             for key in records:
-                dataframe = pandas.json_normalize(records[key])
-                dataframe.to_excel(xlwriter, sheet_name=key)
+                data_frame = pandas.json_normalize(records[key])
+                data_frame.to_excel(excel_writer, sheet_name=key)
 
-            xlwriter.close()
+            excel_writer.close()
             excel_file.seek(0)
             filename = f"geocity_export_{now:%Y-%m-%d}.xlsx"
 
