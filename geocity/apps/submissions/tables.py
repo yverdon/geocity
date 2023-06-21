@@ -6,6 +6,7 @@ from io import BytesIO as IO
 import django_tables2 as tables
 import pandas
 from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
 from django.http import FileResponse
 from django.template.defaultfilters import floatformat
 from django.utils import timezone
@@ -382,14 +383,14 @@ class PandasExportMixin(ExportMixin):
         records = {}
         submissions_qs = self.get_table_data().filter()
 
-        # # Make sure there will be no bypass
-        # submissions_list = submissions_qs.values_list("id", flat=True)
-        # visible_submissions_for_user = models.Submission.objects.filter_for_user(
-        #     self.request.user,
-        # ).values_list("id", flat=True)
+        # Make sure there will be no bypass
+        submissions_list = submissions_qs.values_list("id", flat=True)
+        visible_submissions_for_user = models.Submission.objects.filter_for_user(
+            self.request.user,
+        ).values_list("id", flat=True)
 
-        # if not all(item in visible_submissions_for_user for item in submissions_list):
-        #     raise SuspiciousOperation
+        if not all(item in visible_submissions_for_user for item in submissions_list):
+            raise SuspiciousOperation
 
         for submission in submissions_qs:
             list_selected_forms = list(
