@@ -703,8 +703,6 @@ class Form(models.Model):
 
         if self.api_name:
             if self.api_name != convert_string_to_api_key(self.api_name):
-                print(self.api_name)
-                print(convert_string_to_api_key(self.api_name))
                 raise ValidationError(
                     {
                         "api_name": _(
@@ -925,8 +923,6 @@ class Field(models.Model):
 
         if self.api_name:
             if self.api_name != convert_string_to_api_key(self.api_name):
-                print(self.api_name)
-                print(convert_string_to_api_key(self.api_name))
                 raise ValidationError(
                     {
                         "api_name": _(
