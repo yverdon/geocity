@@ -1801,7 +1801,7 @@ def submission_submit_confirmed(request, submission_id):
         if step.errors_count and step.url
     ]
 
-    if incomplete_steps:
+    if incomplete_steps or not submission.forms.exists():
         raise SuspiciousOperation
 
     services_to_notify_and_message = models.FieldValue.objects.filter(
