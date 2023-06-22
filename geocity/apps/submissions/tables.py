@@ -7,6 +7,7 @@ import django_tables2 as tables
 import pandas
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
+from django.db.models import Q
 from django.http import FileResponse
 from django.template.defaultfilters import floatformat
 from django.utils import timezone
@@ -376,12 +377,25 @@ class TransactionsTable(tables.Table):
 
 class PandasExportMixin(ExportMixin):
     def create_export(self, export_format):
+        # Check if user has any group pilot or integrator
+        user_is_backoffice_or_integrator = self.request.user.groups.filter(
+            Q(permit_department__is_backoffice=True)
+            | Q(permit_department__is_integrator_admin=True),
+        )
+
+        # If user isn't pilot, integrator or superuser, he uses ExportMixin instead of PandasExportMixin
+        if not (user_is_backoffice_or_integrator or self.request.user.is_superuser):
+            return super().create_export(export_format)
 
         if not export_format in ["xlsx"]:
             raise NotImplementedError
 
         records = {}
-        submissions_qs = self.get_table_data().filter()
+
+        # Take all submission except status draft
+        submissions_qs = self.get_table_data().filter(
+            ~Q(status=models.Submission.STATUS_DRAFT)
+        )
 
         # Make sure there will be no bypass
         submissions_list = submissions_qs.values_list("id", flat=True)
