@@ -587,7 +587,9 @@ def search_result_to_json(result):
             "author": result.author_name,
             "status": result.submission_status,
             "createdAt": result.submission_created_at.strftime("%d.%m.%Y"),
-            "sentDate": result.submission_sent_date.strftime("%d.%m.%Y"),
+            "sentDate": result.submission_sent_date.strftime("%d.%m.%Y")
+            if result.submission_sent_date
+            else "",
         },
         "match": {
             "fieldLabel": result.field_label,

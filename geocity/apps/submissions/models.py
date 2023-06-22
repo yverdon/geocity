@@ -1744,6 +1744,18 @@ class SubmissionAmendField(models.Model):
     can_always_update = models.BooleanField(
         _("Editable même après classement de la demande"), default=False
     )
+    placeholder = models.CharField(
+        _("exemple de donnée à saisir"), max_length=255, blank=True
+    )
+    help_text = models.CharField(
+        _("information complémentaire"), max_length=255, blank=True
+    )
+    regex_pattern = models.CharField(
+        _("regex pattern"),
+        max_length=255,
+        blank=True,
+        help_text=_("Exemple: ^[0-9]{4}$"),
+    )
     forms = models.ManyToManyField(
         Form,
         verbose_name=_("formulaires"),
