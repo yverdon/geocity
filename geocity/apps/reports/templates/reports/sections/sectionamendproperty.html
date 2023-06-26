@@ -8,13 +8,17 @@
     {% if request_data.properties.amend_fields %}
         <div class="flex_container">
             <div class="flex_item-100">
-                {% for form, commentaires in request_data.properties.amend_fields.items %}
-                    {% if section.show_form_name %}
-                        <h3>{{ form }}</h3>
+                {% for form_key, forms in request_data.properties.amend_fields.items %}
+                    {% if section.form_name == 1 %}
+                        <div class="flex_item-100"><h3>{{forms.title.form}}</h3></div>
+                    {% elif section.form_name == 2 %}
+                        <div class="flex_item-100"><h3>{{forms.title.category}}</h3></div>
+                    {% elif section.form_name == 3 %}
+                        <div class="flex_item-100"><h3>{{forms.title.form_category}}</h3></div>
                     {% endif %}
-                    {% for key, commentaire in commentaires.items %}
-                        {% if not key in section.undesired_properties %}
-                            <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">{{key}} : </span>{{commentaire}}</div><br>
+                    {% for comment_key, comment in forms.fields.items %}
+                        {% if not comment.name in section.undesired_properties %}
+                            <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">{{comment.name}} : </span>{{comment.value}}</div><br>
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
