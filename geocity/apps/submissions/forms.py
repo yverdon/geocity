@@ -69,7 +69,7 @@ def _title_html_representation(prop, for_summary=False):
 
 
 def _text_html_representation(prop, for_summary=False):
-    base = f"<p class='propertyText'>{prop.name}</p>"
+    base = f"<p class='propertyText mb-0'>{prop.name}</p>"
     if not for_summary and prop.help_text:
         base = f"{base}<small>{prop.help_text}</small>"
     return base
