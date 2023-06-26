@@ -1799,7 +1799,7 @@ def submission_submit_confirmed(request, submission_id):
         messages.add_message(
             request,
             messages.ERROR,
-            _("Il n'est pas possible d'envoyer un formulaire sans aucun objet."),
+            _("Il est impossible d'envoyer un formulaire sans objet."),
         )
         return redirect(
             "submissions:submission_select_forms", submission_id=submission_id
