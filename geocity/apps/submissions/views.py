@@ -1795,13 +1795,23 @@ def submission_submit_confirmed(request, submission_id):
         )
         return redirect("submissions:submission_submit", submission_id=submission_id)
 
+    if not submission.forms.exists():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Il n'est pas possible d'envoyer un formulaire sans aucun objet."),
+        )
+        return redirect(
+            "submissions:submission_select_forms", submission_id=submission_id
+        )
+
     incomplete_steps = [
         step.url
         for step in get_progress_bar_steps(request, submission).values()
         if step.errors_count and step.url
     ]
 
-    if incomplete_steps or not submission.forms.exists():
+    if incomplete_steps:
         raise SuspiciousOperation
 
     services_to_notify_and_message = models.FieldValue.objects.filter(
