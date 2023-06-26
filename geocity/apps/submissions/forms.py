@@ -85,8 +85,8 @@ def _file_download_html_representation(prop, for_summary=False):
 
 
 non_value_input_type_mapping = {
-    models.Field.INPUT_TYPE_DISPLAY_TITLE: _title_html_representation,
-    models.Field.INPUT_TYPE_DISPLAY_TEXT: _text_html_representation,
+    models.Field.DISPLAY_TITLE: _title_html_representation,
+    models.Field.DISPLAY_TEXT: _text_html_representation,
     models.Field.INPUT_TYPE_FILE_DOWNLOAD: _file_download_html_representation,
 }
 
