@@ -1007,6 +1007,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             link="https://mapnv.ch",
             archive_link="https://mapnv.ch",
             geom=geom,
+            is_single_form_submissions=True,
         )
 
         administrative_entity.tags.add(entity)
