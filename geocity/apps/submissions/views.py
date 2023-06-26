@@ -1657,6 +1657,9 @@ class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
         else:
             return self.object_list
 
+    def get_pandas_table_data(self):
+        return self.object_list
+
     def is_department_user(self):
         return self.request.user.groups.filter(permit_department__isnull=False).exists()
 

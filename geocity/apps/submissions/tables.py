@@ -377,6 +377,10 @@ class TransactionsTable(tables.Table):
 
 class PandasExportMixin(ExportMixin):
     def create_export(self, export_format):
+
+        if not export_format in ["xlsx"]:
+            raise NotImplementedError
+
         # Check if user has any group pilot or integrator
         user_is_backoffice_or_integrator = self.request.user.groups.filter(
             Q(permit_department__is_backoffice=True)
@@ -387,13 +391,10 @@ class PandasExportMixin(ExportMixin):
         if not (user_is_backoffice_or_integrator or self.request.user.is_superuser):
             return super().create_export(export_format)
 
-        if not export_format in ["xlsx"]:
-            raise NotImplementedError
-
         records = {}
 
         # Take all submission except status draft
-        submissions_qs = self.get_table_data().filter(
+        submissions_qs = self.get_pandas_table_data().filter(
             ~Q(status=models.Submission.STATUS_DRAFT)
         )
 
