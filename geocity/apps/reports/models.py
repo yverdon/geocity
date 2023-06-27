@@ -665,19 +665,19 @@ class SectionRecipient(Section):
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
     first_recipient = models.PositiveSmallIntegerField(
-        _("Destinataire choix 1"),
+        _("Destinataire principal"),
         choices=CONTACT_TYPE_CHOICES_RECIPIENT,
         default=CONTACT_TYPE_REQUESTOR,
         help_text=_(
-            'Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire choix 2"'
+            'Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire secondaire"'
         ),
     )
     second_recipient = models.PositiveSmallIntegerField(
-        _("Destinataire choix 2"),
+        _("Destinataire secondaire"),
         choices=CONTACT_TYPE_CHOICES_RECIPIENT,
         default=CONTACT_TYPE_AUTHOR,
         help_text=_(
-            'Utilisé lorsque le "destinataire choix 1" n\'est pas présent dans la liste des contacts saisis'
+            'Utilisé lorsque le "destinataire principal" n\'est pas présent dans la liste des contacts saisis'
         ),
     )
 
