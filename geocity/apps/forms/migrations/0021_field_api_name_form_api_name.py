@@ -30,4 +30,26 @@ class Migration(migrations.Migration):
                 verbose_name="Nom dans l'API",
             ),
         ),
+        migrations.AlterField(
+            model_name="field",
+            name="input_type",
+            field=models.CharField(
+                choices=[
+                    ("address", "Adresse"),
+                    ("checkbox", "Case à cocher"),
+                    ("list_multiple", "Choix multiple"),
+                    ("list_single", "Choix simple"),
+                    ("date", "Date"),
+                    ("file", "Fichier"),
+                    ("file_download", "Fichier (à télécharger)"),
+                    ("number", "Nombre"),
+                    ("text", "Texte"),
+                    ("regex", "Texte (regex)"),
+                    ("text_output", "Texte à afficher"),
+                    ("title_output", "Titre à afficher"),
+                ],
+                max_length=30,
+                verbose_name="type de caractéristique",
+            ),
+        ),
     ]
