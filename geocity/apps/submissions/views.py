@@ -1795,6 +1795,16 @@ def submission_submit_confirmed(request, submission_id):
         )
         return redirect("submissions:submission_submit", submission_id=submission_id)
 
+    if not submission.forms.exists():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Il est impossible d'envoyer un formulaire sans objet."),
+        )
+        return redirect(
+            "submissions:submission_select_forms", submission_id=submission_id
+        )
+
     incomplete_steps = [
         step.url
         for step in get_progress_bar_steps(request, submission).values()
