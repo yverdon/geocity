@@ -3,6 +3,18 @@
 from django.db import migrations, models
 
 
+def update_secondary_recipient(apps, schema_editor):
+    """
+    When uses_dynamic_recipient was at false, the author was returned, so return author on first and second choice
+    """
+    SectionRecipient = apps.get_model("reports", "SectionRecipient")
+
+    sections = SectionRecipient.objects.filter(uses_dynamic_recipient=False)
+    for section in sections:
+        section.secondary_recipient = 999
+        section.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,10 +22,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="sectionrecipient",
-            name="uses_dynamic_recipient",
-        ),
         migrations.AddField(
             model_name="sectionrecipient",
             name="principal_recipient",
@@ -55,5 +63,10 @@ class Migration(migrations.Migration):
                 help_text="Utilisé lorsque le destinataire principal n'est pas présent dans la liste des contacts saisis",
                 verbose_name="Destinataire secondaire",
             ),
+        ),
+        migrations.RunPython(update_secondary_recipient),
+        migrations.RemoveField(
+            model_name="sectionrecipient",
+            name="uses_dynamic_recipient",
         ),
     ]

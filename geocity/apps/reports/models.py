@@ -690,8 +690,8 @@ class SectionRecipient(Section):
 
         # Order from last choice to first choice
         recipients = [self.secondary_recipient, self.principal_recipient]
-
-        selected_recipient = "Aucun contact trouvé"
+        # Empty string, if nothing is found, it won't return anything from json and will let empty the section instead of crashing
+        selected_recipient = ""
 
         for recipient in recipients:
             if recipient == 999 and "author" in properties:
