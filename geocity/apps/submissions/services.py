@@ -18,6 +18,7 @@ from django.db.models import Q
 from django.http.response import FileResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
@@ -85,6 +86,11 @@ def submit_submission(submission, request):
             send_email_notification(data, attachments=attachments)
 
     submission.status = models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
+
+    # Set last datetime when submission was sent for validation
+    if submission.status == models.Submission.STATUS_SUBMITTED_FOR_VALIDATION:
+        submission.sent_date = timezone.now()
+
     submission.save()
 
 

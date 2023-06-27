@@ -95,6 +95,7 @@ JAZZMIN_SETTINGS = {
         "forms.Field": "fas fa-list-ol",
         "forms.Form": "fas fa-book",
         "forms.FormCategory": "fas fa-object-ungroup",
+        "forms.MapWidgetConfiguration": "fa fa-map",
         "knox.AuthToken": "fas fa-user-secret",
         "reports.Report": "fas fa-print",
         "reports.ReportLayout": "fas fa-file-alt",

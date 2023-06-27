@@ -24,7 +24,7 @@ from django.core.exceptions import (
 )
 from django.core.serializers import serialize
 from django.db import transaction
-from django.db.models import Prefetch, Q, Sum
+from django.db.models import F, Prefetch, Q, Sum
 from django.forms import formset_factory, modelformset_factory
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.http.response import HttpResponseNotFound
@@ -423,17 +423,13 @@ class SubmissionDetailView(View):
         ):
             return None
 
-        current_inquiry = models.SubmissionInquiry.get_current_inquiry(
-            submission=self.submission
-        )
-
         form = forms.SubmissionInquiryForm(
             data=data,
             submission=self.submission,
-            instance=current_inquiry,
+            instance=self.submission.current_inquiry,
         )
 
-        if current_inquiry:
+        if self.submission.current_inquiry:
             forms.disable_form(form, editable_fields=[form.fields["documents"].label])
 
         return form
@@ -1641,7 +1637,10 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
                     queryset=Form.objects.select_related("category"),
                 )
             )
-            .order_by("-created_at")
+            .order_by(
+                F("sent_date").desc(nulls_last=False),
+                F("created_at").desc(nulls_last=True),
+            )
         )
 
         if form_filter is not None:
@@ -1795,6 +1794,16 @@ def submission_submit_confirmed(request, submission_id):
             submission.get_maximum_submissions_message(),
         )
         return redirect("submissions:submission_submit", submission_id=submission_id)
+
+    if not submission.forms.exists():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Il est impossible d'envoyer un formulaire sans objet."),
+        )
+        return redirect(
+            "submissions:submission_select_forms", submission_id=submission_id
+        )
 
     incomplete_steps = [
         step.url

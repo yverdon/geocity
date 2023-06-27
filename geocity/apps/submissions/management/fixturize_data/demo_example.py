@@ -18,6 +18,7 @@ iterations = {
 entities = {
     "ca.ch": "Commune-a",
     "cb.ch": "Commune-b",
+    "pc.ch": "Participation citoyenne ",
 }
 
 # Geometries for the entities
@@ -30,7 +31,7 @@ geoms = [
 ]
 
 # Ofs_ids for the entities
-ofs_ids = [5938, 5938, 5586, 5890, 5938]
+ofs_ids = [5938, 5938, 5586, 5890, 5938, 1]
 
 # Define the fields
 field_comment = {
@@ -104,7 +105,18 @@ field_list_multiple = {
 # To create specific cases add in front of category name :
 # - RENEWAL_REMINDER
 # - NO_GEOM_NOR_TIME
+# - ADVANCED_MAP_PLUGIN
 form_categories = [
+    (
+        "ADVANCED_MAP_PLUGIN Gestion participative de l'espace public",
+        [
+            (
+                "Signaler un problème sur un lampadaire",
+                field_comment,
+                field_date,
+            ),
+        ],
+    ),
     (
         "RENEWAL_REMINDER Stationnement (ex. de demande devant être prolongée)",
         [

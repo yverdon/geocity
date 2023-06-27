@@ -1,0 +1,45 @@
+{% if id != 'id_form-__prefix__-geom' %}
+{# Adapted from django gis contrib #}
+
+{% load i18n l10n %}
+{% load static %}
+{% load submissions_extras %}
+
+{% block stylesheets%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/advancegeometrywidget/geometrywidget.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+{% endblock %}
+
+
+<div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
+  <div id="map-ro-result"></div>
+  <div id="map-custom-modal-button" class="cursor">
+    <i class="fa fa-map"></i> Localiser sur une carte
+  </div>
+  <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
+  <div id="geo-invalid-content">No geometry value provided.</div>
+</div>
+
+<div id="map-custom-modal-overlay" style="display: none">
+</div>
+
+<div id="map-custom-modal" style="display: none">
+  <div class="map-modal-header">
+    <p>Sélection de la localisation</p>
+    <i id="modal-close-button" class="fa fa-times cursor"></i>
+  </div>
+  <div id="web-component-advanced">
+  </div>
+  <div class="validate-layout">
+    <div id="modal-validation-button" class="cursor">
+      Valider
+    </div>
+  </div>
+
+</div>
+
+{% block scripts %}
+<script type="module" src="{% static 'geocity-wc-map/geocity-wc-map.js' %}"></script>
+<script src="{% static 'js/advancegeometrywidget/geometrywidget.js' %}"></script>
+{% endblock %}
+{% endif %}

@@ -1,0 +1,44 @@
+{% extends "reports/sections/_section.html" %}
+
+{% block content %}
+    <h1>Aide à la création pour les paragraphes libres</h1>
+    <p>Ici se trouvent toutes les variables du formulaire pour le quel celui-ci est imprimé.</p>
+    <p>Toutes les variables des "champs" et des "formulaires" sont accessibles au travers du api_name qui est configuré dans l'admin de geocity</p>
+    <h2>Variables de bases</h2>
+    <p><b>submission : </b>{{submission}}</p>
+    <hr>
+    <p><b>request_data : </b>{{request_data}}</p>
+    <hr>
+    <p><b>form_data : </b>{{form_data}}</p>
+    <hr>
+    <p><b>form_data.request_properties : </b>{{form_data.request_properties}}</p>
+    <hr>
+    <p><b>form_data.amend_properties : </b>{{form_data.amend_properties}}</p>
+    <hr>
+    <h2>Accéder à une donnée en particulier</h2>
+    <p>
+        Les données sont facilement accessibles, pour accéder à une donnée il faut "remonter les niveaux" à partir de la donnée voulue.
+        Chaque accolade ouvrante (<b>{</b>) indique qu'on déscend d'un niveau, tandis qu'une accolade fermante (<b>}</b>) remonte d'un niveau.
+        Il faut commencer par identifier le chemin que fait notre donnée (Quelle est la variable précédant l'accolade ouvrante ?).
+    </p>
+    <h3>Voici un exemple d'accès à une variable, ainsi que la reflexion pour y arriver</h3>
+    <p>
+        <b>Données à disposition</b><br>
+        form_data.request_properties : {'title': {'form': 'Événement sportif', 'category': 'Événements sur la voie publique',
+        'form_category': 'Événement sportif (Événements sur la voie publique)'}, 'fields': {'largeur_m': {'name': 'Largeur [m]', 'value': 3.0},
+        'commentaire': {'name': 'Commentaire', 'value': 'ABC'}, 'date': {'name': 'Date', 'value': '2023-06-16'}, 'impact_sur_la_chaussee':
+        {'name': 'Impact sur la chaussée', 'value': False}, 'adresse': {'name': 'Adresse', 'value': 'Place Pestalozzi 2, 1400 Yverdon-lesBains'}, 'a_moins_de_3m_dun_arbre': {'name': "À moins de 3m d'un arbre", 'value': ['Déviation trafic']}}}
+    </p>
+    <p>
+        L'objectif est d'afficher <b>l'adresse</b>, on va donc afficher le chemin à parcourir<br>
+        <b>form_data.request_properties :</b> {'title': {'form': 'Événement sportif', 'category': 'Événements sur la voie publique',
+        'form_category': 'Événement sportif (Événements sur la voie publique)'}, <b>'fields':</b> {'largeur_m': {'name': 'Largeur [m]', 'value': 3.0},
+        'commentaire': {'name': 'Commentaire', 'value': 'ABC'}, 'date': {'name': 'Date', 'value': '2023-06-16'}, 'impact_sur_la_chaussee':
+        {'name': 'Impact sur la chaussée', 'value': False}, <b>'adresse':</b> {<b>'name':</b> 'Adresse', <b>'value':</b> 'Place Pestalozzi 2, 1400 Yverdon-lesBains'}, 'a_moins_de_3m_dun_arbre': {'name': "À moins de 3m d'un arbre", 'value': ['Déviation trafic']}}}
+    </p>
+    <p>
+        L'adresse est définie par "name" et "value", celle-ci passe par "adresse" > "fields" > form_data.request_properties<br>
+        Pour l'afficher, le chemin correcte est : "form_data.request_properties.fields.adresse.name" et "form_data.request_properties.fields.adresse.value".<br>
+        Voici le résultat : {{form_data.request_properties.fields.adresse.name}} {{form_data.request_properties.fields.adresse.value}}.
+    </p>
+{% endblock %}

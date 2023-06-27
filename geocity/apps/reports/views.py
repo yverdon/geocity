@@ -32,7 +32,7 @@ def report_content(request, submission_id, form_id, report_id, **kwargs):
 
     # Prepare the base context for rendering sections
     request_json_data = SubmissionPrintSerializer(submission).data
-    form_key = form.name + (f" ({form.category.name})" if form.category_id else "")
+    form_key = form.api_name
     request_props = request_json_data["properties"]["submission_fields"][form_key]
     amend_props = request_json_data["properties"]["amend_fields"][form_key]
     base_section_context = {

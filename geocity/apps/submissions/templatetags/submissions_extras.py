@@ -1,6 +1,6 @@
 import json
 import os.path
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from django import template
 from django.forms import modelformset_factory
@@ -122,6 +122,8 @@ def human_field_value(value):
         return _("Oui") if value else _("Non")
     elif isinstance(value, float):
         return floatformat(value, arg=-2)
+    elif isinstance(value, date):
+        return value.strftime("%d.%m.%Y")
     elif isinstance(value, list):
         return render_to_string("submissions/_field_value_list.html", {"values": value})
     elif not value:

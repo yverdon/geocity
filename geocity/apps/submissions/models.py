@@ -1,4 +1,6 @@
+import collections
 import enum
+import json
 import logging
 import os
 import tempfile
@@ -6,13 +8,14 @@ import urllib.parse
 import zipfile
 from datetime import date, datetime, timedelta
 
+import pandas
 import PIL
 import requests
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
@@ -24,13 +27,13 @@ from django.utils.dateparse import parse_date
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-from django_tables2.export import TableExport
 from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts.validators import validate_email
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
@@ -211,6 +214,7 @@ class Submission(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
+    sent_date = models.DateTimeField(_("date du dernier envoi"), null=True)
     forms = models.ManyToManyField(
         Form,
         through="SelectedForm",
@@ -516,10 +520,20 @@ class Submission(models.Model):
 
     @property
     def current_inquiry(self):
-        today = datetime.today()
-        return SubmissionInquiry.objects.filter(
-            submission=self, start_date__lte=today, end_date__gte=today
-        ).first()
+        """
+        Try to return the current inquiry from the pre-fetched and filtered
+        inquiries (needs to be added to the queryset).
+        """
+
+        if hasattr(self, "current_inquiries_filtered"):
+            if len(self.current_inquiries_filtered) > 0:
+                return self.current_inquiries_filtered[0]
+            return None
+        else:  # Check on SubmissionInquiry, it's perf leek for API if "current_inquiries_filtered" is not found
+            today = datetime.today()
+            return SubmissionInquiry.objects.filter(
+                submission=self, start_date__lte=today, end_date__gte=today
+            ).first()
 
     def get_forms_names_list(self):
         return ", ".join(
@@ -576,13 +590,17 @@ class Submission(models.Model):
         return SubmissionComplementaryDocument.objects.filter(submission=self).all()
 
     def to_csv(self):
-        from .tables import OwnSubmissionsExportTable
+        from ..api.serializers import SubmissionPrintSerializer
 
-        table = OwnSubmissionsExportTable(data=Submission.objects.filter(id=self.id))
+        ordered_dict = SubmissionPrintSerializer(self).data
+        ordered_dict.move_to_end("geometry")
+        data_dict = dict(ordered_dict)
+        data_str = json.dumps(data_dict)
+        result = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
 
-        exporter = TableExport(export_format=TableExport.CSV, table=table)
+        pd_dataframe = pandas.json_normalize(result)
 
-        return exporter.export()
+        return pd_dataframe.to_csv(None, sep=";")
 
     def requires_payment(self):
         return any(form.requires_payment for form in self.forms.all())
@@ -1156,16 +1174,6 @@ class Submission(models.Model):
         history.sort(reverse=True)
         return history
 
-    @property
-    def sent_date(self):
-        # Return the last sent date because the submission can be resent if it was incomplete
-        last_sent_history = (
-            self.history.filter(status=Submission.STATUS_SUBMITTED_FOR_VALIDATION)
-            .order_by("history_date")
-            .last()
-        )
-        return last_sent_history.history_date if last_sent_history is not None else None
-
     def get_last_transaction(self):
         if self.get_transactions() is None:
             return None
@@ -1548,6 +1556,7 @@ class SubmissionInquiry(models.Model):
         null=False,
         on_delete=models.CASCADE,
         verbose_name=_("Demande"),
+        related_name="inquiries",
     )
     submitter = models.ForeignKey(
         User,
@@ -1559,13 +1568,6 @@ class SubmissionInquiry(models.Model):
     class Meta:
         verbose_name = _("2.3 Enquête publique")
         verbose_name_plural = _("2.3 Enquêtes publiques")
-
-    @classmethod
-    def get_current_inquiry(cls, submission):
-        today = datetime.today()
-        return cls.objects.filter(
-            submission=submission, start_date__lte=today, end_date__gte=today
-        ).first()
 
 
 class SubmissionComplementaryDocument(models.Model):
@@ -1726,6 +1728,12 @@ class ComplementaryDocumentTypeForAdminSite(ComplementaryDocumentType):
 
 class SubmissionAmendField(models.Model):
     name = models.CharField(_("nom"), max_length=255)
+    api_name = models.CharField(
+        _("Nom dans l'API"),
+        max_length=255,
+        blank=True,
+        help_text=_("Se génère automatiquement lorsque celui-ci est vide."),
+    )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     is_visible_by_author = models.BooleanField(
         _("Visible par l'auteur de la demande"), default=True
@@ -1735,6 +1743,18 @@ class SubmissionAmendField(models.Model):
     )
     can_always_update = models.BooleanField(
         _("Editable même après classement de la demande"), default=False
+    )
+    placeholder = models.CharField(
+        _("exemple de donnée à saisir"), max_length=255, blank=True
+    )
+    help_text = models.CharField(
+        _("information complémentaire"), max_length=255, blank=True
+    )
+    regex_pattern = models.CharField(
+        _("regex pattern"),
+        max_length=255,
+        blank=True,
+        help_text=_("Exemple: ^[0-9]{4}$"),
     )
     forms = models.ManyToManyField(
         Form,
@@ -1755,6 +1775,19 @@ class SubmissionAmendField(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.api_name:
+            if self.api_name != convert_string_to_api_key(self.api_name):
+                raise ValidationError(
+                    {
+                        "api_name": _(
+                            f"Celui-ci ne peut pas comporter d'espaces ou de caractères spéciaux"
+                        )
+                    }
+                )
+        else:
+            self.api_name = convert_string_to_api_key(self.name)
 
 
 class SubmissionAmendFieldValue(models.Model):

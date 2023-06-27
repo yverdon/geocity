@@ -432,6 +432,7 @@ class SubmissionFactory(factory.django.DjangoModelFactory):
 
     administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
     author = factory.SubFactory(UserFactory)
+    sent_date = factory.Faker("date_time", tzinfo=timezone.utc)
 
 
 class PostFinanceTransactionFactory(factory.django.DjangoModelFactory):
@@ -559,6 +560,24 @@ class SubmissionAmendFieldFactory(factory.django.DjangoModelFactory):
             return
 
         self.integrator = extracted
+
+    @factory.post_generation
+    def placeholder(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.placeholder = extracted if extracted else ""
+
+    @factory.post_generation
+    def help_text(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.help_text = extracted if extracted else ""
+
+    @factory.post_generation
+    def regex_pattern(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.regex_pattern = extracted if extracted else ""
 
 
 class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):

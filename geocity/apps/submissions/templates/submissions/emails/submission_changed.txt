@@ -6,8 +6,11 @@
 {% if reason %}
 {% translate "Raison du changement:" %}
 {{ reason }}
-{% endif %}
+{% endif %}{% if request_submission_edit_text %}
+{% translate "Vous pouvez la modifier depuis le lien suivant" %}: {{ submission_url }}
+{% else %}
 {% translate "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
+{% endif %}
 
 {% translate "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
