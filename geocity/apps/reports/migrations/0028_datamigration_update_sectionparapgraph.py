@@ -5,16 +5,14 @@ from django.db import migrations
 
 from geocity.apps.api.services import convert_string_to_api_key
 
-regex_pattern = r"\{([^\}]+)\}"
+regex_pattern = r"\{\{form_data\.(amend_properties|request_properties)\.([\w.]+)\}\}"
 
 
 def transform_string(match):
-    parts = match.group(1).split(".")
-    last_part = parts.pop()
-    transformed = (
-        ".".join(parts) + ".fields." + convert_string_to_api_key(last_part) + ".value"
-    )
-    return "{" + transformed + "}"
+    property_path = match.group(1)
+    last_property = property_path.split(".")[-1]
+    transformed = f"{property_path[:-len(last_property)-1]}.{convert_string_to_api_key(last_property)}.value"
+    return "{{" + transformed + "}}"
 
 
 class Migration(migrations.Migration):
