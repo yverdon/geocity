@@ -3,7 +3,7 @@
 from django.db import migrations, models
 
 
-def update_secondary_recipient(apps, schema_editor):
+def update_first_recipient(apps, schema_editor):
     """
     When uses_dynamic_recipient was at false, the author was returned, so return author on first and second choice
     """
@@ -11,7 +11,7 @@ def update_secondary_recipient(apps, schema_editor):
 
     sections = SectionRecipient.objects.filter(uses_dynamic_recipient=False)
     for section in sections:
-        section.secondary_recipient = 999
+        section.first_recipient = 999
         section.save()
 
 
@@ -24,28 +24,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="sectionrecipient",
-            name="principal_recipient",
-            field=models.PositiveSmallIntegerField(
-                choices=[
-                    (7, "Architecte/Ingénieur"),
-                    (6, "Association"),
-                    (0, "Autres"),
-                    (8, "Direction des travaux"),
-                    (3, "Entreprise"),
-                    (4, "Maître d'ouvrage"),
-                    (2, "Propriétaire"),
-                    (1, "Requérant (si différent de l'auteur de la demande)"),
-                    (5, "Sécurité"),
-                    (999, "Auteur"),
-                ],
-                default=999,
-                help_text="Utilisé par défaut. Si celui-ci n'existe pas, prend le destinataire secondaire",
-                verbose_name="Destinataire principal",
-            ),
-        ),
-        migrations.AddField(
-            model_name="sectionrecipient",
-            name="secondary_recipient",
+            name="first_recipient",
             field=models.PositiveSmallIntegerField(
                 choices=[
                     (7, "Architecte/Ingénieur"),
@@ -60,11 +39,32 @@ class Migration(migrations.Migration):
                     (999, "Auteur"),
                 ],
                 default=1,
-                help_text="Utilisé lorsque le destinataire principal n'est pas présent dans la liste des contacts saisis",
-                verbose_name="Destinataire secondaire",
+                help_text='Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire choix 2"',
+                verbose_name="Destinataire choix 1",
             ),
         ),
-        migrations.RunPython(update_secondary_recipient),
+        migrations.AddField(
+            model_name="sectionrecipient",
+            name="second_recipient",
+            field=models.PositiveSmallIntegerField(
+                choices=[
+                    (7, "Architecte/Ingénieur"),
+                    (6, "Association"),
+                    (0, "Autres"),
+                    (8, "Direction des travaux"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (2, "Propriétaire"),
+                    (1, "Requérant (si différent de l'auteur de la demande)"),
+                    (5, "Sécurité"),
+                    (999, "Auteur"),
+                ],
+                default=999,
+                help_text='Utilisé lorsque le "destinataire choix 1" n\'est pas présent dans la liste des contacts saisis',
+                verbose_name="Destinataire choix 2",
+            ),
+        ),
+        migrations.RunPython(update_first_recipient),
         migrations.RemoveField(
             model_name="sectionrecipient",
             name="uses_dynamic_recipient",

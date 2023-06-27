@@ -664,20 +664,20 @@ class SectionRecipient(Section):
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-    principal_recipient = models.PositiveSmallIntegerField(
-        _("Destinataire principal"),
-        choices=CONTACT_TYPE_CHOICES_RECIPIENT,
-        default=CONTACT_TYPE_AUTHOR,
-        help_text=_(
-            "Utilisé par défaut. Si celui-ci n'existe pas, prend le destinataire secondaire"
-        ),
-    )
-    secondary_recipient = models.PositiveSmallIntegerField(
-        _("Destinataire secondaire"),
+    first_recipient = models.PositiveSmallIntegerField(
+        _("Destinataire choix 1"),
         choices=CONTACT_TYPE_CHOICES_RECIPIENT,
         default=CONTACT_TYPE_REQUESTOR,
         help_text=_(
-            "Utilisé lorsque le destinataire principal n'est pas présent dans la liste des contacts saisis"
+            'Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire choix 2"'
+        ),
+    )
+    second_recipient = models.PositiveSmallIntegerField(
+        _("Destinataire choix 2"),
+        choices=CONTACT_TYPE_CHOICES_RECIPIENT,
+        default=CONTACT_TYPE_AUTHOR,
+        help_text=_(
+            'Utilisé lorsque le "destinataire choix 1" n\'est pas présent dans la liste des contacts saisis'
         ),
     )
 
@@ -689,7 +689,7 @@ class SectionRecipient(Section):
         contacts = properties["contacts"]
 
         # Order from last choice to first choice
-        recipients = [self.secondary_recipient, self.principal_recipient]
+        recipients = [self.second_recipient, self.first_recipient]
         # Empty string, if nothing is found, it won't return anything from json and will let empty the section instead of crashing
         selected_recipient = ""
 
