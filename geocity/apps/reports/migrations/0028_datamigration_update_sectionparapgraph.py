@@ -9,10 +9,13 @@ regex_pattern = r"\{\{form_data\.(amend_properties|request_properties)\.([\w.]+)
 
 
 def transform_string(match):
-    property_path = match.group(1)
-    last_property = property_path.split(".")[-1]
-    transformed = f"{property_path[:-len(last_property)-1]}.{convert_string_to_api_key(last_property)}.value"
-    return "{{" + transformed + "}}"
+    property_path = match.group()
+
+    string_beginning = property_path.split(".")[:-1]
+    string_end = property_path.split(".")[-1]
+
+    transformed = f"{'.'.join(string_beginning)}.fields.{convert_string_to_api_key(string_end)}.value"
+    return transformed + "}}"
 
 
 class Migration(migrations.Migration):
