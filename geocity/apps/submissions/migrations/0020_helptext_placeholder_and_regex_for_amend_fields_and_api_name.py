@@ -2,8 +2,17 @@
 
 from django.db import migrations, models
 
+from geocity.apps.api.services import convert_string_to_api_key
+
 
 class Migration(migrations.Migration):
+    def api_name_from_name(apps, schema_editor):
+
+        SubmissionAmendField = apps.get_model("submissions", "SubmissionAmendField")
+
+        for amend_field in SubmissionAmendField.objects.all():
+            amend_field.api_name = convert_string_to_api_key(amend_field.name)
+            amend_field.save(update_fields=["api_name"])
 
     dependencies = [
         ("submissions", "0019_datamigration_sent_date"),
@@ -44,4 +53,5 @@ class Migration(migrations.Migration):
                 verbose_name="Nom dans l'API",
             ),
         ),
+        migrations.RunPython(api_name_from_name),
     ]
