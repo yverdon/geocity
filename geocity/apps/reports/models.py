@@ -653,7 +653,7 @@ class SectionCreditor(Section):
 
 CONTACT_TYPE_AUTHOR = 999
 CONTACT_TYPE_CHOICES_RECIPIENT = CONTACT_TYPE_CHOICES + (
-    (CONTACT_TYPE_AUTHOR, _("Author")),
+    (CONTACT_TYPE_AUTHOR, _("Auteur")),
 )
 
 
@@ -685,32 +685,25 @@ class SectionRecipient(Section):
         verbose_name = _("Destinataire")
 
     def _get_recipient(self, request, base_context):
-        contacts = base_context["request_data"]["properties"]
-        if (
-            convert_string_to_api_key(
-                dict(CONTACT_TYPE_CHOICES_RECIPIENT)[self.principal_recipient]
-            )
-            in contacts
-        ):
-            recipient = contacts[
-                convert_string_to_api_key(
-                    dict(CONTACT_TYPE_CHOICES_RECIPIENT)[self.principal_recipient]
+        properties = base_context["request_data"]["properties"]
+        contacts = properties["contacts"]
+
+        # Order from last choice to first choice
+        recipients = [self.secondary_recipient, self.principal_recipient]
+
+        selected_recipient = "Aucun contact trouvé"
+
+        for recipient in recipients:
+            if recipient == 999 and "author" in properties:
+                selected_recipient = properties["author"]
+            else:
+                contact = convert_string_to_api_key(
+                    dict(CONTACT_TYPE_CHOICES_RECIPIENT)[recipient]
                 )
-            ]
-        elif (
-            convert_string_to_api_key(
-                dict(CONTACT_TYPE_CHOICES_RECIPIENT)[self.secondary_recipient]
-            )
-            in contacts
-        ):
-            recipient = contacts[
-                convert_string_to_api_key(
-                    dict(CONTACT_TYPE_CHOICES_RECIPIENT)[self.secondary_recipient]
-                )
-            ]
-        else:
-            recipient = "Aucun contact trouvé"
-        return recipient
+                if contact in contacts:
+                    selected_recipient = contacts[contact]
+
+        return selected_recipient
 
     def prepare_context(self, request, base_context):
         # Return updated context
