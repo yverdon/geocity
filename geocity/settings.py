@@ -654,6 +654,11 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "geocity.settings.show_toolbar",
+    "DISABLE_PANELS": {
+        "debug_toolbar.panels.sql.SQLPanel",
+        "debug_toolbar.panels.redirects.RedirectsPanel",
+        "debug_toolbar.panels.profiling.ProfilingPanel",
+    },
 }
 
 LOGGING = {
