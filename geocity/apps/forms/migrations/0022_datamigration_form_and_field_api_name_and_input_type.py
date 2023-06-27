@@ -18,6 +18,13 @@ class Migration(migrations.Migration):
             field.api_name = convert_string_to_api_key(field.name)
             field.save(update_fields=["api_name"])
 
+    def input_type_title_update(apps, schema_editor):
+        Field = apps.get_model("forms", "Field")
+
+        for field in Field.objects.all().filter(input_type="title"):
+            field.input_type = "title_output"
+            field.save(update_fields=["input_type"])
+
     dependencies = [
         (
             "forms",
@@ -27,4 +34,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(api_name_from_name),
+        migrations.RunPython(input_type_title_update),
     ]

@@ -1666,7 +1666,8 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
             for form, fields in submission.get_fields_by_form(
                 [
                     models.Field.INPUT_TYPE_FILE_DOWNLOAD,
-                    models.Field.INPUT_TYPE_TITLE,
+                    models.Field.DISPLAY_TITLE,
+                    models.Field.DISPLAY_TEXT,
                 ],
             ):
                 if str(form.pk) != form_filter:

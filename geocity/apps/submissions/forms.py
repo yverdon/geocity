@@ -68,6 +68,13 @@ def _title_html_representation(prop, for_summary=False):
     return base
 
 
+def _text_html_representation(prop, for_summary=False):
+    base = f"<p class='propertyText mb-0'>{prop.name}</p>"
+    if not for_summary and prop.help_text:
+        base = f"{base}<small>{prop.help_text}</small>"
+    return base
+
+
 def _file_download_html_representation(prop, for_summary=False):
     if not for_summary and prop.file_download:
         description = prop.help_text if prop.help_text else _("Télécharger le fichier")
@@ -78,7 +85,8 @@ def _file_download_html_representation(prop, for_summary=False):
 
 
 non_value_input_type_mapping = {
-    models.Field.INPUT_TYPE_TITLE: _title_html_representation,
+    models.Field.DISPLAY_TITLE: _title_html_representation,
+    models.Field.DISPLAY_TEXT: _text_html_representation,
     models.Field.INPUT_TYPE_FILE_DOWNLOAD: _file_download_html_representation,
 }
 
