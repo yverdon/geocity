@@ -15,8 +15,6 @@ class Migration(migrations.Migration):
             name="input_type",
             field=models.CharField(
                 choices=[
-                    ("title_output", "Titre à afficher"),
-                    ("text_output", "Texte à afficher"),
                     ("address", "Adresse"),
                     ("checkbox", "Case à cocher"),
                     ("list_multiple", "Choix multiple"),
@@ -27,6 +25,8 @@ class Migration(migrations.Migration):
                     ("number", "Nombre"),
                     ("text", "Texte"),
                     ("regex", "Texte (regex)"),
+                    ("text_output", "Texte à afficher"),
+                    ("title_output", "Titre à afficher"),
                 ],
                 max_length=30,
                 verbose_name="type de caractéristique",
