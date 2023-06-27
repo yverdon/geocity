@@ -34,4 +34,14 @@ class Migration(migrations.Migration):
                 verbose_name="regex pattern",
             ),
         ),
+        migrations.AddField(
+            model_name="submissionamendfield",
+            name="api_name",
+            field=models.CharField(
+                blank=True,
+                help_text="Se génère automatiquement lorsque celui-ci est vide.",
+                max_length=255,
+                verbose_name="Nom dans l'API",
+            ),
+        ),
     ]

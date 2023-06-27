@@ -1007,6 +1007,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             link="https://mapnv.ch",
             archive_link="https://mapnv.ch",
             geom=geom,
+            is_single_form_submissions=True,
         )
 
         administrative_entity.tags.add(entity)
@@ -1138,7 +1139,8 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                 if (
                     field_obj.input_type == Field.INPUT_TYPE_TEXT
                     or field_obj.input_type == Field.INPUT_TYPE_REGEX
-                    or field_obj.input_type == Field.INPUT_TYPE_TITLE
+                    or field_obj.input_type == Field.DISPLAY_TITLE
+                    or field_obj.input_type == Field.DISPLAY_TEXT
                 ):
                     FieldValue.objects.create(
                         field=field_obj,
