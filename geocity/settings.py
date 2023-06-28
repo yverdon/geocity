@@ -1,5 +1,7 @@
 import os
 
+from django.conf import settings
+
 from .admin_jazzmin_settings import JAZZMIN_SETTINGS  # noqa
 
 # Set environment mode
@@ -652,12 +654,17 @@ CKEDITOR_CONFIGS = {
 
 
 def show_toolbar(request):
-    """Shows the debug toolbar when `?DEBUG=true` is your URL and DEBUG is enabled."""
-    return DEBUG and request.GET.get("DEBUG", "false").lower() == "true"
+    """Shows the debug toolbar when DEBUG is enabled."""
+    return settings.DEBUG
 
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "geocity.settings.show_toolbar",
+    "DISABLE_PANELS": {
+        "debug_toolbar.panels.sql.SQLPanel",
+        "debug_toolbar.panels.redirects.RedirectsPanel",
+        "debug_toolbar.panels.profiling.ProfilingPanel",
+    },
 }
 
 LOGGING = {

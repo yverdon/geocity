@@ -1669,7 +1669,8 @@ class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
             for form, fields in submission.get_fields_by_form(
                 [
                     models.Field.INPUT_TYPE_FILE_DOWNLOAD,
-                    models.Field.INPUT_TYPE_TITLE,
+                    models.Field.DISPLAY_TITLE,
+                    models.Field.DISPLAY_TEXT,
                 ],
             ):
                 if str(form.pk) != form_filter:
@@ -1797,6 +1798,16 @@ def submission_submit_confirmed(request, submission_id):
             submission.get_maximum_submissions_message(),
         )
         return redirect("submissions:submission_submit", submission_id=submission_id)
+
+    if not submission.forms.exists():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Il est impossible d'envoyer un formulaire sans objet."),
+        )
+        return redirect(
+            "submissions:submission_select_forms", submission_id=submission_id
+        )
 
     incomplete_steps = [
         step.url

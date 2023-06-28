@@ -486,7 +486,7 @@ class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     help_text = factory.Faker("word")
-    input_type = forms_models.Field.INPUT_TYPE_TITLE
+    input_type = forms_models.Field.DISPLAY_TITLE
 
 
 class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):

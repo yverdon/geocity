@@ -743,7 +743,8 @@ INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
 INPUT_TYPE_TEXT = "text"
-INPUT_TYPE_TITLE = "title"
+DISPLAY_TEXT = "text_output"
+DISPLAY_TITLE = "title_output"
 
 
 class Field(models.Model):
@@ -757,7 +758,8 @@ class Field(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
-    INPUT_TYPE_TITLE = INPUT_TYPE_TITLE
+    DISPLAY_TEXT = DISPLAY_TEXT
+    DISPLAY_TITLE = DISPLAY_TITLE
 
     # The choices are sorted according to their values
     INPUT_TYPE_CHOICES = (
@@ -771,7 +773,8 @@ class Field(models.Model):
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_TITLE, _("Titre")),
+        (DISPLAY_TEXT, _("Texte à afficher")),
+        (DISPLAY_TITLE, _("Titre à afficher")),
     )
     integrator = models.ForeignKey(
         Group,
