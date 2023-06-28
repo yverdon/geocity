@@ -15,7 +15,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
@@ -33,6 +33,7 @@ from simple_history.models import HistoricalRecords
 
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts.validators import validate_email
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
@@ -1727,6 +1728,12 @@ class ComplementaryDocumentTypeForAdminSite(ComplementaryDocumentType):
 
 class SubmissionAmendField(models.Model):
     name = models.CharField(_("nom"), max_length=255)
+    api_name = models.CharField(
+        _("Nom dans l'API"),
+        max_length=255,
+        blank=True,
+        help_text=_("Se génère automatiquement lorsque celui-ci est vide."),
+    )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     is_visible_by_author = models.BooleanField(
         _("Visible par l'auteur de la demande"), default=True
@@ -1736,6 +1743,18 @@ class SubmissionAmendField(models.Model):
     )
     can_always_update = models.BooleanField(
         _("Editable même après classement de la demande"), default=False
+    )
+    placeholder = models.CharField(
+        _("exemple de donnée à saisir"), max_length=255, blank=True
+    )
+    help_text = models.CharField(
+        _("information complémentaire"), max_length=255, blank=True
+    )
+    regex_pattern = models.CharField(
+        _("regex pattern"),
+        max_length=255,
+        blank=True,
+        help_text=_("Exemple: ^[0-9]{4}$"),
     )
     forms = models.ManyToManyField(
         Form,
@@ -1756,6 +1775,19 @@ class SubmissionAmendField(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.api_name:
+            if self.api_name != convert_string_to_api_key(self.api_name):
+                raise ValidationError(
+                    {
+                        "api_name": _(
+                            f"Celui-ci ne peut pas comporter d'espaces ou de caractères spéciaux"
+                        )
+                    }
+                )
+        else:
+            self.api_name = convert_string_to_api_key(self.name)
 
 
 class SubmissionAmendFieldValue(models.Model):

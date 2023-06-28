@@ -567,8 +567,14 @@ Après : Excellent projet qui bénéficiera à la communauté."""
 
             # Amend properties
             name = "Commentaire interne"
+            placeholder = "Exemple de texte à saisir"
+            help_text = "Explication relative au texte à saisir"
+            regex_pattern = ""
             amend_field = self.create_submission_amend_field(
                 name,
+                placeholder,
+                help_text,
+                regex_pattern,
                 first_form,
                 form_no_validation_document,
                 is_visible_by_author=False,
@@ -578,14 +584,34 @@ Après : Excellent projet qui bénéficiera à la communauté."""
 
             name = "Commentaire visible par le requérant"
             amend_field = self.create_submission_amend_field(
-                name, first_form, form_no_validation_document, is_visible_by_author=True
+                name,
+                placeholder,
+                help_text,
+                regex_pattern,
+                first_form,
+                form_no_validation_document,
+                is_visible_by_author=True,
+            )
+            amend_field_with_regex = self.create_submission_amend_field(
+                name,
+                "CHF 100.-",
+                "Saisir une valeur au format suivant CHF 100.-",
+                ".*(CHF \d+).*",
+                first_form,
+                form_no_validation_document,
+                is_visible_by_author=True,
             )
             self.create_submission_amend_field_value(amend_field, selected_form_1, text)
-            self.create_submission_amend_field_value(amend_field, selected_form_2, text)
+            self.create_submission_amend_field_value(
+                amend_field_with_regex, selected_form_2, "CHF 100.-"
+            )
 
             name = "Commentaire interne visible par les validateurs"
             amend_field = self.create_submission_amend_field(
                 name,
+                placeholder,
+                help_text,
+                regex_pattern,
                 first_form,
                 form_no_validation_document,
                 is_visible_by_author=False,
@@ -981,6 +1007,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             link="https://mapnv.ch",
             archive_link="https://mapnv.ch",
             geom=geom,
+            is_single_form_submissions=True,
         )
 
         administrative_entity.tags.add(entity)
@@ -1040,6 +1067,9 @@ Après : Excellent projet qui bénéficiera à la communauté."""
     def create_submission_amend_field(
         self,
         name,
+        placeholder,
+        help_text,
+        regex_pattern,
         first_form,
         second_form,
         is_visible_by_author=True,
@@ -1047,6 +1077,9 @@ Après : Excellent projet qui bénéficiera à la communauté."""
     ):
         amend_field = SubmissionAmendField.objects.create(
             name=name,
+            placeholder=placeholder,
+            help_text=help_text,
+            regex_pattern=regex_pattern,
             is_visible_by_author=is_visible_by_author,
             is_visible_by_validators=is_visible_by_validators,
         )
@@ -1106,7 +1139,8 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                 if (
                     field_obj.input_type == Field.INPUT_TYPE_TEXT
                     or field_obj.input_type == Field.INPUT_TYPE_REGEX
-                    or field_obj.input_type == Field.INPUT_TYPE_TITLE
+                    or field_obj.input_type == Field.DISPLAY_TITLE
+                    or field_obj.input_type == Field.DISPLAY_TEXT
                 ):
                     FieldValue.objects.create(
                         field=field_obj,

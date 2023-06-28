@@ -486,7 +486,7 @@ class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     help_text = factory.Faker("word")
-    input_type = forms_models.Field.INPUT_TYPE_TITLE
+    input_type = forms_models.Field.DISPLAY_TITLE
 
 
 class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
@@ -560,6 +560,24 @@ class SubmissionAmendFieldFactory(factory.django.DjangoModelFactory):
             return
 
         self.integrator = extracted
+
+    @factory.post_generation
+    def placeholder(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.placeholder = extracted if extracted else ""
+
+    @factory.post_generation
+    def help_text(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.help_text = extracted if extracted else ""
+
+    @factory.post_generation
+    def regex_pattern(self, create, extracted, **kwargs):
+        if not create:
+            return
+        self.regex_pattern = extracted if extracted else ""
 
 
 class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):

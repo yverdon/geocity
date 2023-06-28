@@ -59,7 +59,7 @@ class BaseSubmissionFilterSet(django_filters.FilterSet):
     created_at = django_filters.DateFilter(
         field_name="created_at",
         lookup_expr="date",
-        label=_("Date de création le"),
+        label=_("Date de création"),
         widget=DatePickerInput(
             attrs={"placeholder": "ex: 15/02/2019"},
             options={"format": "DD/MM/YYYY", "locale": "fr"},
@@ -131,6 +131,7 @@ class DepartmentSubmissionFilterSet(BaseSubmissionFilterSet):
             "forms__category",
             "forms",
             "created_at",
+            "sent_date",
             "starts_at_min",
             "ends_at_max",
             "author__last_name",

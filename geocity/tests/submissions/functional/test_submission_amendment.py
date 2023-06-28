@@ -539,6 +539,128 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
         self.assertEqual(response2.status_code, 200)
 
+    def test_amend_fields_placeholder_and_helptext_are_visible_and_regex_checked_correctly(
+        self,
+    ):
+
+        help_text = "my help text"
+        placeholder = "my placeholder text"
+        regex_pattern = ".*(CHF \d+).*"
+        regex_test_string = "CHF 100.-"
+        submission = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        form = factories.FormFactory()
+        form.administrative_entities.set([submission.administrative_entity])
+
+        selected_form = factories.SelectedFormFactory(submission=submission, form=form)
+
+        field_no_regex = factories.SubmissionAmendFieldFactory(
+            name="No Regex",
+            can_always_update=True,
+            placeholder=placeholder,
+            help_text=help_text,
+            regex_pattern="",
+        )
+
+        field_with_regex = factories.SubmissionAmendFieldFactory(
+            name="With Regex",
+            can_always_update=True,
+            placeholder=placeholder,
+            help_text=help_text,
+            regex_pattern=regex_pattern,
+        )
+
+        fields = [field_no_regex, field_with_regex]
+
+        data = {
+            "action": submissions_models.ACTION_AMEND,
+            "status": submissions_models.Submission.STATUS_APPROVED,
+        }
+
+        forms_pk = submission.forms.first().pk
+
+        for field in fields:
+            field.forms.set(submission.forms.all())
+
+            factories.SubmissionAmendFieldValueFactory(
+                field=field,
+                form=selected_form,
+                value=field.name,
+            )
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check placeholder and help_text are there
+        parser = get_parser(response.content)
+        self.assertEqual(
+            parser.select(".amend-field-property")[0]["placeholder"], placeholder
+        )
+        self.assertEqual(
+            parser.select(".amend-field-property")[1]["placeholder"], placeholder
+        )
+        self.assertEqual(parser.select(".amend-field-property")[0]["title"], help_text)
+        self.assertEqual(parser.select(".amend-field-property")[1]["title"], help_text)
+
+        # Check that it is NOT possible to save a badly formatted string, (is the correct string not saved in DB ?)
+        data[f"{forms_pk}_{field_with_regex.pk}"] = "My badly formed input"
+        data[f"{forms_pk}_{field_no_regex.pk}"] = "Any string accepted"
+        response2 = self.client.post(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        self.assertEqual(response2.status_code, 200)
+
+        new_fields_values_qs = (
+            submissions_models.SubmissionAmendFieldValue.objects.values_list(
+                "value", flat=True
+            )
+        )
+
+        self.assertNotIn(
+            "My badly formed input",
+            new_fields_values_qs,
+        )
+
+        # Check that it is possible to save a correctly formatted string (is the correct string saved in DB ?)
+        data[f"{forms_pk}_{field_with_regex.pk}"] = regex_test_string
+        data[f"{forms_pk}_{field_no_regex.pk}"] = "Any string accepted"
+        response3 = self.client.post(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        self.assertEqual(response3.status_code, 200)
+
+        new_fields_values_qs = (
+            submissions_models.SubmissionAmendFieldValue.objects.values_list(
+                "value", flat=True
+            )
+        )
+
+        self.assertIn(
+            regex_test_string,
+            new_fields_values_qs,
+        )
+
     def test_email_to_author_is_sent_when_secretariat_checks_notify(self):
         user = factories.UserFactory(email="user@geocity.com")
         submission = factories.SubmissionFactory(

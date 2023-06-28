@@ -7,31 +7,26 @@
 {% block content %}
     {% if request_data.properties.submission_fields %}
         <div class="flex_container">
-            {% if section.style == 0 %}
-                {% for form, fields in request_data.properties.submission_fields.items %}
-                    {% if section.show_form_name %}
-                        <div class="flex_item-100"><h3>{{ form }}</h3></div>
-                    {% endif %}
-                    {% for key, field in fields.items %}
-                        {% if not key in section.undesired_properties %}
-                            <div class="flex_item-100" style="padding-top:{{section.line_height}}px;"><span class="bold">{{key}} : </span>{{field}}<br></div>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            {% elif  section.style == 1 %}
-                {% for form, fields in request_data.properties.submission_fields.items %}
-                    {% if section.show_form_name %}
-                        <div class="flex_item-100"><h3>{{form}}</h3></div>
-                    {% endif %}
-                    {% for key, field in fields.items %}
-                        {% if not key in section.undesired_properties %}
-                            <div class="flex_item-40"><span class="bold">{{key}}</span></div>
-                            <div class="flex_item-60">{{field}}</div>
+            {% for form_key, forms in request_data.properties.submission_fields.items %}
+                {% if section.form_name == 1 %}
+                    <div class="flex_item-100"><h3>{{forms.title.form}}</h3></div>
+                {% elif section.form_name == 2 %}
+                    <div class="flex_item-100"><h3>{{forms.title.category}}</h3></div>
+                {% elif section.form_name == 3 %}
+                    <div class="flex_item-100"><h3>{{forms.title.form_category}}</h3></div>
+                {% endif %}
+                {% for field_key, field in forms.fields.items %}
+                    {% if not field.name in section.undesired_properties %}
+                        {% if section.style == 0 %}
+                            <div class="flex_item-100" style="padding-top:{{section.line_height}}px;"><span class="bold">{{field.name}} : </span>{{field.value}}<br></div>
+                        {% elif section.style == 1 %}
+                            <div class="flex_item-40"><span class="bold">{{field.name}}</span></div>
+                            <div class="flex_item-60">{{field.value}}</div>
                             <div style="padding-top:{{section.line_height}}px;"></div>
                         {% endif %}
-                    {% endfor %}
+                    {% endif %}
                 {% endfor %}
-            {% endif %}
+            {% endfor %}
         </div>
     {% else %}
         <p>Aucune propriété pour cette demande</p>

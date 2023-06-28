@@ -50,8 +50,26 @@ input_type_mapping = {
 }
 
 
+def get_regex_error_message(field):
+    return (
+        (
+            _("La saisie n'est pas conforme au format demandé (%(placeholder)s).")
+            % {"placeholder": field.placeholder}
+        )
+        if field.placeholder
+        else _("La saisie n'est pas conforme au format demandé.")
+    )
+
+
 def _title_html_representation(prop, for_summary=False):
     base = f"<h5 class='propertyTitle'>{prop.name}</h5>"
+    if not for_summary and prop.help_text:
+        base = f"{base}<small>{prop.help_text}</small>"
+    return base
+
+
+def _text_html_representation(prop, for_summary=False):
+    base = f"<p class='propertyText mb-0'>{prop.name}</p>"
     if not for_summary and prop.help_text:
         base = f"{base}<small>{prop.help_text}</small>"
     return base
@@ -67,7 +85,8 @@ def _file_download_html_representation(prop, for_summary=False):
 
 
 non_value_input_type_mapping = {
-    models.Field.INPUT_TYPE_TITLE: _title_html_representation,
+    models.Field.DISPLAY_TITLE: _title_html_representation,
+    models.Field.DISPLAY_TEXT: _text_html_representation,
     models.Field.INPUT_TYPE_FILE_DOWNLOAD: _file_download_html_representation,
 }
 
@@ -537,14 +556,6 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_regex_field_kwargs(self, field, default_kwargs):
-        error_message = (
-            (
-                _("La saisie n'est pas conforme au format demandé (%(placeholder)s).")
-                % {"placeholder": field.placeholder}
-            )
-            if field.placeholder
-            else _("La saisie n'est pas conforme au format demandé.")
-        )
 
         return {
             **default_kwargs,
@@ -559,7 +570,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             "validators": [
                 RegexValidator(
                     regex=field.regex_pattern,
-                    message=error_message,
+                    message=get_regex_error_message(field),
                 )
             ],
         }
@@ -983,10 +994,24 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
             for form, field in self.get_fields():
                 field_name = self.get_field_name(form.id, field.id)
+
                 self.fields[field_name] = forms.CharField(
                     label=field.name,
                     required=field.is_mandatory,
-                    widget=forms.Textarea(attrs={"rows": 3}),
+                    help_text=field.help_text,
+                    widget=forms.Textarea(
+                        attrs={
+                            "rows": 3,
+                            "placeholder": field.placeholder,
+                            "class": "amend-field-property",
+                        }
+                    ),
+                    validators=[
+                        RegexValidator(
+                            regex=field.regex_pattern,
+                            message=get_regex_error_message(field),
+                        )
+                    ],
                 )
 
     def get_field_name(self, form_id, field_id):

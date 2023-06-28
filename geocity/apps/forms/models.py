@@ -20,6 +20,7 @@ from taggit.managers import TaggableManager
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.api.services import convert_string_to_api_key
 
 from ..reports.models import Report
 from . import fields
@@ -470,6 +471,12 @@ class Form(models.Model):
     )
 
     name = models.CharField(_("nom"), max_length=255)
+    api_name = models.CharField(
+        _("Nom dans l'API"),
+        max_length=255,
+        blank=True,
+        help_text=_("Se génère automatiquement lorsque celui-ci est vide."),
+    )
     order = models.PositiveIntegerField(
         _("ordre"), default=0, blank=False, null=False, db_index=True
     )
@@ -694,6 +701,18 @@ class Form(models.Model):
                 }
             )
 
+        if self.api_name:
+            if self.api_name != convert_string_to_api_key(self.api_name):
+                raise ValidationError(
+                    {
+                        "api_name": _(
+                            f"Celui-ci ne peut pas comporter d'espaces ou de caractères spéciaux"
+                        )
+                    }
+                )
+        else:
+            self.api_name = convert_string_to_api_key(self.name)
+
 
 class FormField(models.Model):
     form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
@@ -724,7 +743,8 @@ INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
 INPUT_TYPE_TEXT = "text"
-INPUT_TYPE_TITLE = "title"
+DISPLAY_TEXT = "text_output"
+DISPLAY_TITLE = "title_output"
 
 
 class Field(models.Model):
@@ -738,7 +758,8 @@ class Field(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
-    INPUT_TYPE_TITLE = INPUT_TYPE_TITLE
+    DISPLAY_TEXT = DISPLAY_TEXT
+    DISPLAY_TITLE = DISPLAY_TITLE
 
     # The choices are sorted according to their values
     INPUT_TYPE_CHOICES = (
@@ -752,7 +773,8 @@ class Field(models.Model):
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_TITLE, _("Titre")),
+        (DISPLAY_TEXT, _("Texte à afficher")),
+        (DISPLAY_TITLE, _("Titre à afficher")),
     )
     integrator = models.ForeignKey(
         Group,
@@ -762,6 +784,12 @@ class Field(models.Model):
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     name = models.CharField(_("nom"), max_length=255)
+    api_name = models.CharField(
+        _("Nom dans l'API"),
+        max_length=255,
+        blank=True,
+        help_text=_("Se génère automatiquement lorsque celui-ci est vide."),
+    )
     placeholder = models.CharField(
         _("exemple de donnée à saisir"), max_length=255, blank=True
     )
@@ -895,3 +923,15 @@ class Field(models.Model):
         if self.input_type == INPUT_TYPE_REGEX:
             if not self.regex_pattern:
                 raise ValidationError({"regex_pattern": _("This field is required.")})
+
+        if self.api_name:
+            if self.api_name != convert_string_to_api_key(self.api_name):
+                raise ValidationError(
+                    {
+                        "api_name": _(
+                            f"Celui-ci ne peut pas comporter d'espaces ou de caractères spéciaux"
+                        )
+                    }
+                )
+        else:
+            self.api_name = convert_string_to_api_key(self.name)

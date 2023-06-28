@@ -19,6 +19,7 @@ from polymorphic.models import PolymorphicModel
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.submissions.contact_type_choices import *
 
 from .fields import BackgroundFileField
@@ -220,6 +221,27 @@ def padding_top_field(default=0):
         help_text=_(
             "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
         ),
+    )
+
+
+NONE = 0
+FORM = 1
+CATEGORY = 2
+FORM_CATEGORY = 3
+FORM_NAME_DISPLAY = (
+    (NONE, _("Aucun")),
+    (FORM, _("Formulaire")),
+    (CATEGORY, _("Catégorie")),
+    (FORM_CATEGORY, _("Formulaire (Catégorie)")),
+)
+
+
+def form_name():
+    return models.PositiveSmallIntegerField(
+        _("Affichage du nom du formulaire"),
+        choices=FORM_NAME_DISPLAY,
+        default=FORM_CATEGORY,
+        help_text=_("Choix de la valeur à afficher pour le nom du formulaire"),
     )
 
 
@@ -463,7 +485,6 @@ class SectionAuthor(Section):
 class SectionDetail(Section):
     STYLE_0 = 0
     STYLE_1 = 1
-
     STYLES = (
         (STYLE_0, _("champ : valeur")),
         (STYLE_1, _("champ (tab) valeur")),
@@ -482,13 +503,7 @@ class SectionDetail(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
-    show_form_name = models.BooleanField(
-        _("Afficher le nom du formulaire"),
-        default=True,
-        help_text=_(
-            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
-        ),
-    )
+    form_name = form_name()
     style = models.PositiveSmallIntegerField(
         _("Style"),
         choices=STYLES,
@@ -579,13 +594,7 @@ class SectionAmendProperty(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
-    show_form_name = models.BooleanField(
-        _("Afficher le nom du formulaire"),
-        default=True,
-        help_text=_(
-            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
-        ),
-    )
+    form_name = form_name()
     undesired_properties = models.CharField(
         _("Nom de champs a masquer"),
         max_length=2000,
@@ -642,6 +651,12 @@ class SectionCreditor(Section):
         verbose_name = _("Adresse de facturation")
 
 
+CONTACT_TYPE_AUTHOR = 999
+CONTACT_TYPE_CHOICES_RECIPIENT = CONTACT_TYPE_CHOICES + (
+    (CONTACT_TYPE_AUTHOR, _("Auteur")),
+)
+
+
 class SectionRecipient(Section):
     padding_top = padding_top_field(default=40)
     is_recommended = models.BooleanField(
@@ -649,34 +664,58 @@ class SectionRecipient(Section):
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-    uses_dynamic_recipient = models.BooleanField(
-        _("Destinataire dynamique"),
-        default=True,
+    first_recipient = models.PositiveSmallIntegerField(
+        _("Destinataire principal"),
+        choices=CONTACT_TYPE_CHOICES_RECIPIENT,
+        default=CONTACT_TYPE_REQUESTOR,
         help_text=_(
-            "Si le demande est saisie au nom d'une autre personne (requérant) celui-ci sera utilisé"
+            'Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire secondaire"'
+        ),
+    )
+    second_recipient = models.PositiveSmallIntegerField(
+        _("Destinataire secondaire"),
+        choices=CONTACT_TYPE_CHOICES_RECIPIENT,
+        default=CONTACT_TYPE_AUTHOR,
+        help_text=_(
+            'Utilisé lorsque le "destinataire principal" n\'est pas présent dans la liste des contacts saisis'
         ),
     )
 
     class Meta:
         verbose_name = _("Destinataire")
 
-    def _get_dynamic_recipient(self, request, base_context):
-        contacts = base_context["request_data"]["properties"]["contacts"]
-        contact_type_requestor = None
-        requestor = dict(CONTACT_TYPE_CHOICES)[CONTACT_TYPE_REQUESTOR]
-        if requestor in contacts:
-            contact_type_requestor = contacts[requestor]
+    def _get_recipient(self, request, base_context):
+        properties = base_context["request_data"]["properties"]
+        contacts = properties["contacts"]
 
-        author = base_context["request_data"]["properties"]["author"]
-        dynamic_recipient = contact_type_requestor if contact_type_requestor else author
-        return dynamic_recipient
+        # Order from last choice to first choice
+        recipients = [self.second_recipient, self.first_recipient]
+        # Empty string, if nothing is found, it won't return anything from json and will let empty the section instead of crashing
+        selected_recipient = ""
+
+        for recipient in recipients:
+            if recipient == 999 and "author" in properties:
+                selected_recipient = properties["author"]
+            else:
+                contact = convert_string_to_api_key(
+                    dict(CONTACT_TYPE_CHOICES_RECIPIENT)[recipient]
+                )
+                if contact in contacts:
+                    selected_recipient = contacts[contact]
+
+        return selected_recipient
 
     def prepare_context(self, request, base_context):
         # Return updated context
         return {
             **super().prepare_context(request, base_context),
-            "dynamic_recipient": self._get_dynamic_recipient(request, base_context),
+            "recipient": self._get_recipient(request, base_context),
         }
+
+
+class SectionBuildHelper(Section):
+    class Meta:
+        verbose_name = _("Aide")
 
 
 class HeaderFooter(PolymorphicModel):
