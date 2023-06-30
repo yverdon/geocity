@@ -19,6 +19,14 @@ td, th {
   font-weight: bold;
 }
 
+.italic {
+  font-style: italic;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
 /* sections */
 .section-map img {
   max-width:100%;
