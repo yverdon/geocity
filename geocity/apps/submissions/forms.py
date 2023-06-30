@@ -975,6 +975,11 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
                     self.fields["status"].choices = tuple(all_statuses_tuple)
 
+            # Don't notify anonymous user
+            if self.instance.forms.filter(is_anonymous=True).exists():
+                self.fields["notify_author"].widget = forms.HiddenInput()
+                self.fields["reason"].widget = forms.HiddenInput()
+
             # A permit that is anonymous cannot be notified
             if self.instance.forms.filter(is_anonymous=True).exists():
                 self.fields["notify_author"].disabled = True

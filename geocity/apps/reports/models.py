@@ -214,6 +214,22 @@ class Heading(models.TextChoices):
     H6 = "h6", _("Titre 6")
 
 
+class PropertyTitle(models.TextChoices):
+    """
+    Used to define the style of the property title in each section
+    """
+
+    BOLD = "bold", _("Gras")
+    ITALIC = "italic", _("Italique")
+    UNDERLINE = "underline", _("Souligné")
+    H1 = "h1", _("Titre 1")
+    H2 = "h2", _("Titre 2")
+    H3 = "h3", _("Titre 3")
+    H4 = "h4", _("Titre 4")
+    H5 = "h5", _("Titre 5")
+    H6 = "h6", _("Titre 6")
+
+
 def padding_top_field(default=0):
     return models.PositiveIntegerField(
         _("Espace vide au dessus"),
@@ -562,6 +578,13 @@ class SectionHorizontalRule(Section):
 
 
 class SectionValidation(Section):
+    STYLE_0 = 0
+    STYLE_1 = 1
+    STYLES = (
+        (STYLE_0, _("champ : valeur")),
+        (STYLE_1, _("valeur")),
+    )
+
     padding_top = padding_top_field()
     title = models.CharField(
         _("Titre"), default="Commentaire·s des services", blank=True, max_length=2000
@@ -574,6 +597,28 @@ class SectionValidation(Section):
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
+    )
+    service_style = models.CharField(
+        _("Style du service"),
+        choices=PropertyTitle.choices,
+        default=PropertyTitle.H3,
+        max_length=255,
+        help_text=_("S'applique au nom du service"),
+    )
+    style = models.PositiveSmallIntegerField(
+        _("Style"),
+        choices=STYLES,
+        default=STYLE_0,
+        help_text=_("Choisir le style d'affichage"),
+    )
+    show_status = models.BooleanField(
+        _("Afficher le statut"),
+        default=False,
+    )
+    show_empty_comment = models.BooleanField(
+        _("Afficher les commentaires vides"),
+        default=False,
+        help_text=_("Afficher/masquer les validations sans commentaires"),
     )
 
     class Meta:
