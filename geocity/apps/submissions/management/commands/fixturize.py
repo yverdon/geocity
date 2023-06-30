@@ -306,6 +306,7 @@ class Command(BaseCommand):
 
         form_obj = Form.objects.create(
             name=form,
+            api_name=convert_string_to_api_key(form),
             category=form_category_obj,
             is_public=True,
             notify_services=True,
@@ -433,6 +434,7 @@ class Command(BaseCommand):
         field, created = Field.objects.get_or_create(
             integrator=integrator,
             name=name,
+            api_name=convert_string_to_api_key(name),
             placeholder=placeholder,
             help_text=help_text,
             input_type=input_type,
@@ -1077,6 +1079,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
     ):
         amend_field = SubmissionAmendField.objects.create(
             name=name,
+            api_name=convert_string_to_api_key(name),
             placeholder=placeholder,
             help_text=help_text,
             regex_pattern=regex_pattern,
