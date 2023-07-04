@@ -635,20 +635,39 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             + " Megatoctet. Les extensions autorisées : "
             + config.ALLOWED_FILE_EXTENSIONS
         )
-        allowed_file_extensions_list = (
+        global_allowed_file_extensions_list = (
             config.ALLOWED_FILE_EXTENSIONS.translate(
                 str.maketrans("", "", string.whitespace)
             )
             .lower()
             .split(",")
         )
+
+        field_allowed_file_extensions_list = (
+            field.allowed_file_types.translate(str.maketrans("", "", string.whitespace))
+            .lower()
+            .split(",")
+        )
+
+        if field.allowed_file_types:
+            extensions_intersect = list(
+                set(global_allowed_file_extensions_list).intersection(
+                    set(field_allowed_file_extensions_list)
+                )
+            )
+        else:
+            extensions_intersect = global_allowed_file_extensions_list
+
         allowed_mimetypes = []
-        for item in allowed_file_extensions_list:
+        for item in extensions_intersect:
             try:
                 allowed_mimetypes.append(mimetypes.types_map[f".{item}"])
             except:
-                # TODO: log error properly
-                print("erreur")
+                raise TypeError(
+                    _(
+                        "La configuration des types de fichiers acceptés contient des types ne trouvant pas leur correspondance mimetype python"
+                    )
+                )
 
         allowed_mimetypes_str = ", ".join(allowed_mimetypes)
 

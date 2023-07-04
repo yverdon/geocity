@@ -237,6 +237,7 @@ def send_mass_email(datatuple, attachments=None, fail_silently=False):
 # kind.extension => will return "exe"
 # kind.mime => will return "application/x-msdownload"
 def validate_file(file):
+    print(dir(file))
     kind = filetype.guess(file)
     if kind is not None:
         extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")

@@ -862,17 +862,10 @@ class Field(models.Model):
         ),
     )
     allowed_file_types = models.CharField(
-        _("Permet de restreindre plus finement les extensions autorisées"),
+        _("Restreindre plus finement les extensions autorisées"),
         max_length=255,
         blank=True,
         help_text=_('Ex: "pdf, jpg, png"'),
-    )
-    max_file_upload_size = models.PositiveBigIntegerField(
-        _(
-            "Permet de restreindre plus finement la taille (en bytes) maximum des fichiers"
-        ),
-        null=True,
-        help_text=_('Ex: "10485760"'),
     )
 
     class Meta(object):
