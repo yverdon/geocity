@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('forms', '0022_datamigration_form_and_field_api_name_and_input_type'),
+        ("forms", "0022_datamigration_form_and_field_api_name_and_input_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='field',
-            name='allowed_file_types',
-            field=models.CharField(blank=True, help_text='Ex: "pdf, jpg, png"', max_length=255, verbose_name='Restreindre plus finement les extensions autorisées'),
+            model_name="field",
+            name="allowed_file_types",
+            field=models.CharField(
+                blank=True,
+                help_text='Ex: "pdf, jpg, png"',
+                max_length=255,
+                verbose_name="Restreindre plus finement les extensions autorisées",
+            ),
         ),
     ]

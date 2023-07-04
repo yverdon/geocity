@@ -642,13 +642,11 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             .lower()
             .split(",")
         )
-
         field_allowed_file_extensions_list = (
             field.allowed_file_types.translate(str.maketrans("", "", string.whitespace))
             .lower()
             .split(",")
         )
-
         if field.allowed_file_types:
             extensions_intersect = list(
                 set(global_allowed_file_extensions_list).intersection(
