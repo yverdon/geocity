@@ -861,6 +861,21 @@ class Field(models.Model):
             "Ce champs sera visible sur l'application géocalendrier si la demande est publique"
         ),
     )
+    allowed_file_types = models.CharField(
+        _(
+            "Permet de restreindre plus finement les extensions autorisées"
+        ),
+        max_length=255,
+        blank=True,
+        help_text=_('Ex: "pdf, jpg, png"'),
+    )
+    max_file_upload_size = models.PositiveBigIntegerField(
+        _(
+            "Permet de restreindre plus finement la taille (en bytes) maximum des fichiers"
+        ),
+        null=True,
+        help_text=_('Ex: "10485760"'),
+    )
 
     class Meta(object):
         verbose_name = _("1.3 Champ")

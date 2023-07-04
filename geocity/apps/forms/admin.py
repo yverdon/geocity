@@ -414,6 +414,8 @@ class FieldAdminForm(forms.ModelForm):
             "is_public_when_permitrequest_is_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
+            "allowed_file_types",
+            "max_file_upload_size",
             "integrator",
         ]
 

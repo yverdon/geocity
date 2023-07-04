@@ -1,4 +1,6 @@
 import io
+import mimetypes
+import string
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import groupby
@@ -633,6 +635,22 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             + " Megatoctet. Les extensions autorisées : "
             + config.ALLOWED_FILE_EXTENSIONS
         )
+        allowed_file_extensions_list = (
+            config.ALLOWED_FILE_EXTENSIONS.translate(
+                str.maketrans("", "", string.whitespace)
+            )
+            .lower()
+            .split(",")
+        )
+        allowed_mimetypes = []
+        for item in allowed_file_extensions_list:
+            try:
+                allowed_mimetypes.append(mimetypes.types_map[f".{item}"])
+            except:
+                # TODO: log error properly
+                print("erreur")
+
+        allowed_mimetypes_str = ", ".join(allowed_mimetypes)
 
         return {
             **default_kwargs,
@@ -640,8 +658,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             "help_text": field.help_text
             if field.help_text != ""
             else default_help_text,
-            # TODO: set this dynamically
-            "widget": forms.ClearableFileInput(attrs={"accept":"image/png, image/jpeg"})
+            "widget": forms.ClearableFileInput(attrs={"accept": allowed_mimetypes_str}),
         }
 
     def get_list_single_field_kwargs(self, field, default_kwargs):
