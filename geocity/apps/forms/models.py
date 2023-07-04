@@ -862,9 +862,7 @@ class Field(models.Model):
         ),
     )
     allowed_file_types = models.CharField(
-        _(
-            "Permet de restreindre plus finement les extensions autorisées"
-        ),
+        _("Permet de restreindre plus finement les extensions autorisées"),
         max_length=255,
         blank=True,
         help_text=_('Ex: "pdf, jpg, png"'),
