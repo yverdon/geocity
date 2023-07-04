@@ -640,6 +640,8 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             "help_text": field.help_text
             if field.help_text != ""
             else default_help_text,
+            # TODO: set this dynamically
+            "widget": forms.ClearableFileInput(attrs={"accept":"image/png, image/jpeg"})
         }
 
     def get_list_single_field_kwargs(self, field, default_kwargs):
@@ -694,7 +696,7 @@ class AppendicesForm(FieldsForm):
     def get_field_kwargs(self, prop):
         return {
             **super().get_field_kwargs(prop),
-            **{"widget": forms.ClearableFileInput},
+            # **{"widget": forms.ClearableFileInput(attrs={"accept":"image/png, image/jpeg"})},
         }
 
 
