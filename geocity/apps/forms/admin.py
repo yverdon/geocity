@@ -452,6 +452,7 @@ class FieldAdminForm(forms.ModelForm):
                     set(field_allowed_file_extensions_list)
                 )
             )
+
             if len(extensions_intersect) == 0:
                 raise forms.ValidationError(
                     _(

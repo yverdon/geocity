@@ -629,12 +629,8 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
     def get_file_field_kwargs(self, field, default_kwargs):
         file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
-        default_help_text = (
-            "Le fichier doit faire moins de "
-            + str(file_size_mb)
-            + " Megatoctet. Les extensions autorisées : "
-            + config.ALLOWED_FILE_EXTENSIONS
-        )
+        default_help_text = f"Le fichier doit faire moins de {str(file_size_mb)} Mo"
+        dynamic_help_text = ""
         global_allowed_file_extensions_list = (
             config.ALLOWED_FILE_EXTENSIONS.translate(
                 str.maketrans("", "", string.whitespace)
@@ -653,28 +649,23 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                     set(field_allowed_file_extensions_list)
                 )
             )
+            dynamic_help_text = (
+                f"{default_help_text}, format(s): {field.allowed_file_types}"
+            )
         else:
             extensions_intersect = global_allowed_file_extensions_list
+            dynamic_help_text = (
+                f"{default_help_text}, format(s): {config.ALLOWED_FILE_EXTENSIONS}"
+            )
 
-        allowed_mimetypes = []
-        for item in extensions_intersect:
-            try:
-                allowed_mimetypes.append(mimetypes.types_map[f".{item}"])
-            except:
-                raise TypeError(
-                    _(
-                        "La configuration des types de fichiers acceptés contient des types ne trouvant pas leur correspondance mimetype python"
-                    )
-                )
-
-        allowed_mimetypes_str = ", ".join(allowed_mimetypes)
+        allowed_mimetypes_str = ", ".join(
+            [mimetypes.types_map[f".{item}"] for item in extensions_intersect]
+        )
 
         return {
             **default_kwargs,
             "validators": [services.validate_file],
-            "help_text": field.help_text
-            if field.help_text != ""
-            else default_help_text,
+            "help_text": dynamic_help_text,
             "widget": forms.ClearableFileInput(attrs={"accept": allowed_mimetypes_str}),
         }
 
