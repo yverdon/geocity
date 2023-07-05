@@ -113,7 +113,7 @@
                     </a>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
                       {% if user.is_staff %}
-                      <a class="dropdown-item" href="{% url 'admin:index' %}">{% translate "Interface d'administration" %}</a>
+                      <a class="dropdown-item" href="{% url 'admin:index' %}" target="_blank">{% translate "Interface d'administration" %}</a>
                       <div class="dropdown-divider"></div>
                       {% endif %}
                       <a class="dropdown-item" href="{% url 'accounts:user_profile_edit' %}">{% translate "Gérer mon compte" %}</a>
@@ -138,7 +138,7 @@
                     <ul class="navbar-nav d-flex d-md-none">
                       {% if user.is_staff %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">{% translate "Interface d'administration" %}</a>
+                        <a class="nav-link" href="{% url 'admin:index' %}" target="_blank">{% translate "Interface d'administration" %}</a>
                       </li>
                       <div class="dropdown-divider"></div>
                       {% endif %}
