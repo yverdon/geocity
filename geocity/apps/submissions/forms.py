@@ -721,7 +721,6 @@ class AppendicesForm(FieldsForm):
     def get_field_kwargs(self, prop):
         return {
             **super().get_field_kwargs(prop),
-            # **{"widget": forms.ClearableFileInput(attrs={"accept":"image/png, image/jpeg"})},
         }
 
 
