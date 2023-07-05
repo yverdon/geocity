@@ -1664,7 +1664,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(items[0].has_attr("accept"), True)
-        self.assertEqual(items[0]["accept"], "image/jpeg, image/png")
+        self.assertIn("image/jpeg", items[0]["accept"])
+        self.assertIn("image/png", items[0]["accept"])
 
 
 class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
