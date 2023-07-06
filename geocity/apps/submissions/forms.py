@@ -35,6 +35,7 @@ from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
+from .contact_type_choices import *
 from .payments.models import SubmissionPrice
 
 input_type_mapping = {
@@ -1917,7 +1918,8 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     SubmissionContactFormset = modelformset_factory(
         models.SubmissionContact,
         form=SubmissionContactForm,
-        extra=len(contact_initial_forms),
+        extra=len(contact_initial_forms)
+        + 1,  # TODO: define from admin to enable/disable mechanisme + add new button "Save and add new contact"
     )
 
     formset = SubmissionContactFormset(
@@ -1940,6 +1942,9 @@ def get_submission_contacts_formset_initiated(submission, data=None):
             or form.initial["contact_type"] not in mandatory_contact_types
         )
 
+    # TODO: define from admin which contact type should selected for new item, at form level
+    new_form = formset[len(formset) - 1]
+    new_form.fields["contact_type"].initial = CONTACT_TYPE_OWNER
     return formset
 
 
