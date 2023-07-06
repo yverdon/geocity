@@ -1945,6 +1945,14 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     # TODO: define from admin which contact type should selected for new item, at form level
     new_form = formset[len(formset) - 1]
     new_form.fields["contact_type"].initial = CONTACT_TYPE_OWNER
+    # TODO: get choices from admin config. See hard-coded example below
+    new_form.fields["contact_type"].choices = (
+        (CONTACT_TYPE_CLIENT, _("Maître d'ouvrage")),
+        (CONTACT_TYPE_OWNER, _("Propriétaire")),
+    )
+    # Allow user to select contact_type
+    new_form.fields["contact_type"].widget.attrs = {}
+
     return formset
 
 
