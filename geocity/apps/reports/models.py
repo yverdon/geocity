@@ -432,6 +432,10 @@ class SectionParagraph(Section):
     class Meta:
         verbose_name = _("Paragraphe libre")
 
+    def _format_date_filter(self, date):
+        # Custom filter to format YYYY-MM-DD API date to DD.MM.YYYY
+        return datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")
+
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
         now = datetime.now()
@@ -449,6 +453,7 @@ class SectionParagraph(Section):
             inner_context["transaction_data"] = base_context["transaction_data"]
 
         env = SandboxedEnvironment()
+        env.filters["format_date"] = self._format_date_filter
         rendered_html = env.from_string(self.content).render(inner_context)
         return mark_safe(rendered_html)
 
