@@ -4,10 +4,7 @@ from captcha.fields import CaptchaField
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.contrib.auth.forms import (
-    AuthenticationForm,
-    BaseUserCreationForm,
-)
+from django.contrib.auth.forms import AuthenticationForm, BaseUserCreationForm
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.utils.translation import gettext_lazy as _
 
@@ -85,6 +82,7 @@ class EmailUserCreationForm(BaseUserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["email"].required = True
+        self.email_already_known = False
 
     def clean_email(self):
         """Reject emails that differ only in case."""
@@ -94,9 +92,9 @@ class EmailUserCreationForm(BaseUserCreationForm):
             self.add_error("email", "")
 
         if email and models.User.objects.filter(email__iexact=email).exists():
-            self.add_error("email", _("Cet email est déjà utilisé"))
-        else:
-            return email
+            self.email_already_known = True
+
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
