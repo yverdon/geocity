@@ -432,8 +432,10 @@ TEMPLATES = [
 AUTHENTICATION_BACKENDS = [
     # AxesBackend
     "axes.backends.AxesBackend",
-    # Classic django authentication backend
+    # Classic django authentication backend (login-by-username)
     "django.contrib.auth.backends.ModelBackend",
+    # Login-by-email authentication backend
+    "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     # SocialAccount authentication backend with allauth
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -612,6 +614,7 @@ ANONYMOUS_USER_ZIPCODE = 9999
 ANONYMOUS_USER_PREFIX = "anonymous_user_"
 ANONYMOUS_NAME = "Anonyme"
 PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
+EMAIL_USER_PREFIX = "email_user_"
 
 if ALLOW_REMOTE_USER_AUTH:
     # Add the auth middleware
@@ -626,6 +629,7 @@ if ALLOW_REMOTE_USER_AUTH:
         # Classic django authentication backend
         "django.contrib.auth.backends.RemoteUserBackend",
         "django.contrib.auth.backends.ModelBackend",
+        "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     ]
 
 CKEDITOR_CONFIGS = {

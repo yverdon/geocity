@@ -52,7 +52,7 @@
         <h4>{% translate "Connexion" %}</h4>
         {{ wizard.management_form }}
         <p>{% translate "Connectez-vous à l'aide de vos identifiants" %}</p>
-        <p>{% bootstrap_field wizard.form.username show_label=False placeholder="Identifiant" %}</p>
+        <p>{% bootstrap_field wizard.form.email_or_username show_label=False placeholder="Email/Identifiant" %}</p>
         <p>{% bootstrap_field wizard.form.password show_label=False placeholder="Mot de passe" %}</p>
         <button id="login_button" class="btn btn-primary font-weight-bold left-button" type="submit">{% translate "ME CONNECTER" %}</button>
         <br>

@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import Http404, StreamingHttpResponse
@@ -21,9 +21,13 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 if settings.ENABLE_2FA:
-    from two_factor.views import LoginView, ProfileView
+    from two_factor.views import (
+        LoginView as LoginView2FA,
+        ProfileView as ProfileView2FA,
+    )
+    from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
 else:
-    from django.contrib.auth.views import LoginView
+    from django.contrib.auth.views import LoginView as LoginViewDjango
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -93,7 +97,6 @@ class SetCurrentSiteMixin:
 
 
 class CustomPasswordResetView(PasswordResetView):
-
     extra_email_context = {"custom_host": ""}
 
     def get_context_data(self, **kwargs):
@@ -108,12 +111,26 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
-# Create this class to simulate ProfileView in a non 2FA context
-class FakeView:
-    pass
+if settings.ENABLE_2FA:
 
+    class BaseLoginView(LoginView2FA):
+        form_list = (
+            ("auth", forms.EmailAuthenticationForm),
+            ("token", AuthenticationTokenForm),
+            ("backup", BackupTokenForm),
+        )
 
-if not settings.ENABLE_2FA:
+    ProfileView = ProfileView2FA
+
+else:
+
+    class BaseLoginView(LoginViewDjango):
+        form_class = forms.EmailAuthenticationForm
+
+    # Create this class to simulate ProfileView in a non 2FA context
+    class FakeView:
+        pass
+
     ProfileView = FakeView
 
 
@@ -129,7 +146,7 @@ class Custom2FAProfileView(ProfileView):
         return update_context_with_filters(context, params_str, url_qs)
 
 
-class CustomLoginView(LoginView, SetCurrentSiteMixin):
+class CustomLoginView(BaseLoginView, SetCurrentSiteMixin):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
         # check if we need to display an activation message
@@ -214,7 +231,6 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         return update_context_with_filters(context, params_str, url_qs)
 
     def get_success_url(self):
-
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
         filter_qs = (
             qs_dict["next"][0].replace(settings.PREFIX_URL, "").replace("/", "")
