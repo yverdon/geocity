@@ -11,7 +11,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "form",
         "field",
         "formfield",
-        "contacttypeforadminsite",
+        "contactformforadminsite",
         "paymentsettings",
         "price",
         "formprice",

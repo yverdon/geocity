@@ -2363,7 +2363,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             "form-MIN_NUM_FORMS": ["0"],
             "form-MAX_NUM_FORMS": ["1000"],
             "creditor_type": [""],
-            "form-0-contact_type": "",
+            "form-0-contact_form": "",
             "form-0-first_name": ["John"],
             "form-0-last_name": ["Doe"],
             "form-0-phone": ["000 000 00 00"],
@@ -2380,11 +2380,11 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory()
         form_category = form.category
 
-        contact_required = factories.ContactTypeFactory(
+        contact_required = factories.ContactFormFactory(
             is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-contact_type"] = contact_required.type
+        self.test_formset_data["form-0-contact_form"] = contact_required.type
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
@@ -2411,11 +2411,11 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory()
         form_category = form.category
 
-        contact_required = factories.ContactTypeFactory(
+        contact_required = factories.ContactFormFactory(
             is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-contact_type"] = contact_required.type
+        self.test_formset_data["form-0-contact_form"] = contact_required.type
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
@@ -2447,7 +2447,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory(requires_payment=False)
         form_category = form.category
 
-        factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
+        factories.ContactFormFactory(is_mandatory=True, form_category=form_category)
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
@@ -2489,7 +2489,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form_categories = [form.category for form in free_forms] + [paid_form.category]
 
         for form_category in form_categories:
-            factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
+            factories.ContactFormFactory(is_mandatory=True, form_category=form_category)
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT

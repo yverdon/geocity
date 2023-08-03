@@ -9,7 +9,7 @@
         <div class="flex_container">
             {% for type, contact in request_data.properties.contacts.items %}
                 <div class="flex_item-50">
-                    <span class="bold">Type : </span>{{contact.contact_type_display}}<br>
+                    <span class="bold">Type : </span>{{contact.contact_form_display}}<br>
                     <span class="bold">Prénom : </span>{{contact.first_name}}<br>
                     <span class="bold">Nom : </span>{{contact.last_name}}<br>
                     <span class="bold">Adresse : </span>{{contact.address}}<br>

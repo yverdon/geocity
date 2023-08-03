@@ -16,7 +16,6 @@ from geocity.apps.accounts.models import *
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
-from geocity.apps.submissions.contact_type_choices import *
 from geocity.apps.submissions.models import *
 
 # import fixturize file
@@ -256,7 +255,7 @@ class Command(BaseCommand):
             form_category_obj = self.create_form_category(
                 form_category_name, integrator_group
             )
-            self.create_contact_type(form_category_obj, integrator_group)
+            self.create_contact_form(form_category_obj, integrator_group)
 
             for form, *fields in objs:
                 form_obj, form_order = self.create_form(
@@ -283,9 +282,10 @@ class Command(BaseCommand):
         form_category_obj.tags.add(unaccent(form_category))
         return form_category_obj
 
-    def create_contact_type(self, form_category_obj, integrator_group):
-        ContactType.objects.create(
-            type=CONTACT_TYPE_OTHER,
+    def create_contact_form(self, form_category_obj, integrator_group):
+        contact_type_other, created = ContactType.objects.get_or_create(name="Autres")
+        ContactForm.objects.create(
+            type=contact_type_other,
             form_category=form_category_obj,
             is_mandatory=False,
             integrator=integrator_group,

@@ -66,8 +66,21 @@ class SubmissionAmendFieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return RequestForm
 
 
-@admin.register(models.ContactTypeForAdminSite)
+@admin.register(models.ContactType)
 class ContactTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_display = [
+        "name",
+    ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("Types")
+
+
+@admin.register(models.ContactFormForAdminSite)
+class ContactFormAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "sortable_str",
         "type",

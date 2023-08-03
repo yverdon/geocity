@@ -248,11 +248,11 @@ def get_appendices_step(submission, enabled):
 
 
 def get_contacts_step(submission, enabled):
-    if submission and len(submission.get_contacts_types()) == 0:
+    if submission and len(submission.get_contacts_forms()) == 0:
         return None
 
     contact_errors = (
-        len(submission.get_missing_required_contact_types()) if submission else 0
+        len(submission.get_missing_required_contact_forms()) if submission else 0
     )
     contacts_url = (
         reverse_submission_url("submissions:submission_contacts", submission)

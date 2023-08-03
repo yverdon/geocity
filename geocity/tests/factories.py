@@ -412,9 +412,9 @@ class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
         self.administrative_entities.add(*extracted)
 
 
-class ContactTypeFactory(factory.django.DjangoModelFactory):
+class ContactFormFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = submissions_models.ContactType
+        model = submissions_models.ContactForm
 
     form_category = factory.SubFactory(FormCategoryFactory)
 

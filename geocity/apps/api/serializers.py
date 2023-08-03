@@ -392,14 +392,14 @@ class SubmissionContactSerializer(serializers.Serializer):
         rep = {}
         for submission_contact in value.submission_contacts.select_related("contact"):
             contact_object = {
-                "contact_type_display": submission_contact.get_contact_type_display()
+                "contact_form_display": submission_contact.get_contact_form_display()
             }
             for field in submission_contact.contact._meta.fields:
                 contact_object[field.name] = getattr(
                     submission_contact.contact, field.name
                 )
             rep[
-                convert_string_to_api_key(submission_contact.get_contact_type_display())
+                convert_string_to_api_key(submission_contact.get_contact_form_display())
             ] = contact_object
 
         return rep
@@ -629,7 +629,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def get_creditor_type(self, obj):
         if obj.creditor_type is not None:
-            creditor = obj.get_creditor_type_display()
+            creditor = obj.creditor_type.name
         elif obj.author:
             creditor = (
                 _("Auteur de la demande, ")

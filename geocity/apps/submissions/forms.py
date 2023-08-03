@@ -706,8 +706,8 @@ class SubmissionCreditorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        required_contact_types = set(
-            models.ContactType.objects.filter(
+        required_contact_forms = set(
+            models.ContactForm.objects.filter(
                 form_category__in=self.instance.get_form_categories()
             ).values_list("type", flat=True)
         )
@@ -715,7 +715,7 @@ class SubmissionCreditorForm(forms.ModelForm):
         choices = [
             (creditor_type, label)
             for creditor_type, label in self.fields["creditor_type"].choices
-            if creditor_type in required_contact_types
+            if creditor_type in required_contact_forms
         ]
         choices.insert(0, ("", "----"))
         self.fields["creditor_type"].choices = choices
@@ -831,9 +831,9 @@ class SubmissionContactForm(forms.ModelForm):
 
     class Meta:
         model = models.SubmissionContact
-        fields = ["contact_type"]
+        fields = ["contact_form"]
         widgets = {
-            "contact_type": forms.Select(
+            "contact_form": forms.Select(
                 attrs={"readonly": True, "hidden": True, "class": "hide-arrow"}
             ),
         }
@@ -850,7 +850,7 @@ class SubmissionContactForm(forms.ModelForm):
                         field: getattr(instance.contact, field)
                         for field in self.contact_fields
                     },
-                    **{"actor_type": instance.contact_type},
+                    **{"actor_form": instance.contact_form},
                 },
             }
 
@@ -1902,16 +1902,16 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     Return PermitActorFormSet with initial values set
     """
 
-    # Queryset with all configured contact types for this submission
-    configured_contact_types = submission.get_contacts_types()
+    # Queryset with all configured contact forms for this submission
+    configured_contact_forms = submission.get_contacts_forms()
 
-    # Get contact types that are not filled yet for the submission
-    missing_contact_types = submission.filter_only_missing_contact_types(
-        configured_contact_types
+    # Get contact forms that are not filled yet for the submission
+    missing_contact_forms = submission.filter_only_missing_contact_forms(
+        configured_contact_forms
     )
 
     contact_initial_forms = [
-        {"contact_type": contact_type[0]} for contact_type in missing_contact_types
+        {"contact_form": contact_form[0]} for contact_form in missing_contact_forms
     ]
 
     SubmissionContactFormset = modelformset_factory(
@@ -1928,16 +1928,16 @@ def get_submission_contacts_formset_initiated(submission, data=None):
         data=data,
     )
 
-    mandatory_contact_types = {
-        contact_type
-        for contact_type, is_mandatory in configured_contact_types
+    mandatory_contact_forms = {
+        contact_form
+        for contact_form, is_mandatory in configured_contact_forms
         if is_mandatory
     }
 
     for form in formset:
         form.empty_permitted = (
-            "contact_type" not in form.initial
-            or form.initial["contact_type"] not in mandatory_contact_types
+            "contact_form" not in form.initial
+            or form.initial["contact_form"] not in mandatory_contact_forms
         )
 
     return formset
