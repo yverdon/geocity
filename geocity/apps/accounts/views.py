@@ -12,24 +12,15 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, HttpResponseRedirect, StreamingHttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.http import require_POST
-
-if settings.ENABLE_2FA:
-    from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
-    from two_factor.views import LoginView as LoginView2FA
-    from two_factor.views import ProfileView as ProfileView2FA
-else:
-    from django.contrib.auth.views import LoginView as LoginViewDjango
-
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 
 from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
@@ -110,17 +101,19 @@ class CustomPasswordResetView(PasswordResetView):
 
 
 if settings.ENABLE_2FA:
+    from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
+    from two_factor.views import LoginView as LoginView2FA
+    from two_factor.views import ProfileView as ProfileView2FA
 
-    class BaseLoginView(LoginView2FA):
+    class BaseLoginView2FA(LoginView2FA):
         form_list = (
             ("auth", forms.EmailAuthenticationForm),
             ("token", AuthenticationTokenForm),
             ("backup", BackupTokenForm),
         )
 
-    ProfileView = ProfileView2FA
-
 else:
+    from django.contrib.auth.views import LoginView as LoginViewDjango
 
     class BaseLoginView(LoginViewDjango):
         form_class = forms.EmailAuthenticationForm
@@ -129,10 +122,8 @@ else:
     class FakeView:
         pass
 
-    ProfileView = FakeView
 
-
-class Custom2FAProfileView(ProfileView):
+class Custom2FAProfileView(ProfileView2FA if settings.ENABLE_2FA else FakeView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         url_qs = ""
@@ -144,7 +135,9 @@ class Custom2FAProfileView(ProfileView):
         return update_context_with_filters(context, params_str, url_qs)
 
 
-class CustomLoginView(BaseLoginView, SetCurrentSiteMixin):
+class CustomLoginView(
+    BaseLoginView2FA if settings.ENABLE_2FA else BaseLoginView, SetCurrentSiteMixin
+):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
         # check if we need to display an activation message
