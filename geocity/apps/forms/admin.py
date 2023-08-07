@@ -89,6 +89,7 @@ class FormAdminForm(forms.ModelForm):
                     + "mapserver&CRS=EPSG%3A2056",
                 }
             ),
+            "quick_access_slug": forms.TextInput(),
         }
         help_texts = {
             "wms_layers": "URL pour la ou les couches WMS utiles à la saisie de la demande pour ce type d'objet",
@@ -209,6 +210,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "sortable_str",
         form_administrative_entities,
+        "quick_access_slug",
         "can_always_update",
         "is_public",
         "requires_payment",
@@ -235,6 +237,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "name",
         "category__name",
         "administrative_entities__name",
+        "quick_access_slug",
     ]
     fieldsets = (
         (
@@ -243,6 +246,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 "fields": (
                     "name",
                     "api_name",
+                    "quick_access_slug",
                     "category",
                     "administrative_entities",
                     "can_always_update",
