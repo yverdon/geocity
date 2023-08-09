@@ -518,18 +518,6 @@ class Form(models.Model):
         related_name="map_widget_configuration_form",
         verbose_name=_("Configuration de la carte avancée"),
     )
-    # user_can_add_contacts = models.BooleanField(
-    #     _("Autoriser l'utilisateur à ajouter des contacts"),
-    #     default=False,
-    # )
-    # contacts_available = models.ManyToManyField(
-    #     "type",
-    #     _("Contacts que l'utilisateur peut ajouter"),
-    #     related_name="forms",
-    #     through=ContactType,
-    #     null=True,
-    #     blank=True,
-    # )
 
     # All objects
     objects = FormQuerySet().as_manager()

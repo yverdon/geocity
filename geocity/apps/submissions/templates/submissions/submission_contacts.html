@@ -28,14 +28,24 @@
     {% endif %}
     <h4>Contacts</h4>
     <div id="forms-container">
-        {% for form in formset %}
+      {% for form in formset %}
+        <div class="card mb-3">
+          <div class="card-body">
             <input id="self_contact_{{ forloop.counter }}" type="checkbox" onclick="update_form_value( '{{ forloop.counter0 }}', {{ userprofile }} )" />
             <label for="self_contact_{{ forloop.counter }}">{% translate "Reprendre mes informations" %}</label>
-           {{ form.media }}
-          {% bootstrap_form form layout='horizontal' %}
-      <hr>
-        {% endfor %}
-      </div>
+            {{ form.media }}
+            {% bootstrap_form form layout='horizontal' %}
+          </div>
+        </div>
+        <hr>
+      {% endfor %}
+      {% if has_any_dynamic_contacts_forms %}
+        <div class="text-center">
+          <button class="btn btn-primary" type="button" data-geo-time-role="addContact">{% translate "Ajouter un contact supplémentaire" %}</button>
+        </div>
+      {% endif %}
+    </div>
+    <br>
     {% buttons %}
       {% if previous_step %}
         <a href="{{ previous_step.url }}" class="mr-2">{% translate "Retour" %}</a>
@@ -48,5 +58,4 @@
 
 {% block scripts %}
   <script src="{% static 'js/submission_contacts.js' %}"></script>
-
 {% endblock %}

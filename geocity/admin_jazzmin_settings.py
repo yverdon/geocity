@@ -90,6 +90,7 @@ JAZZMIN_SETTINGS = {
         "django_cron.CronJobLog": "fas fa-tasks",
         "forms.AdministrativeEntityForAdminSite": "fas fa-landmark",
         "forms.ContactFormForAdminSite": "fas fa-address-card",
+        "forms.ContactTypeForAdminSite": "fas fa-hard-hat",
         "forms.PaymentSettings": "fas fa-shopping-cart",
         "forms.Price": "fas fa-coins",
         "forms.Field": "fas fa-list-ol",

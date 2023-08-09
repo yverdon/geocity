@@ -66,9 +66,12 @@ class SubmissionAmendFieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return RequestForm
 
 
-@admin.register(models.ContactType)
+@admin.register(models.ContactTypeForAdminSite)
 class ContactTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
+        "name",
+    ]
+    search_fields = [
         "name",
     ]
 
@@ -86,6 +89,7 @@ class ContactFormAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "type",
         "form_category",
         "is_mandatory",
+        "is_dynamic",
     ]
     list_filter = [
         "form_category",

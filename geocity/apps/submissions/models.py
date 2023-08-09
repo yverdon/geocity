@@ -150,6 +150,15 @@ class ContactType(models.Model):
         verbose_name_plural = _("1.9 Types de contacts")
 
 
+# Change the app_label in order to regroup models under the same app in admin
+class ContactTypeForAdminSite(ContactType):
+    class Meta:
+        proxy = True
+        app_label = "forms"
+        verbose_name = _("1.9 Type de contact")
+        verbose_name_plural = _("1.9 Types de contacts")
+
+
 class Submission(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
@@ -837,10 +846,18 @@ class Submission(models.Model):
         """
         return (
             ContactForm.objects.filter(form_category__in=self.get_form_categories())
-            .values_list("type", "is_mandatory")
+            .values_list("type", "is_mandatory", "is_dynamic")
             .distinct()
             .order_by("-is_mandatory", "type")
         )
+
+    def has_any_dynamic_contacts_forms(self):
+        """
+        Get contacts forms assigned as dynamic, defined for each form defined for the submission
+        """
+        return ContactForm.objects.filter(
+            form_category__in=self.get_form_categories(), is_dynamic=True
+        ).exists()
 
     def get_missing_required_contact_forms(self):
         """
@@ -850,7 +867,7 @@ class Submission(models.Model):
         return self.filter_only_missing_contact_forms(
             [
                 (actor_form, is_mandatory)
-                for actor_form, is_mandatory in self.get_contacts_forms()
+                for actor_form, is_mandatory, is_dynamic in self.get_contacts_forms()
                 if is_mandatory
             ],
         )
@@ -1351,6 +1368,13 @@ class ContactForm(models.Model):
         related_name="contact_forms",
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=True)
+    is_dynamic = models.BooleanField(
+        _("Dynamique"),
+        help_text=_(
+            "Permet à l'utilisateur d'ajouter ce type de contact lors de la saisie, autant de fois que souhaité."
+        ),
+        default=False,
+    )
     integrator = models.ForeignKey(
         Group,
         null=True,
