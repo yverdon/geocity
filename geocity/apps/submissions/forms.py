@@ -1962,7 +1962,7 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     if has_any_dynamic_contacts_forms:
         contact_type = models.ContactType.objects.all()
 
-        default_contact = (None, "---")
+        default_contact = (0, "---")
         contacts = (
             (contact_form, contact_type.get(id=contact_form).name)
             for contact_form, is_mandatory, is_dynamic in configured_contact_forms

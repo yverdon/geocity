@@ -43,6 +43,7 @@ def get_contacts_summary(submission):
             ],
         )
         for contact in forms.get_submission_contacts_formset_initiated(submission)
+        if contact["contact_form"].value()
     ]
 
     return contacts
