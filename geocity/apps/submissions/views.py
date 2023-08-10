@@ -1151,7 +1151,7 @@ def submission_select_administrative_entity(request, submission_id=None):
                 submission.forms.set([form])
 
                 steps = get_progress_bar_steps(request=request, submission=submission)
-                return redirect(get_next_step(steps, StepType.FORMS).url)
+                return redirect(steps[StepType.FIELDS].url)
 
     entity_tags = request.GET.getlist("entityfilter")
     entities = get_selectable_entities(
