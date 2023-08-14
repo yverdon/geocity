@@ -7,19 +7,42 @@
 {% block content %}
     {% if request_data.properties.contacts %}
         <div class="flex_container">
-            {% for type, contact in request_data.properties.contacts.items %}
-                <div class="flex_item-50">
-                    <span class="bold">Type : </span>{{contact.contact_form_display}}<br>
-                    <span class="bold">Prénom : </span>{{contact.first_name}}<br>
-                    <span class="bold">Nom : </span>{{contact.last_name}}<br>
-                    <span class="bold">Adresse : </span>{{contact.address}}<br>
-                    <span class="bold">NPA : </span>{{contact.zipcode}}<br>
-                    <span class="bold">Localité : </span>{{contact.city}}<br>
-                    <span class="bold">Raison sociale : </span>{{contact.company_name}}<br>
-                    <span class="bold">Numéro TVA : </span>{{contact.vat_number}}<br>
-                    <span class="bold">Téléphone : </span>{{contact.phone}}<br>
-                    <span class="bold">E-mail : </span>{{contact.email}}<br>
-                </div>
+            {% for type, contacts in request_data.properties.contacts.items %}
+                {% for contact in contacts %}
+                    <div class="flex_item-50">
+                        {% if contact.contact_form_display %}
+                            <span class="bold">Type : </span>{{contact.contact_form_display}}<br>
+                        {% endif %}
+                        {% if contact.first_name %}
+                            <span class="bold">Prénom : </span>{{contact.first_name}}<br>
+                        {% endif %}
+                        {% if contact.last_name %}
+                            <span class="bold">Nom : </span>{{contact.last_name}}<br>
+                        {% endif %}
+                        {% if contact.address %}
+                            <span class="bold">Adresse : </span>{{contact.address}}<br>
+                        {% endif %}
+                        {% if contact.zipcode %}
+                            <span class="bold">NPA : </span>{{contact.zipcode}}<br>
+                        {% endif %}
+                        {% if contact.city %}
+                            <span class="bold">Localité : </span>{{contact.city}}<br>
+                        {% endif %}
+                        {% if contact.company_name %}
+                            <span class="bold">Raison sociale : </span>{{contact.company_name}}<br>
+                        {% endif %}
+                        {% if contact.vat_number %}
+                            <span class="bold">Numéro TVA : </span>{{contact.vat_number}}<br>
+                        {% endif %}
+                        {% if contact.phone %}
+                            <span class="bold">Téléphone : </span>{{contact.phone}}<br>
+                        {% endif %}
+                        {% if contact.email %}
+                            <span class="bold">E-mail : </span>{{contact.email}}<br>
+                        {% endif %}
+                        <br>
+                    </div>
+                {% endfor %}
             {% endfor %}
         </div>
     {% else %}

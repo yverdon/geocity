@@ -8,17 +8,37 @@
     {% if submission.author %}
         <div class="flex_container">
             <div class="flex_item-100">
-                <span class="bold">Prénom : </span>{{submission.author.first_name}}<br>
-                <span class="bold">Nom : </span>{{submission.author.last_name}}<br>
-                <span class="bold">Adresse : </span>{{submission.author.userprofile.address}}<br>
-                <span class="bold">NPA : </span>{{submission.author.userprofile.zipcode}}<br>
-                <span class="bold">Localité : </span>{{submission.author.userprofile.city}}<br>
-                <span class="bold">Raison sociale : </span>{{submission.author.userprofile.company_name}}<br>
-                <span class="bold">Numéro TVA : </span>{{submission.author.userprofile.vat_number}}<br>
-                <span class="bold">Téléphone principal : </span>{{submission.author.userprofile.phone_first}}<br>
-                <span class="bold">Téléphone secondaire : </span>{{submission.author.userprofile.phone_second}}<br>
-                <span class="bold">E-mail : </span>{{submission.author.email}}<br>
-                {% if settings.AUTHOR_IBAN_VISIBLE %}
+                {% if submission.author.first_name %}
+                    <span class="bold">Prénom : </span>{{submission.author.first_name}}<br>
+                {% endif %}
+                {% if submission.author.last_name %}
+                    <span class="bold">Nom : </span>{{submission.author.last_name}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.address %}
+                    <span class="bold">Adresse : </span>{{submission.author.userprofile.address}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.zipcode %}
+                    <span class="bold">NPA : </span>{{submission.author.userprofile.zipcode}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.city %}
+                    <span class="bold">Localité : </span>{{submission.author.userprofile.city}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.company_name %}
+                    <span class="bold">Raison sociale : </span>{{submission.author.userprofile.company_name}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.vat_number %}
+                    <span class="bold">Numéro TVA : </span>{{submission.author.userprofile.vat_number}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.phone_first %}
+                    <span class="bold">Téléphone principal : </span>{{submission.author.userprofile.phone_first}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.phone_second %}
+                    <span class="bold">Téléphone secondaire : </span>{{submission.author.userprofile.phone_second}}<br>
+                {% endif %}
+                {% if submission.author.userprofile.email %}
+                    <span class="bold">E-mail : </span>{{submission.author.email}}<br>
+                {% endif %}
+                {% if settings.AUTHOR_IBAN_VISIBLE and submission.author.userprofile.iban %}
                     <span class="bold">IBAN : </span>{{submission.author.userprofile.iban}}<br>
                 {% endif %}
             </div>

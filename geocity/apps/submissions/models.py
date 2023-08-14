@@ -1418,7 +1418,7 @@ class SubmissionContact(models.Model):
         verbose_name_plural = _("Relations demande-contact")
 
     def __str__(self):
-        return "{} - {}".format(str(self.contact), str(self.get_contact_form_display()))
+        return "{} - {}".format(str(self.contact), str(self.contact_form.name))
 
 
 class FieldValue(models.Model):
