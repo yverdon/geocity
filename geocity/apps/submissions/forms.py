@@ -828,17 +828,14 @@ class SubmissionContactForm(forms.ModelForm):
         ],
         widget=forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789 (TVA)"}),
     )
-    # id = forms.IntegerField(widget=forms.HiddenInput())
-    # DELETE = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+    contact_form = forms.ModelChoiceField(
+        queryset=models.ContactType.objects.all(),
+        empty_label="Sélectionner un contact...",
+    )
 
     class Meta:
         model = models.SubmissionContact
         fields = ["contact_form"]
-        widgets = {
-            "contact_form": forms.Select(
-                attrs={"readonly": True, "hidden": True, "class": "hide-arrow"}
-            ),
-        }
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -1918,8 +1915,10 @@ def get_submission_contacts_formset_initiated(submission, data=None):
         {"contact_form": contact_form[0]} for contact_form in missing_contact_forms
     ]
 
+    nb_extra = 10
+
     if has_any_dynamic_contacts_forms:
-        extra = len(contact_initial_forms) + 1
+        extra = len(contact_initial_forms) + nb_extra
     else:
         extra = len(contact_initial_forms)
 
@@ -1927,7 +1926,6 @@ def get_submission_contacts_formset_initiated(submission, data=None):
         models.SubmissionContact,
         form=SubmissionContactForm,
         extra=extra,
-        can_delete=True,
     )
 
     formset = SubmissionContactFormset(
@@ -1949,34 +1947,23 @@ def get_submission_contacts_formset_initiated(submission, data=None):
             "contact_form" not in form.initial
             or form.initial["contact_form"] not in mandatory_contact_forms
         )
-
-    # class Meta:
-    #     model = models.SubmissionContact
-    #     fields = ["contact_form"]
-    #     widgets = {
-    #         "contact_form": forms.Select(
-    #             attrs={"readonly": True, "hidden": True, "class": "hide-arrow"}
-    #         ),
-    #     }
+        form.fields["contact_form"].widget.attrs["readonly"] = True
+        form.fields["contact_form"].widget.attrs["hidden"] = True
 
     if has_any_dynamic_contacts_forms:
-        contact_type = models.ContactType.objects.all()
-
-        default_contact = (0, "---")
-        contacts = (
-            (contact_form, contact_type.get(id=contact_form).name)
-            for contact_form, is_mandatory, is_dynamic in configured_contact_forms
-            if is_dynamic
-        )
-
-        contacts_list = [default_contact] + list(contacts)
-        contacts_tuple = tuple(contacts_list)
-
-        new_form = formset[len(formset) - 1]
-        new_form.fields["contact_form"].choices = contacts_tuple
-        # Allow user to select contact_form
-        for field in new_form.fields:
-            new_form.fields[field].widget.attrs = {"required": False}
+        for extra in range(nb_extra):
+            extra += 1
+            new_form = formset[len(formset) - extra]
+            dynamic_types = configured_contact_forms.filter(is_dynamic=True).values(
+                "type"
+            )
+            types_filtered = new_form.fields["contact_form"].queryset.filter(
+                id__in=dynamic_types
+            )
+            new_form.fields["contact_form"].queryset = types_filtered
+            new_form.fields["contact_form"].widget.attrs["class"] = "extra-form"
+            new_form.fields["contact_form"].widget.attrs["readonly"] = False
+            new_form.fields["contact_form"].widget.attrs["hidden"] = False
 
     return formset
 

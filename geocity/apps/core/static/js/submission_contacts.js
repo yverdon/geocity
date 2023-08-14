@@ -14,16 +14,30 @@ let update_form_value = function(item, userprofile) {
   }
 }
 
-// Create a label to replace "readonly hidden select" readonly
+// Create a label to replace .form-control without .extra-form in classes inside of forms-container
 window.addEventListener('load', function () {
-  var selects = document.querySelectorAll("select[readonly][hidden]");
-  for (select of selects) {
+  var forms_control = document.querySelectorAll("[id=forms-container] select[class=form-control]");
+  for (form_control of forms_control) {
     let elem = document.createElement('label');
-    let text = select.querySelector("option[selected]").text
-    let div = select.closest('.col-md-9');
+    let text = form_control.querySelector("option[selected]").text
+    let div = form_control.closest('.col-md-9');
 
     elem.innerHTML = text;
     elem.classList.add('col-form-label', 'bold');
     div.appendChild(elem);
   }
+
+  // Hide .extra-form and show first hidden .extra-form on click of .show-extra-form
+  var extra_forms = document.querySelectorAll("[id=forms-container] select.form-control.extra-form");
+  for (extra_form of extra_forms) {
+    let form = extra_form.closest("[class=contact-form]")
+    form.setAttribute("hidden", true)
+  }
+
+  // addEventListener for button .show-extra-form
+  var button = document.querySelector("button.show-extra-form");
+  button.addEventListener("click", (event) => {
+    var hidden_extra_forms = document.querySelector(".contact-form[hidden]")
+    hidden_extra_forms.removeAttribute("hidden")
+  });
 });
