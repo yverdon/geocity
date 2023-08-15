@@ -414,7 +414,7 @@ class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
 
 class ContactTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = submissions_models.ContactForm
+        model = submissions_models.ContactType
 
     name = factory.Faker("word")
 
