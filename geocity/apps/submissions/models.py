@@ -1247,7 +1247,7 @@ class Submission(models.Model):
 
         complementary_document_attrs[
             "description"
-        ] = f"{description} {transaction.merchant_reference}"
+        ] = f"{description} {transaction.transaction_id}"
         complementary_document_attrs["owner"] = self.author
         complementary_document_attrs["submission"] = self
         complementary_document_attrs[

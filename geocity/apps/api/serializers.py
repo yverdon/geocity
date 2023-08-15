@@ -305,7 +305,7 @@ class PostFinanceTransactionPrintSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostFinanceTransaction
         fields = (
-            "merchant_reference",
+            "transaction_id",
             "amount",
             "currency",
             "creation_date",

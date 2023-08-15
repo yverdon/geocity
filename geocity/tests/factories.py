@@ -441,7 +441,7 @@ class PostFinanceTransactionFactory(factory.django.DjangoModelFactory):
 
     amount = factory.Faker("pyint", min_value=0, max_value=1000)
     currency = factory.Faker("name")
-    merchant_reference = factory.Faker("name")
+    transaction_id = factory.Faker("name")
     authorization_timeout_on = factory.Faker("date_time", tzinfo=timezone.utc)
     payment_url = factory.Faker("uri")
 

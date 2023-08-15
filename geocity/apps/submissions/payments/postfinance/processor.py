@@ -62,7 +62,7 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
 
         Returns a dict with the following entries:
         {
-            "merchant_reference": <str, PostFinance's transaction identifier>,
+            "transaction_id": <str, PostFinance's transaction identifier>,
             "authorization_timeout_on": <datetime, when the transaction times out, if not paid/cancelled>,
             "payment_page_url": <str, the URL when payment is done on PostFinance>,
         }
@@ -132,7 +132,7 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
         )
 
         return {
-            "merchant_reference": transaction_create.id,  # TODO: Rename `merchant_reference` to `transaction_id`
+            "transaction_id": transaction_create.id,
             "authorization_timeout_on": transaction_create.authorization_timeout_on,
             "payment_page_url": payment_page_url,
         }
@@ -140,7 +140,7 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
     def _get_transaction_status(self, transaction):
         transaction_service = self._get_transaction_service_api()
         merchant_transaction = transaction_service.read(
-            self.space_id, transaction.merchant_reference
+            self.space_id, transaction.transaction_id
         )
         return merchant_transaction.state
 

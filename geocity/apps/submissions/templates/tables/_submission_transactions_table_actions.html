@@ -9,7 +9,7 @@
       <ul class="list-inline text-left">
         <li>
           <div class="form-group">
-            <select class="form-control transactionStatusChangeSelect" id="transactionStatusChangeSelect-{{ record.merchant_reference }}">
+            <select class="form-control transactionStatusChangeSelect" id="transactionStatusChangeSelect-{{ record.transaction_id }}">
               <option value="">--------</option>
               {% if can_refund %}
                 {% if record.status != 'to_refund' and record.status != 'refunded' and record.status != 'failed' %}
@@ -26,7 +26,7 @@
           </div>
         </li>
         <li>
-            <button class="btn btn-primary transactionStatusChangeBtn" data-href="{% url 'submissions:change_transaction_status' record.merchant_reference %}" data-merchant-reference="{{ record.merchant_reference }}">
+            <button class="btn btn-primary transactionStatusChangeBtn" data-href="{% url 'submissions:change_transaction_status' record.transaction_id %}" data-merchant-reference="{{ record.transaction_id }}">
               <i class="fa fa-save" style="pointer-events: none"></i>
             </button>
         </li>

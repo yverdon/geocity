@@ -56,7 +56,7 @@ from .exceptions import BadSubmissionStatus, NonProlongableSubmission
 from .payments.services import (
     get_payment_processor,
     get_transaction_from_id,
-    get_transaction_from_merchant_reference,
+    get_transaction_from_transaction_id,
 )
 from .search import search_result_to_json, search_submissions
 from .services import send_refund_email
@@ -2080,10 +2080,10 @@ class ChangeTransactionStatus(View):
 
     def get(self, request, *args, **kwargs):
         try:
-            merchant_reference = kwargs.get("merchant_reference")
+            transaction_id = kwargs.get("transaction_id")
             new_status = request.GET.get("new_status")
 
-            transaction = get_transaction_from_merchant_reference(merchant_reference)
+            transaction = get_transaction_from_transaction_id(transaction_id)
             submission = transaction.submission_price.submission
             if not permissions.user_has_permission_to_change_transaction_status(
                 request.user, transaction, new_status
@@ -2109,12 +2109,12 @@ class ChangeTransactionStatus(View):
                 request,
                 mark_safe(
                     _(
-                        """Le statut de la transaction {merchant_reference} a été mis à jour en
+                        """Le statut de la transaction {transaction_id} a été mis à jour en
                     <strong>{new_status_display}</strong>
                     """
                     ).format(
                         new_status_display=new_status_display,
-                        merchant_reference=merchant_reference,
+                        transaction_id=transaction_id,
                     )
                 ),
             )
