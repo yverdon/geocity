@@ -743,17 +743,18 @@ class SectionRecipient(Section):
         selected_recipient = ""
 
         for recipient in recipients:
-            for contact in contacts.values():
-                for contact_prop in contact:
-                    if recipient.name == "Auteur" and "author" in properties:
-                        selected_recipient = properties["author"]
-                    elif (
-                        "contact_form_display" in contact_prop
-                        and contact_prop["contact_form_display"] == recipient.name
-                    ):
-                        selected_recipient = contacts[
-                            convert_string_to_api_key(recipient.name)
-                        ][0]
+            if recipient.name == "Auteur" and "author" in properties:
+                selected_recipient = properties["author"]
+            elif contacts:
+                for contact in contacts.values():
+                    for contact_prop in contact:
+                        if (
+                            "contact_form_display" in contact_prop
+                            and contact_prop["contact_form_display"] == recipient.name
+                        ):
+                            selected_recipient = contacts[
+                                convert_string_to_api_key(recipient.name)
+                            ][0]
 
         return selected_recipient
 
