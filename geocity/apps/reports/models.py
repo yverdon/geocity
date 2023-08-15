@@ -19,6 +19,7 @@ from polymorphic.models import PolymorphicModel
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.api.services import convert_string_to_api_key
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -742,13 +743,17 @@ class SectionRecipient(Section):
         selected_recipient = ""
 
         for recipient in recipients:
-            if recipient == 999 and "author" in properties:
-                selected_recipient = properties["author"]
-            else:
-                # TODO: Adapt this part
-                contact = None
-                if contact in contacts:
-                    selected_recipient = contacts[contact]
+            for contact in contacts.values():
+                for contact_prop in contact:
+                    if recipient.name == "Auteur" and "author" in properties:
+                        selected_recipient = properties["author"]
+                    elif (
+                        "contact_form_display" in contact_prop
+                        and contact_prop["contact_form_display"] == recipient.name
+                    ):
+                        selected_recipient = contacts[
+                            convert_string_to_api_key(recipient.name)
+                        ][0]
 
         return selected_recipient
 
