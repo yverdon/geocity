@@ -21,9 +21,9 @@ def get_payment_processor(form):
     return pay_class(**kwargs)
 
 
-def get_transaction_from_merchant_reference(merchant_reference):
+def get_transaction_from_transaction_id(transaction_id):
     return PostFinanceCheckoutProcessor.transaction_class.objects.get(
-        merchant_reference=merchant_reference
+        transaction_id=transaction_id
     )
 
 

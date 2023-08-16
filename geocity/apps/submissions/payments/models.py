@@ -35,7 +35,7 @@ class Transaction(models.Model):
     )
     amount = models.DecimalField(_("Montant"), max_digits=6, decimal_places=2)
     currency = models.CharField(_("Devise"), max_length=20)
-    merchant_reference = models.CharField(_("Référence marchande"), max_length=255)
+    transaction_id = models.CharField(_("ID transaction"), max_length=255)
     status = models.CharField(
         _("Statut"),
         max_length=20,
@@ -97,7 +97,7 @@ class Transaction(models.Model):
         )
         if read:
             output = output.read()
-        return f"invoice_{self.merchant_reference}.pdf", output
+        return f"invoice_{self.transaction_id}.pdf", output
 
     def get_refund_pdf(self, read=False):
         submission = self.submission_price.submission
@@ -111,4 +111,4 @@ class Transaction(models.Model):
         )
         if read:
             output = output.read()
-        return f"refund_{self.merchant_reference}.pdf", output
+        return f"refund_{self.transaction_id}.pdf", output
