@@ -172,16 +172,16 @@ class Submission(models.Model):
     STATUS_ARCHIVED = 9
 
     STATUS_CHOICES = (
-        (STATUS_DRAFT, _("Brouillon")),
-        (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),
-        (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),
-        (STATUS_PROCESSING, _("En traitement")),
-        (STATUS_AWAITING_VALIDATION, _("En validation")),
-        (STATUS_APPROVED, _("Approuvée")),
-        (STATUS_REJECTED, _("Refusée")),
-        (STATUS_RECEIVED, _("Réceptionnée")),
-        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),
-        (STATUS_ARCHIVED, _("Archivée")),
+        (STATUS_DRAFT, _("Brouillon")),  # 0
+        (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),  # 1
+        (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),  # 4
+        (STATUS_PROCESSING, _("En traitement")),  # 3
+        (STATUS_AWAITING_VALIDATION, _("En validation")),  # 5
+        (STATUS_APPROVED, _("Approuvée")),  # 2
+        (STATUS_REJECTED, _("Refusée")),  # 6
+        (STATUS_RECEIVED, _("Réceptionnée")),  # 7
+        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),  # 8
+        (STATUS_ARCHIVED, _("Archivée")),  # 9
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -264,6 +264,7 @@ class Submission(models.Model):
     creditor_type = models.ForeignKey(
         ContactType,
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Destinataire de la facture"),
     )

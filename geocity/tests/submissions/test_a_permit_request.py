@@ -2384,7 +2384,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-contact_form"] = contact_required.type
+        self.test_formset_data["form-0-contact_form"] = contact_required.type.id
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
