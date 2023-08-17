@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0021_add_contact_type"),
+        ("submissions", "0022_contactform_and_more"),
     ]
 
     operations = [
