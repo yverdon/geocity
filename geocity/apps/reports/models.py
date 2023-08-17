@@ -734,6 +734,8 @@ class SectionRecipient(Section):
         verbose_name = _("Destinataire")
 
     def _get_recipient(self, request, base_context):
+        from geocity.apps.submissions.models import ContactType
+
         properties = base_context["request_data"]["properties"]
         contacts = properties["contacts"]
 
@@ -742,8 +744,10 @@ class SectionRecipient(Section):
         # Empty string, if nothing is found, it won't return anything from json and will let empty the section instead of crashing
         selected_recipient = ""
 
+        author = ContactType.objects.get(name="Auteur")
+
         for recipient in recipients:
-            if recipient.name == "Auteur" and "author" in properties:
+            if recipient == author and "author" in properties:
                 selected_recipient = properties["author"]
             elif contacts:
                 for contact in contacts.values():
