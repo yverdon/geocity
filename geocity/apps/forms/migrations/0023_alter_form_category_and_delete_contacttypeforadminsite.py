@@ -21,4 +21,7 @@ class Migration(migrations.Migration):
                 verbose_name="catégorie",
             ),
         ),
+        migrations.DeleteModel(
+            name="ContactTypeForAdminSite",
+        ),
     ]

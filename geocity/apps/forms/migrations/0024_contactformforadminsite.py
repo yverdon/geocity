@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0024_delete_contacttypeforadminsite"),
+        ("forms", "0023_alter_form_category_and_delete_contacttypeforadminsite"),
         ("submissions", "0022_contactform_and_more"),
     ]
 
@@ -22,5 +22,17 @@ class Migration(migrations.Migration):
                 "constraints": [],
             },
             bases=("submissions.contactform",),
+        ),
+        migrations.CreateModel(
+            name="ContactTypeForAdminSite",
+            fields=[],
+            options={
+                "verbose_name": "1.9 Type de contact",
+                "verbose_name_plural": "1.9 Types de contacts",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
+            },
+            bases=("submissions.contacttype",),
         ),
     ]

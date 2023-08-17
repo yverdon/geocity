@@ -81,7 +81,7 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0024_delete_contacttypeforadminsite"),
+        ("forms", "0023_alter_form_category_and_delete_contacttypeforadminsite"),
         ("auth", "0012_alter_user_first_name_max_length"),
         ("submissions", "0021_add_contact_type"),
     ]
@@ -207,6 +207,7 @@ class Migration(migrations.Migration):
             model_name="submission",
             name="creditor_type",
             field=models.ForeignKey(
+                blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 to="submissions.contacttype",
@@ -224,4 +225,20 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RunPython(migrate_contact_type_based_on_new_model),
+        migrations.AlterModelOptions(
+            name="contacttype",
+            options={
+                "verbose_name": "1.9 Type de contact",
+                "verbose_name_plural": "1.9 Types de contacts",
+            },
+        ),
+        migrations.AddField(
+            model_name="contactform",
+            name="is_dynamic",
+            field=models.BooleanField(
+                default=False,
+                help_text="Permet à l'utilisateur d'ajouter ce type de contact lors de la saisie, autant de fois que souhaité.",
+                verbose_name="Dynamique",
+            ),
+        ),
     ]
