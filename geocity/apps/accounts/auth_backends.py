@@ -9,9 +9,8 @@ class EmailAuthenticationBackend(ModelBackend):
         if not email or not password:
             return None
 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        user = User.objects.filter(email=email).first()
+        if not user:
             return None
 
         if user.check_password(password):
