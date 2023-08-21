@@ -1134,7 +1134,7 @@ def submission_select_administrative_entity(request, submission_id=None):
         else None
     )
 
-    quick_access_slug = request.GET.get("q")
+    quick_access_slug = request.GET.get("form")
     if not submission and quick_access_slug:
         form = get_selectable_form(
             user=request.user, quick_access_slug=quick_access_slug
