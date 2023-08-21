@@ -156,6 +156,13 @@ class NewDjangoAuthUserForm(EmailUserCreationForm):
 class DjangoAuthUserForm(forms.ModelForm):
     """User"""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.username.startswith(settings.EMAIL_USER_PREFIX):
+            field = self.fields["username"]
+            field.widget = field.hidden_widget()
+
     first_name = forms.CharField(
         max_length=30,
         label=_("Prénom"),
@@ -170,6 +177,17 @@ class DjangoAuthUserForm(forms.ModelForm):
             attrs={"placeholder": "ex: Dupond", "required": "required"}
         ),
     )
+    email = forms.EmailField(
+        max_length=254,
+        label=_("Email"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: exemple@exemple.com", "required": "required"}
+        ),
+    )
+    username = forms.CharField(
+        max_length=150, label=_("Identifiant"), disabled=True, required=False
+    )
+
     required_css_class = "required"
 
     def clean_first_name(self):
@@ -190,7 +208,7 @@ class DjangoAuthUserForm(forms.ModelForm):
 
     class Meta:
         model = models.User
-        fields = ["first_name", "last_name"]
+        fields = ["first_name", "last_name", "email", "username"]
 
 
 class GenericUserProfileForm(forms.ModelForm):
