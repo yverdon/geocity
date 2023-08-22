@@ -104,7 +104,7 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
     for submission_contact in SubmissionContact.objects.all():
         if submission_contact.contact_form:
             type = ContactType.objects.get(
-                name=CONTACT_TYPE_CHOICES[submission_contact.creditor_type][1]
+                name=CONTACT_TYPE_CHOICES[submission_contact.contact_form][1]
             ).pk
             submission_contact.contact_form = type
             submission_contact.save()
