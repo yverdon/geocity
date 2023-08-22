@@ -3,14 +3,37 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+CONTACT_TYPE_OTHER = 0
+CONTACT_TYPE_REQUESTOR = 1
+CONTACT_TYPE_OWNER = 2
+CONTACT_TYPE_COMPANY = 3
+CONTACT_TYPE_CLIENT = 4
+CONTACT_TYPE_SECURITY = 5
+CONTACT_TYPE_ASSOCIATION = 6
+CONTACT_TYPE_ENGINEER = 7
+CONTACT_TYPE_WORKDIRECTOR = 8
+CONTACT_TYPE_CHOICES = (
+    (CONTACT_TYPE_ENGINEER, ("Architecte/Ingénieur")),
+    (CONTACT_TYPE_ASSOCIATION, ("Association")),
+    (CONTACT_TYPE_OTHER, ("Autres")),
+    (CONTACT_TYPE_WORKDIRECTOR, ("Direction des travaux")),
+    (CONTACT_TYPE_COMPANY, ("Entreprise")),
+    (CONTACT_TYPE_CLIENT, ("Maître d'ouvrage")),
+    (CONTACT_TYPE_OWNER, ("Propriétaire")),
+    (CONTACT_TYPE_REQUESTOR, ("Requérant (si différent de l'auteur de la demande)")),
+    (CONTACT_TYPE_SECURITY, ("Sécurité")),
+)
+
 
 def create_contact_types(apps, schema_editor):
     """
     Create default contact types based on hardcoded contact types that already exists
     """
     NewContactType = apps.get_model("submissions", "NewContactType")
+
     contact_types = [
         "Autres",
+        "Auteur",
         "Requérant (si différent de l'auteur de la demande)",
         "Propriétaire",
         "Entreprise",
@@ -20,7 +43,6 @@ def create_contact_types(apps, schema_editor):
         "Architecte/Ingénieur",
         "Direction des travaux",
         "Bénéficiaire",
-        "Auteur",
     ]
 
     for contact_type in contact_types:
@@ -36,7 +58,6 @@ def migrate_contact_type_to_contact_form(apps, schema_editor):
 
     contact_types = ContactType.objects.all()
     for contact_type in contact_types:
-        # type = ContactType.objects.get(name="Autres").pk
         ContactForm.objects.create(
             type=contact_type.type,
             is_mandatory=contact_type.is_mandatory,
@@ -54,27 +75,38 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
     HistoricalSubmission = apps.get_model("submissions", "HistoricalSubmission")
     Submission = apps.get_model("submissions", "Submission")
     SubmissionContact = apps.get_model("submissions", "SubmissionContact")
+    ContactType = apps.get_model("submissions", "ContactType")
 
     for contact_form in ContactForm.objects.all():
         if contact_form.type:
-            contact_form.type = contact_form.type + 1
+            type = ContactType.objects.get(
+                name=CONTACT_TYPE_CHOICES[contact_form.type][1]
+            ).pk
+            contact_form.type = type
             contact_form.save()
 
     for historical_submission in HistoricalSubmission.objects.all():
         if historical_submission.creditor_type:
-            historical_submission.creditor_type = (
-                historical_submission.creditor_type + 1
-            )
+            type = ContactType.objects.get(
+                name=CONTACT_TYPE_CHOICES[historical_submission.creditor_type][1]
+            ).pk
+            historical_submission.creditor_type = type
             historical_submission.save()
 
     for submission in Submission.objects.all():
         if submission.creditor_type:
-            submission.creditor_type = submission.creditor_type + 1
+            type = ContactType.objects.get(
+                name=CONTACT_TYPE_CHOICES[submission.creditor_type][1]
+            ).pk
+            submission.creditor_type = type
             submission.save()
 
     for submission_contact in SubmissionContact.objects.all():
         if submission_contact.contact_form:
-            submission_contact.contact_form = submission_contact.contact_form + 1
+            type = ContactType.objects.get(
+                name=CONTACT_TYPE_CHOICES[submission_contact.creditor_type][1]
+            ).pk
+            submission_contact.contact_form = type
             submission_contact.save()
 
 
@@ -171,15 +203,52 @@ class Migration(migrations.Migration):
             old_name="contact_type",
             new_name="contact_form",
         ),
-        migrations.RunPython(
+        migrations.RunPython(  # Migrate the data from old ContactType to new ContactForm that replaces it
             migrate_contact_type_to_contact_form
-        ),  # Migrate the data from old ContactType to new ContactForm that replaces it
+        ),
         migrations.DeleteModel(  # Delete old ContactType that has become ContactForm
             name="ContactType",
         ),
         migrations.RenameModel(  # Rename model as the name is free
             "NewContactType", "ContactType"
         ),
+        migrations.AlterField(
+            model_name="contactform",
+            name="type",
+            field=models.IntegerField(
+                blank=True,
+                null=True,
+                verbose_name="type de contact",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="historicalsubmission",
+            name="creditor_type",
+            field=models.IntegerField(
+                blank=True,
+                null=True,
+                verbose_name="type de contact",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="submission",
+            name="creditor_type",
+            field=models.IntegerField(
+                blank=True,
+                null=True,
+                verbose_name="type de contact",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="submissioncontact",
+            name="contact_form",
+            field=models.IntegerField(
+                blank=True,
+                null=True,
+                verbose_name="type de contact",
+            ),
+        ),
+        migrations.RunPython(migrate_contact_type_based_on_new_model),
         migrations.AlterField(
             model_name="contactform",
             name="type",
@@ -224,7 +293,6 @@ class Migration(migrations.Migration):
                 verbose_name="type de contact",
             ),
         ),
-        migrations.RunPython(migrate_contact_type_based_on_new_model),
         migrations.AlterModelOptions(
             name="contacttype",
             options={
