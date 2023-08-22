@@ -2,7 +2,7 @@ import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import (
@@ -391,10 +391,24 @@ class FormWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
         return f"{obj} ({obj.category}) - {entities}"
 
 
+class ReadOnlyTextInput(forms.TextInput):
+    def render(self, name, value, attrs=None, renderer=None):
+        return value
+
+
 class FieldAdminForm(forms.ModelForm):
+    form_list = forms.CharField(
+        required=False, label="Formulaire(s) avec ce champ", widget=forms.HiddenInput()
+    )
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
+        instance = kwargs.get("instance")
+
+        if instance:
+            self.fields["form_list"].widget = ReadOnlyTextInput()
+            self.initial["form_list"] = self.get_form_list()
 
     class Meta:
         model = models.Field
@@ -415,7 +429,17 @@ class FieldAdminForm(forms.ModelForm):
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
             "integrator",
+            "form_list",
         ]
+
+    def get_form_list(self):
+        form_fields = self.instance.form_fields.all().order_by("form__name")
+        list_content = format_html_join(
+            "",
+            "<li>{}</li>",
+            [[ff.form] for ff in form_fields],
+        )
+        return f"<ul>{list_content}</ul>"
 
     def clean_file_download(self):
         if self.cleaned_data["input_type"] == "file_download":
