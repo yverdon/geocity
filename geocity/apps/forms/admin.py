@@ -434,12 +434,15 @@ class FieldAdminForm(forms.ModelForm):
 
     def get_form_list(self):
         form_fields = self.instance.form_fields.all().order_by("form__name")
-        list_content = format_html_join(
-            "",
-            "<li>{}</li>",
-            [[ff.form] for ff in form_fields],
-        )
-        return f"<ul>{list_content}</ul>"
+        if form_fields:
+            list_content = format_html_join(
+                "",
+                "<li>{}</li>",
+                [[ff.form] for ff in form_fields],
+            )
+            return f"<ul>{list_content}</ul>"
+        else:
+            return "—"
 
     def clean_file_download(self):
         if self.cleaned_data["input_type"] == "file_download":
