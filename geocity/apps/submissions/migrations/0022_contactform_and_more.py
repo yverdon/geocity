@@ -83,7 +83,9 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
                 name=CONTACT_TYPE_CHOICES[contact_form.type][1]
             ).pk
             contact_form.type = type
-            contact_form.save()
+        else:
+            contact_form.type = None
+        contact_form.save()
 
     for historical_submission in HistoricalSubmission.objects.all():
         if historical_submission.creditor_type:
@@ -91,7 +93,9 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
                 name=CONTACT_TYPE_CHOICES[historical_submission.creditor_type][1]
             ).pk
             historical_submission.creditor_type = type
-            historical_submission.save()
+        else:
+            historical_submission.creditor_type = None
+        historical_submission.save()
 
     for submission in Submission.objects.all():
         if submission.creditor_type:
@@ -99,7 +103,9 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
                 name=CONTACT_TYPE_CHOICES[submission.creditor_type][1]
             ).pk
             submission.creditor_type = type
-            submission.save()
+        else:
+            submission.creditor_type = None
+        submission.save()
 
     for submission_contact in SubmissionContact.objects.all():
         if submission_contact.contact_form:
@@ -107,7 +113,9 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
                 name=CONTACT_TYPE_CHOICES[submission_contact.contact_form][1]
             ).pk
             submission_contact.contact_form = type
-            submission_contact.save()
+        else:
+            submission_contact.contact_form = None
+        submission_contact.save()
 
 
 class Migration(migrations.Migration):
