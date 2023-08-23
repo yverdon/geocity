@@ -711,6 +711,7 @@ class SectionRecipient(Section):
     )
     first_recipient = models.ForeignKey(
         ContactType,
+        on_delete=models.DO_NOTHING,
         verbose_name=_("Destinataire principal"),
         help_text=_(
             'Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire secondaire"'
@@ -719,6 +720,7 @@ class SectionRecipient(Section):
     )
     second_recipient = models.ForeignKey(
         ContactType,
+        on_delete=models.DO_NOTHING,
         verbose_name=_("Destinataire secondaire"),
         help_text=_(
             'Utilisé lorsque le "destinataire principal" n\'est pas présent dans la liste des contacts saisis'

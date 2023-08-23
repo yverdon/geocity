@@ -1409,6 +1409,7 @@ class SubmissionContact(models.Model):
     )
     contact_form = models.ForeignKey(
         ContactType,
+        on_delete=models.DO_NOTHING,
         verbose_name=_("type de contact"),
     )
 
