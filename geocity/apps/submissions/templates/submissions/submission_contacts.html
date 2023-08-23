@@ -27,6 +27,9 @@
       <hr>
     {% endif %}
     <h4>Contacts</h4>
+    <div id="contact-alert" class="alert alert-info sticky-top" style="display: none;">
+      Le nombre maximum de contacts est atteint
+    </div>
     <div id="forms-container">
       {% for form in formset %}
         <div class="contact-form">

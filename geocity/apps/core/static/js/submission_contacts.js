@@ -38,6 +38,9 @@ window.addEventListener('load', function () {
   var button = document.querySelector("button.show-extra-form");
   button.addEventListener("click", (event) => {
     var hidden_extra_forms = document.querySelector(".contact-form[hidden]")
+    if (hidden_extra_forms == null){
+      document.getElementById('contact-alert').style.display = "block"
+    }
     hidden_extra_forms.removeAttribute("hidden")
   });
 });
