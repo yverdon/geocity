@@ -224,7 +224,6 @@ class Migration(migrations.Migration):
             model_name="contactform",
             name="type",
             field=models.IntegerField(
-                blank=True,
                 null=True,
                 verbose_name="type de contact",
             ),
@@ -251,7 +250,6 @@ class Migration(migrations.Migration):
             model_name="submissioncontact",
             name="contact_form",
             field=models.IntegerField(
-                blank=True,
                 null=True,
                 verbose_name="type de contact",
             ),
