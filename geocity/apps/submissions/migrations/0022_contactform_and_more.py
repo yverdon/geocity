@@ -13,15 +13,18 @@ CONTACT_TYPE_ASSOCIATION = 6
 CONTACT_TYPE_ENGINEER = 7
 CONTACT_TYPE_WORKDIRECTOR = 8
 CONTACT_TYPE_CHOICES = (
-    (CONTACT_TYPE_ENGINEER, ("Architecte/Ingénieur")),
-    (CONTACT_TYPE_ASSOCIATION, ("Association")),
-    (CONTACT_TYPE_OTHER, ("Autres")),
-    (CONTACT_TYPE_WORKDIRECTOR, ("Direction des travaux")),
-    (CONTACT_TYPE_COMPANY, ("Entreprise")),
-    (CONTACT_TYPE_CLIENT, ("Maître d'ouvrage")),
-    (CONTACT_TYPE_OWNER, ("Propriétaire")),
-    (CONTACT_TYPE_REQUESTOR, ("Requérant (si différent de l'auteur de la demande)")),
-    (CONTACT_TYPE_SECURITY, ("Sécurité")),
+    (CONTACT_TYPE_OTHER, ("Autres")),  # 0
+    (
+        CONTACT_TYPE_REQUESTOR,
+        ("Requérant (si différent de l'auteur de la demande)"),
+    ),  # 1
+    (CONTACT_TYPE_OWNER, ("Propriétaire")),  # 2
+    (CONTACT_TYPE_COMPANY, ("Entreprise")),  # 3
+    (CONTACT_TYPE_CLIENT, ("Maître d'ouvrage")),  # 4
+    (CONTACT_TYPE_SECURITY, ("Sécurité")),  # 5
+    (CONTACT_TYPE_ASSOCIATION, ("Association")),  # 6
+    (CONTACT_TYPE_ENGINEER, ("Architecte/Ingénieur")),  # 7
+    (CONTACT_TYPE_WORKDIRECTOR, ("Direction des travaux")),  # 8
 )
 
 
