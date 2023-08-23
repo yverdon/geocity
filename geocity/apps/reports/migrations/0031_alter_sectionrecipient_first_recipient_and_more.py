@@ -36,7 +36,7 @@ def migrate_section_recipient(apps, schema_editor):
     for recipient in SectionRecipient.objects.all():
         if recipient.first_recipient != None:
             if recipient.first_recipient == 999:
-                type = ContactType.objects.get(name="Auteur")
+                type = ContactType.objects.get(name="Auteur").pk
             else:
                 type = ContactType.objects.get(
                     name=CONTACT_TYPE_CHOICES[recipient.first_recipient][1]
@@ -47,7 +47,7 @@ def migrate_section_recipient(apps, schema_editor):
 
         if recipient.second_recipient != None:
             if recipient.second_recipient == 999:
-                type = ContactType.objects.get(name="Auteur")
+                type = ContactType.objects.get(name="Auteur").pk
             else:
                 type = ContactType.objects.get(
                     name=CONTACT_TYPE_CHOICES[recipient.second_recipient][1]
