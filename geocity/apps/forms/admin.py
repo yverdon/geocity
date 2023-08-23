@@ -2,7 +2,8 @@ import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
-from django.utils.html import format_html, format_html_join
+from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import (
@@ -433,14 +434,20 @@ class FieldAdminForm(forms.ModelForm):
         ]
 
     def get_form_list(self):
-        form_fields = self.instance.form_fields.all().order_by("form__name")
-        if form_fields:
-            list_content = format_html_join(
-                "",
-                "<li>{}</li>",
-                [[ff.form] for ff in form_fields],
-            )
-            return f"<ul>{list_content}</ul>"
+        forms_fields = self.instance.form_fields.all().order_by(
+            "form__name", "form__id"
+        )
+        if forms_fields:
+            list_content = []
+            for ff in forms_fields:
+                url = reverse(
+                    "admin:forms_form_change", kwargs={"object_id": ff.form.id}
+                )
+                list_content.append(
+                    format_html("<li><a href='{}'>{}</a></li>", url, ff.form.name)
+                )
+            list_html = "\n".join(list_content)
+            return f"<ul>{list_html}</ul>"
         else:
             return "—"
 
