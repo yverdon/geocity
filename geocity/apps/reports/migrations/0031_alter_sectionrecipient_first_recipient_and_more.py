@@ -17,8 +17,7 @@ class Migration(migrations.Migration):
             name="first_recipient",
             field=models.ForeignKey(
                 help_text='Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire secondaire"',
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
+                on_delete=django.db.models.deletion.DO_NOTHING,
                 related_name="first_recipient",
                 to="submissions.contacttype",
                 verbose_name="Destinataire principal",
@@ -29,8 +28,7 @@ class Migration(migrations.Migration):
             name="second_recipient",
             field=models.ForeignKey(
                 help_text='Utilisé lorsque le "destinataire principal" n\'est pas présent dans la liste des contacts saisis',
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
+                on_delete=django.db.models.deletion.DO_NOTHING,
                 related_name="second_recipient",
                 to="submissions.contacttype",
                 verbose_name="Destinataire secondaire",

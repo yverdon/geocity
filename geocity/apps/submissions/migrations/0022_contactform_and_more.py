@@ -250,7 +250,6 @@ class Migration(migrations.Migration):
             model_name="submissioncontact",
             name="contact_form",
             field=models.IntegerField(
-                null=True,
                 verbose_name="type de contact",
             ),
         ),
@@ -293,7 +292,6 @@ class Migration(migrations.Migration):
             model_name="submissioncontact",
             name="contact_form",
             field=models.ForeignKey(
-                null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 to="submissions.contacttype",
                 verbose_name="type de contact",
