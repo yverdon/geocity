@@ -125,7 +125,7 @@ class Migration(migrations.Migration):
         ("auth", "0012_alter_user_first_name_max_length"),
         ("submissions", "0021_add_contact_type"),
     ]
-
+    atomic = False
     operations = [
         migrations.CreateModel(  # Create ContactType with another name cause already exists
             name="NewContactType",

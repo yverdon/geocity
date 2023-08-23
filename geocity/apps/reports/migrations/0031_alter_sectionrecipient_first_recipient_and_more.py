@@ -3,6 +3,61 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+CONTACT_TYPE_OTHER = 0
+CONTACT_TYPE_REQUESTOR = 1
+CONTACT_TYPE_OWNER = 2
+CONTACT_TYPE_COMPANY = 3
+CONTACT_TYPE_CLIENT = 4
+CONTACT_TYPE_SECURITY = 5
+CONTACT_TYPE_ASSOCIATION = 6
+CONTACT_TYPE_ENGINEER = 7
+CONTACT_TYPE_WORKDIRECTOR = 8
+CONTACT_TYPE_CHOICES = (
+    (CONTACT_TYPE_ENGINEER, ("Architecte/Ingénieur")),
+    (CONTACT_TYPE_ASSOCIATION, ("Association")),
+    (CONTACT_TYPE_OTHER, ("Autres")),
+    (CONTACT_TYPE_WORKDIRECTOR, ("Direction des travaux")),
+    (CONTACT_TYPE_COMPANY, ("Entreprise")),
+    (CONTACT_TYPE_CLIENT, ("Maître d'ouvrage")),
+    (CONTACT_TYPE_OWNER, ("Propriétaire")),
+    (CONTACT_TYPE_REQUESTOR, ("Requérant (si différent de l'auteur de la demande)")),
+    (CONTACT_TYPE_SECURITY, ("Sécurité")),
+)
+
+
+def migrate_section_recipient(apps, schema_editor):
+    """
+    As the data went from a choices field to a foreign key relation, it goes from 1 to 10 instead of 0 to 9, order remains unchanged.
+    Incrementing the existing value by 1 is enough to keep the data correct.
+    """
+    SectionRecipient = apps.get_model("reports", "sectionrecipient")
+    ContactType = apps.get_model("submissions", "ContactType")
+
+    for recipient in SectionRecipient.objects.all():
+        if recipient.first_recipient != None:
+            if recipient.first_recipient == 999:
+                type = ContactType.objects.get(name="Auteur")
+            else:
+                type = ContactType.objects.get(
+                    name=CONTACT_TYPE_CHOICES[recipient.first_recipient][1]
+                ).pk
+            recipient.first_recipient = type
+        else:
+            recipient.first_recipient = None
+
+        if recipient.second_recipient != None:
+            if recipient.second_recipient == 999:
+                type = ContactType.objects.get(name="Auteur")
+            else:
+                type = ContactType.objects.get(
+                    name=CONTACT_TYPE_CHOICES[recipient.second_recipient][1]
+                ).pk
+            recipient.second_recipient = type
+        else:
+            recipient.second_recipient = None
+
+        recipient.save()
+
 
 class Migration(migrations.Migration):
 
@@ -10,8 +65,23 @@ class Migration(migrations.Migration):
         ("submissions", "0022_contactform_and_more"),
         ("reports", "0030_add_contact_type"),
     ]
-
+    atomic = False
     operations = [
+        migrations.AlterField(
+            model_name="sectionrecipient",
+            name="first_recipient",
+            field=models.IntegerField(
+                verbose_name="Destinataire principal",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="sectionrecipient",
+            name="second_recipient",
+            field=models.IntegerField(
+                verbose_name="Destinataire secondaire",
+            ),
+        ),
+        migrations.RunPython(migrate_section_recipient),  # Migrate section recipient
         migrations.AlterField(
             model_name="sectionrecipient",
             name="first_recipient",
