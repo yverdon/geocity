@@ -1,6 +1,6 @@
 import json
 from collections import OrderedDict
-from datetime import timedelta
+from datetime import timedelta, timezone
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Max, Min
@@ -556,18 +556,21 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
                 )
 
+            local_tz = timezone(timedelta(hours=2))
             geotime_aggregated = {}
             geotime_aggregated["start_date"] = (
-                aggregated_geotime_qs["submission_geo_time_start_date"].strftime(
-                    "%d.%m.%Y %H:%M"
-                )
+                aggregated_geotime_qs["submission_geo_time_start_date"]
+                .replace(tzinfo=timezone.utc)
+                .astimezone(local_tz)
+                .strftime("%d.%m.%Y %H:%M")
                 if aggregated_geotime_qs["submission_geo_time_start_date"]
                 else ""
             )
             geotime_aggregated["end_date"] = (
-                aggregated_geotime_qs["submission_geo_time_end_date"].strftime(
-                    "%d.%m.%Y %H:%M"
-                )
+                aggregated_geotime_qs["submission_geo_time_end_date"]
+                .replace(tzinfo=timezone.utc)
+                .astimezone(local_tz)
+                .strftime("%d.%m.%Y %H:%M")
                 if aggregated_geotime_qs["submission_geo_time_end_date"]
                 else ""
             )
