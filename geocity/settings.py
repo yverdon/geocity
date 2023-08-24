@@ -145,7 +145,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "constance",
-    "constance.backends.database",
     "simple_history",
     "corsheaders",
     "django_filters",
