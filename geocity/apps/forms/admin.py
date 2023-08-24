@@ -1,5 +1,8 @@
+import string
+
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
+from constance import config
 from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
@@ -414,6 +417,7 @@ class FieldAdminForm(forms.ModelForm):
             "is_public_when_permitrequest_is_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
+            "allowed_file_types",
             "integrator",
         ]
 
@@ -422,6 +426,42 @@ class FieldAdminForm(forms.ModelForm):
             if not self.cleaned_data["file_download"]:
                 raise forms.ValidationError(_("This field is required."))
         return self.cleaned_data["file_download"]
+
+    def clean_allowed_file_types(self):
+        if (
+            self.cleaned_data["input_type"] == "file"
+            and self.cleaned_data["allowed_file_types"]
+        ):
+            global_allowed_file_extensions_list = (
+                config.ALLOWED_FILE_EXTENSIONS.translate(
+                    str.maketrans("", "", string.whitespace)
+                )
+                .lower()
+                .split(",")
+            )
+
+            field_allowed_file_extensions_list = (
+                self.cleaned_data["allowed_file_types"]
+                .translate(str.maketrans("", "", string.whitespace))
+                .lower()
+                .split(",")
+            )
+
+            extensions_intersect = list(
+                set(global_allowed_file_extensions_list).intersection(
+                    set(field_allowed_file_extensions_list)
+                )
+            )
+
+            if len(extensions_intersect) == 0:
+                raise forms.ValidationError(
+                    _(
+                        "Ces extensions ne sont pas autorisées au niveau global de l'application. Les extentensions actuellement autorisées sont: "
+                    )
+                    + config.ALLOWED_FILE_EXTENSIONS
+                )
+
+        return self.cleaned_data["allowed_file_types"]
 
     class Media:
         js = ("js/admin/form_field.js",)

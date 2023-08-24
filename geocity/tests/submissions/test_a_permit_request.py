@@ -1641,6 +1641,32 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             ["Sélectionnez un choix valide. baz n’en fait pas partie."],
         )
 
+    def test_file_input_extensions_restrictions_sets_accept_correctly_in_template(self):
+
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory()
+        submission.administrative_entity.forms.set([form])
+        submission.forms.set([form])
+        field = factories.FieldFactory(
+            input_type=forms_models.Field.INPUT_TYPE_FILE,
+            allowed_file_types="jpg,png",
+        )
+        field.forms.set([form])
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_appendices",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        parser = get_parser(response.content)
+        items = parser.select(".form-control-file")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(items[0].has_attr("accept"), True)
+        self.assertIn("image/jpeg", items[0]["accept"])
+        self.assertIn("image/png", items[0]["accept"])
+
 
 class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
