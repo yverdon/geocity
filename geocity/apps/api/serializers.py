@@ -596,7 +596,7 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
 # Override of real ListSerializer from django-rest-framework-gis
 # If you want to add a new structure with dynamic values, just add it to OrderedDict and give him a new function like "super().prefix_to_representation(data)"
 # Then in SubmissionPrintSerializer write this class like the existant "to_representation"
-class SubmissionPrintListSerialier(gis_serializers.ListSerializer):
+class SubmissionPrintListSerializer(gis_serializers.ListSerializer):
     @property
     def data(self):
         return super(gis_serializers.ListSerializer, self).data
@@ -689,7 +689,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
         meta = getattr(cls, "Meta", None)
         list_serializer_class = getattr(
-            meta, "list_serializer_class", SubmissionPrintListSerialier
+            meta, "list_serializer_class", SubmissionPrintListSerializer
         )
         return list_serializer_class(*args, **list_kwargs)
 
