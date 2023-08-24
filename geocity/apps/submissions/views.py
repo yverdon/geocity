@@ -1487,6 +1487,7 @@ def submission_contacts(request, submission_id):
         current_step_type=StepType.CONTACTS,
     )
     requires_payment = submission.requires_payment()
+    has_any_dynamic_contacts_forms = submission.has_any_dynamic_contacts_forms()
 
     creditorform = forms.SubmissionCreditorForm(
         request.POST or None, instance=submission
@@ -1533,6 +1534,7 @@ def submission_contacts(request, submission_id):
             "creditorform": creditorform,
             "submission": submission,
             "requires_payment": requires_payment,
+            "has_any_dynamic_contacts_forms": has_any_dynamic_contacts_forms,
             "userprofile": userprofile,
             **steps_context,
         },
@@ -2242,7 +2244,7 @@ def submission_validations_edit(request, submission_id):
     if not permissions.has_permission_to_edit_submission_validations(
         request.user, submission
     ):
-        # TODO: be nicer whith user
+        # TODO: be nicer with user
         raise PermissionDenied
 
     submissionValidationFormset = modelformset_factory(

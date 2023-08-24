@@ -31,7 +31,7 @@
       <label class="col-md-3 col-form-label" for="id_chk_accept_policy">{% translate "Conditions d'utilisation" %}</label>
       <div class="col-md-9 login-policy">
         <input type="checkbox" id="chk_accept_policy" name="chk_accept_policy">
-        <label for="chk_accept_policy">{% translate "J'ai lu et accepte les" %} <b><a href="{{config.GENERAL_CONDITIONS_URL}}" target="_blank" rel="noreferrer">{% translate "conditions d'utilisation" %}</a></b> {% translate "et la" %} <b><a href="{{config.PRIVACY_POLICY_URL}}" target="_blank" rel="noreferrer">{% translate "politique de confidentialité" %}</a></b>.</label><br>
+        <label for="chk_accept_policy">{% translate "J'ai lu et accepte les" %} <b><a href="{{config.GENERAL_CONDITIONS_URL}}" target="_blank" rel="noreferrer">{% translate "conditions d'utilisation de Geocity" %}</a></b> {% translate "et la" %} <b><a href="{{config.PRIVACY_POLICY_URL}}" target="_blank" rel="noreferrer">{% translate "politique de confidentialité" %}</a></b>.</label><br>
       </div>
     </div>
     {% bootstrap_button "Confirmer" button_type="submit" id="user_profile_edit" button_class="btn-primary mr-3" value="Enregistrer" name="disabled"%}

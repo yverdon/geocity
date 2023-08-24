@@ -20,6 +20,7 @@ from geocity.apps.reports.models import (
     SectionStatus,
     SectionValidation,
 )
+from geocity.apps.submissions.models import ContactType
 
 from .base import ReportsTestsBase
 
@@ -94,6 +95,8 @@ class ReportsTests(ReportsTestsBase):
         # Clean all blocks
         for section in self.report.sections.all():
             section.delete()
+
+        contact_type, created = ContactType.objects.get_or_create(name="Auteur")
 
         # Add one block of each type
         sections_config = {
@@ -342,6 +345,8 @@ class ReportsTests(ReportsTestsBase):
                     "padding_top": 20,
                     # "is_new_page": bool,
                     "is_recommended": True,
+                    "first_recipient": contact_type,
+                    "second_recipient": contact_type,
                 }
             },
         }

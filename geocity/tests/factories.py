@@ -416,7 +416,15 @@ class ContactTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = submissions_models.ContactType
 
+    name = factory.Faker("word")
+
+
+class ContactFormFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = submissions_models.ContactForm
+
     form_category = factory.SubFactory(FormCategoryFactory)
+    type = factory.SubFactory(ContactTypeFactory)
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
