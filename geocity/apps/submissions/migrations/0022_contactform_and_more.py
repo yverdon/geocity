@@ -124,7 +124,7 @@ def migrate_contact_type_based_on_new_model(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0023_alter_form_category_and_delete_contacttypeforadminsite"),
+        ("forms", "0023_form_slug_and_category_field_file_types"),
         ("auth", "0012_alter_user_first_name_max_length"),
         ("submissions", "0021_add_contact_type"),
     ]

@@ -1,4 +1,5 @@
 import collections
+import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -7,6 +8,7 @@ from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
     MinValueValidator,
+    validate_slug,
 )
 from django.db import models
 from django.db.models import Q
@@ -518,6 +520,16 @@ class Form(models.Model):
         related_name="map_widget_configuration_form",
         verbose_name=_("Configuration de la carte avancée"),
     )
+    quick_access_slug = models.TextField(
+        blank=True,
+        default=uuid.uuid4,
+        unique=True,
+        validators=[validate_slug],
+        verbose_name=_("URL courte"),
+        help_text=_(
+            "Permettant d'accéder directement au formulaire par l'url: https://geocity.ch/?form=demande-macaron"
+        ),
+    )
 
     # All objects
     objects = FormQuerySet().as_manager()
@@ -686,7 +698,6 @@ class Form(models.Model):
             self.geo_widget_option == self.GEO_WIDGET_ADVANCED
             and not self.administrative_entities.first().is_single_form_submissions
         ):
-
             url = reverse(
                 "admin:forms_administrativeentityforadminsite_change",
                 kwargs={"object_id": self.administrative_entities.first().pk},
