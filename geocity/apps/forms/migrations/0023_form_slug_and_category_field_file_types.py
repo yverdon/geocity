@@ -30,4 +30,27 @@ class Migration(migrations.Migration):
                 verbose_name="URL courte",
             ),
         ),
+        migrations.AlterField(
+            model_name="form",
+            name="category",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="forms",
+                to="forms.formcategory",
+                verbose_name="catégorie",
+            ),
+        ),
+        migrations.DeleteModel(
+            name="ContactTypeForAdminSite",
+        ),
+        migrations.AddField(
+            model_name="field",
+            name="allowed_file_types",
+            field=models.CharField(
+                blank=True,
+                help_text='Ex: "pdf, jpg, png"',
+                max_length=255,
+                verbose_name="Restreindre plus finement les extensions autorisées",
+            ),
+        ),
     ]
