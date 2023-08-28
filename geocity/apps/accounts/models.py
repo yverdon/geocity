@@ -295,7 +295,7 @@ class AdministrativeEntity(models.Model):
     )
     is_single_form_submissions = models.BooleanField(
         _("Autoriser uniquement un objet par demande"),
-        default=False,
+        default=True,
         help_text=_("Nécessaire pour l'utilisation du système de paiement en ligne"),
     )
 
