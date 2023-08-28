@@ -64,4 +64,22 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RunPython(generate_uuids),
+        migrations.AlterField(
+            model_name="form",
+            name="quick_access_slug",
+            field=models.UUIDField(
+                blank=True,
+                default=uuid.uuid4,
+                help_text="Permettant d'accéder directement au formulaire par l'url: https://geocity.ch/?form=demande-macaron",
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        re.compile("^[-a-zA-Z0-9_]+\\Z"),
+                        "Enter a valid “slug” consisting of letters, numbers, underscores or hyphens.",
+                        "invalid",
+                    )
+                ],
+                verbose_name="URL courte",
+            ),
+        ),
     ]

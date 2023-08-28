@@ -188,7 +188,7 @@
           {% for validation in validations %}
             <div class="container">
               <dl>
-                <dt> {{ validation.department.group.name }} </dt>
+                <dt> {{ validation.department }} </dt>
                 <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
                   {% if 'Approuvé' in validation.get_validation_status_display %}
                     <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
