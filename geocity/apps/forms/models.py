@@ -520,7 +520,7 @@ class Form(models.Model):
         related_name="map_widget_configuration_form",
         verbose_name=_("Configuration de la carte avancée"),
     )
-    quick_access_slug = models.TextField(
+    quick_access_slug = models.UUIDField(
         blank=True,
         default=uuid.uuid4,
         unique=True,

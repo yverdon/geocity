@@ -16,7 +16,7 @@ def generate_uuids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0023_form_slug_and_category_field_file_types"),
+        ("forms", "0023_category_field_file_types"),
         ("submissions", "0022_contactform_and_more"),
     ]
 
@@ -45,14 +45,14 @@ class Migration(migrations.Migration):
             },
             bases=("submissions.contacttype",),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name="form",
             name="quick_access_slug",
-            field=models.TextField(
+            field=models.UUIDField(
                 blank=True,
                 default=uuid.uuid4,
                 help_text="Permettant d'accéder directement au formulaire par l'url: https://geocity.ch/?form=demande-macaron",
-                unique=True,
+                null=True,
                 validators=[
                     django.core.validators.RegexValidator(
                         re.compile("^[-a-zA-Z0-9_]+\\Z"),
@@ -63,4 +63,5 @@ class Migration(migrations.Migration):
                 verbose_name="URL courte",
             ),
         ),
+        migrations.RunPython(generate_uuids),
     ]
