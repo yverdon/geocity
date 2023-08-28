@@ -19,4 +19,14 @@ class Migration(migrations.Migration):
                 verbose_name="Autoriser uniquement un objet par demande",
             ),
         ),
+        migrations.AlterField(
+            model_name="permitdepartment",
+            name="shortname",
+            field=models.CharField(
+                blank=True,
+                help_text="Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 100 caractères)",
+                max_length=100,
+                verbose_name="nom court",
+            ),
+        ),
     ]

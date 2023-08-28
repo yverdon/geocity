@@ -316,4 +316,24 @@ class Migration(migrations.Migration):
                 verbose_name="Dynamique",
             ),
         ),
+        migrations.RenameField(
+            model_name="historicalpostfinancetransaction",
+            old_name="merchant_reference",
+            new_name="transaction_id",
+        ),
+        migrations.RenameField(
+            model_name="postfinancetransaction",
+            old_name="merchant_reference",
+            new_name="transaction_id",
+        ),
+        migrations.AlterField(
+            model_name="historicalpostfinancetransaction",
+            name="transaction_id",
+            field=models.CharField(max_length=255, verbose_name="ID transaction"),
+        ),
+        migrations.AlterField(
+            model_name="postfinancetransaction",
+            name="transaction_id",
+            field=models.CharField(max_length=255, verbose_name="ID transaction"),
+        ),
     ]
