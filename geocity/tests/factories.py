@@ -79,6 +79,7 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker("company")
     geom = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    is_single_form_submissions = False
 
     class Meta:
         model = accounts_models.AdministrativeEntity
