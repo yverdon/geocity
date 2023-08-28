@@ -79,6 +79,7 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker("company")
     geom = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    is_single_form_submissions = False
 
     class Meta:
         model = accounts_models.AdministrativeEntity
@@ -416,7 +417,15 @@ class ContactTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = submissions_models.ContactType
 
+    name = factory.Faker("word")
+
+
+class ContactFormFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = submissions_models.ContactForm
+
     form_category = factory.SubFactory(FormCategoryFactory)
+    type = factory.SubFactory(ContactTypeFactory)
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -441,7 +450,7 @@ class PostFinanceTransactionFactory(factory.django.DjangoModelFactory):
 
     amount = factory.Faker("pyint", min_value=0, max_value=1000)
     currency = factory.Faker("name")
-    merchant_reference = factory.Faker("name")
+    transaction_id = factory.Faker("name")
     authorization_timeout_on = factory.Faker("date_time", tzinfo=timezone.utc)
     payment_url = factory.Faker("uri")
 

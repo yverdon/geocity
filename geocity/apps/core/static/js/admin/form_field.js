@@ -26,6 +26,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const requiredClass =  'required';
     const inputType = document.getElementById('id_input_type').value;
 
+    const allowedFileElement = document.getElementById('id_allowed_file_types');
+    const allowedFileRowElement = allowedFileElement.closest('.form-group');
+    const allowedFileLabelElement = allowedFileRowElement.querySelector('label');
+    const isAllowedFileVisible = inputType === 'file';
+
     const choicesElement = document.getElementById('id_choices');
     const choicesRowElement = choicesElement.closest('.form-group');
     const choicesLabelElement = choicesRowElement.querySelector('label');
@@ -63,6 +68,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const isFileVisible = inputType === 'file_download';
 
+    allowedFileElement.removeAttribute('required');
+    allowedFileRowElement.classList.add(hiddenClass);
+    allowedFileLabelElement.classList.remove(requiredClass);
+
     choicesElement.removeAttribute('required');
     choicesRowElement.classList.add(hiddenClass);
     choicesLabelElement.classList.remove(requiredClass);
@@ -96,6 +105,11 @@ document.addEventListener('DOMContentLoaded', function() {
       choicesElement.setAttribute('required', '');
       choicesRowElement.classList.remove(hiddenClass);
       choicesLabelElement.classList.add(requiredClass);
+    }
+    else if (isAllowedFileVisible) {
+      allowedFileElement.setAttribute('required', '');
+      allowedFileRowElement.classList.remove(hiddenClass);
+      allowedFileLabelElement.classList.add(requiredClass);
     }
     else if (isRegexPatternVisible) {
       regexElement.setAttribute('required', '');

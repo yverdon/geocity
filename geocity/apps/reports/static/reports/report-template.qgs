@@ -3236,7 +3236,7 @@ def my_form_open(dialog, layer, feature):
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem uuid="{3ea48789-0f70-4778-949d-edaca503a91d}" zValue="4" outlineWidthM="0.3,mm" size="167.156,6.59773,mm" blendMode="0" groupUuid="" opacity="1" background="false" valign="32" referencePoint="0" marginY="0" positionLock="false" excludeFromExports="0" labelText="Informations dépourvues de foi publiqu, sources: Swisstopo, État de Vaud, OSM" type="65641" htmlState="0" positionOnPage="125.845,197.881,mm" itemRotation="0" marginX="0" halign="2" position="125.845,197.881,mm" visibility="1" frameJoinStyle="miter" templateUuid="{3ea48789-0f70-4778-949d-edaca503a91d}" id="" frame="false">
+      <LayoutItem uuid="{3ea48789-0f70-4778-949d-edaca503a91d}" zValue="4" outlineWidthM="0.3,mm" size="167.156,6.59773,mm" blendMode="0" groupUuid="" opacity="1" background="false" valign="32" referencePoint="0" marginY="0" positionLock="false" excludeFromExports="0" labelText="Informations dépourvues de foi publique, sources: Swisstopo, État de Vaud, OSM" type="65641" htmlState="0" positionOnPage="125.845,197.881,mm" itemRotation="0" marginX="0" halign="2" position="125.845,197.881,mm" visibility="1" frameJoinStyle="miter" templateUuid="{3ea48789-0f70-4778-949d-edaca503a91d}" id="" frame="false">
         <FrameColor red="0" alpha="255" green="0" blue="0"/>
         <BackgroundColor red="255" alpha="255" green="255" blue="255"/>
         <LayoutObject>
@@ -3479,7 +3479,7 @@ def my_form_open(dialog, layer, feature):
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem uuid="{6edb94cc-c898-4787-9f71-0c05f4ca1d15}" zValue="4" outlineWidthM="0.3,mm" size="167.156,6.59773,mm" blendMode="0" groupUuid="" opacity="1" background="false" valign="32" referencePoint="0" marginY="0" positionLock="false" excludeFromExports="0" labelText="Informations dépourvues de foi publiqu, sources: Swisstopo, État de Vaud, OSM" type="65641" htmlState="0" positionOnPage="125.845,197.881,mm" itemRotation="0" marginX="0" halign="2" position="125.845,197.881,mm" visibility="1" frameJoinStyle="miter" templateUuid="{6edb94cc-c898-4787-9f71-0c05f4ca1d15}" id="" frame="false">
+      <LayoutItem uuid="{6edb94cc-c898-4787-9f71-0c05f4ca1d15}" zValue="4" outlineWidthM="0.3,mm" size="167.156,6.59773,mm" blendMode="0" groupUuid="" opacity="1" background="false" valign="32" referencePoint="0" marginY="0" positionLock="false" excludeFromExports="0" labelText="Informations dépourvues de foi publique, sources: Swisstopo, État de Vaud, OSM" type="65641" htmlState="0" positionOnPage="125.845,197.881,mm" itemRotation="0" marginX="0" halign="2" position="125.845,197.881,mm" visibility="1" frameJoinStyle="miter" templateUuid="{6edb94cc-c898-4787-9f71-0c05f4ca1d15}" id="" frame="false">
         <FrameColor red="0" alpha="255" green="0" blue="0"/>
         <BackgroundColor red="255" alpha="255" green="255" blue="255"/>
         <LayoutObject>

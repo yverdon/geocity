@@ -1,4 +1,6 @@
 import io
+import mimetypes
+import string
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import groupby
@@ -627,19 +629,44 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
     def get_file_field_kwargs(self, field, default_kwargs):
         file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
-        default_help_text = (
-            "Le fichier doit faire moins de "
-            + str(file_size_mb)
-            + " Megatoctet. Les extensions autorisées : "
-            + config.ALLOWED_FILE_EXTENSIONS
+        default_help_text = f"Le fichier doit faire moins de {str(file_size_mb)} Mo"
+        dynamic_help_text = ""
+        global_allowed_file_extensions_list = (
+            config.ALLOWED_FILE_EXTENSIONS.translate(
+                str.maketrans("", "", string.whitespace)
+            )
+            .lower()
+            .split(",")
+        )
+        field_allowed_file_extensions_list = (
+            field.allowed_file_types.translate(str.maketrans("", "", string.whitespace))
+            .lower()
+            .split(",")
+        )
+        if field.allowed_file_types:
+            extensions_intersect = list(
+                set(global_allowed_file_extensions_list).intersection(
+                    set(field_allowed_file_extensions_list)
+                )
+            )
+            dynamic_help_text = (
+                f"{default_help_text}, format(s): {field.allowed_file_types}"
+            )
+        else:
+            extensions_intersect = global_allowed_file_extensions_list
+            dynamic_help_text = (
+                f"{default_help_text}, format(s): {config.ALLOWED_FILE_EXTENSIONS}"
+            )
+
+        allowed_mimetypes_str = ", ".join(
+            [mimetypes.types_map[f".{item}"] for item in extensions_intersect]
         )
 
         return {
             **default_kwargs,
             "validators": [services.validate_file],
-            "help_text": field.help_text
-            if field.help_text != ""
-            else default_help_text,
+            "help_text": dynamic_help_text,
+            "widget": forms.ClearableFileInput(attrs={"accept": allowed_mimetypes_str}),
         }
 
     def get_list_single_field_kwargs(self, field, default_kwargs):
@@ -694,7 +721,6 @@ class AppendicesForm(FieldsForm):
     def get_field_kwargs(self, prop):
         return {
             **super().get_field_kwargs(prop),
-            **{"widget": forms.ClearableFileInput},
         }
 
 
@@ -706,8 +732,8 @@ class SubmissionCreditorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        required_contact_types = set(
-            models.ContactType.objects.filter(
+        required_contact_forms = set(
+            models.ContactForm.objects.filter(
                 form_category__in=self.instance.get_form_categories()
             ).values_list("type", flat=True)
         )
@@ -715,7 +741,7 @@ class SubmissionCreditorForm(forms.ModelForm):
         choices = [
             (creditor_type, label)
             for creditor_type, label in self.fields["creditor_type"].choices
-            if creditor_type in required_contact_types
+            if creditor_type in required_contact_forms
         ]
         choices.insert(0, ("", "----"))
         self.fields["creditor_type"].choices = choices
@@ -828,15 +854,14 @@ class SubmissionContactForm(forms.ModelForm):
         ],
         widget=forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789 (TVA)"}),
     )
+    contact_form = forms.ModelChoiceField(
+        queryset=models.ContactType.objects.all(),
+        empty_label="Sélectionner un contact...",
+    )
 
     class Meta:
         model = models.SubmissionContact
-        fields = ["contact_type"]
-        widgets = {
-            "contact_type": forms.Select(
-                attrs={"readonly": True, "hidden": True, "class": "hide-arrow"}
-            ),
-        }
+        fields = ["contact_form"]
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -850,7 +875,7 @@ class SubmissionContactForm(forms.ModelForm):
                         field: getattr(instance.contact, field)
                         for field in self.contact_fields
                     },
-                    **{"actor_type": instance.contact_type},
+                    **{"actor_form": instance.contact_form},
                 },
             }
 
@@ -1902,22 +1927,31 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     Return PermitActorFormSet with initial values set
     """
 
-    # Queryset with all configured contact types for this submission
-    configured_contact_types = submission.get_contacts_types()
+    # Queryset with all configured contact forms for this submission
+    configured_contact_forms = submission.get_contacts_forms()
 
-    # Get contact types that are not filled yet for the submission
-    missing_contact_types = submission.filter_only_missing_contact_types(
-        configured_contact_types
+    has_any_dynamic_contacts_forms = submission.has_any_dynamic_contacts_forms()
+
+    # Get contact forms that are not filled yet for the submission
+    missing_contact_forms = submission.filter_only_missing_contact_forms(
+        configured_contact_forms
     )
 
     contact_initial_forms = [
-        {"contact_type": contact_type[0]} for contact_type in missing_contact_types
+        {"contact_form": contact_form[0]} for contact_form in missing_contact_forms
     ]
+
+    nb_extra = 10
+
+    if has_any_dynamic_contacts_forms:
+        extra = len(contact_initial_forms) + nb_extra
+    else:
+        extra = len(contact_initial_forms)
 
     SubmissionContactFormset = modelformset_factory(
         models.SubmissionContact,
         form=SubmissionContactForm,
-        extra=len(contact_initial_forms),
+        extra=extra,
     )
 
     formset = SubmissionContactFormset(
@@ -1928,17 +1962,34 @@ def get_submission_contacts_formset_initiated(submission, data=None):
         data=data,
     )
 
-    mandatory_contact_types = {
-        contact_type
-        for contact_type, is_mandatory in configured_contact_types
+    mandatory_contact_forms = {
+        contact_form
+        for contact_form, is_mandatory, is_dynamic in configured_contact_forms
         if is_mandatory
     }
 
     for form in formset:
         form.empty_permitted = (
-            "contact_type" not in form.initial
-            or form.initial["contact_type"] not in mandatory_contact_types
+            "contact_form" not in form.initial
+            or form.initial["contact_form"] not in mandatory_contact_forms
         )
+        form.fields["contact_form"].widget.attrs["readonly"] = True
+        form.fields["contact_form"].widget.attrs["hidden"] = True
+
+    if has_any_dynamic_contacts_forms:
+        for extra in range(nb_extra):
+            extra += 1
+            new_form = formset[len(formset) - extra]
+            dynamic_types = configured_contact_forms.filter(is_dynamic=True).values(
+                "type"
+            )
+            types_filtered = new_form.fields["contact_form"].queryset.filter(
+                id__in=dynamic_types
+            )
+            new_form.fields["contact_form"].queryset = types_filtered
+            new_form.fields["contact_form"].widget.attrs["class"] = "extra-form"
+            new_form.fields["contact_form"].widget.attrs["readonly"] = False
+            new_form.fields["contact_form"].widget.attrs["hidden"] = False
 
     return formset
 

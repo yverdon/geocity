@@ -20,7 +20,6 @@ from polymorphic.models import PolymorphicModel
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
 from geocity.apps.api.services import convert_string_to_api_key
-from geocity.apps.submissions.contact_type_choices import *
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -432,6 +431,10 @@ class SectionParagraph(Section):
     class Meta:
         verbose_name = _("Paragraphe libre")
 
+    def _format_date_filter(self, date):
+        # Custom filter to format YYYY-MM-DD API date to DD.MM.YYYY
+        return datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")
+
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
         now = datetime.now()
@@ -449,6 +452,7 @@ class SectionParagraph(Section):
             inner_context["transaction_data"] = base_context["transaction_data"]
 
         env = SandboxedEnvironment()
+        env.filters["format_date"] = self._format_date_filter
         rendered_html = env.from_string(self.content).render(inner_context)
         return mark_safe(rendered_html)
 
@@ -696,40 +700,40 @@ class SectionCreditor(Section):
         verbose_name = _("Adresse de facturation")
 
 
-CONTACT_TYPE_AUTHOR = 999
-CONTACT_TYPE_CHOICES_RECIPIENT = CONTACT_TYPE_CHOICES + (
-    (CONTACT_TYPE_AUTHOR, _("Auteur")),
-)
-
-
 class SectionRecipient(Section):
+    from geocity.apps.submissions.models import ContactType
+
     padding_top = padding_top_field(default=40)
     is_recommended = models.BooleanField(
         _("Recommandée"),
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-    first_recipient = models.PositiveSmallIntegerField(
-        _("Destinataire principal"),
-        choices=CONTACT_TYPE_CHOICES_RECIPIENT,
-        default=CONTACT_TYPE_REQUESTOR,
+    first_recipient = models.ForeignKey(
+        ContactType,
+        on_delete=models.DO_NOTHING,
+        verbose_name=_("Destinataire principal"),
         help_text=_(
             'Utilisé par défaut. Si celui-ci n\'existe pas, prend le "destinataire secondaire"'
         ),
+        related_name="first_recipient",
     )
-    second_recipient = models.PositiveSmallIntegerField(
-        _("Destinataire secondaire"),
-        choices=CONTACT_TYPE_CHOICES_RECIPIENT,
-        default=CONTACT_TYPE_AUTHOR,
+    second_recipient = models.ForeignKey(
+        ContactType,
+        on_delete=models.DO_NOTHING,
+        verbose_name=_("Destinataire secondaire"),
         help_text=_(
             'Utilisé lorsque le "destinataire principal" n\'est pas présent dans la liste des contacts saisis'
         ),
+        related_name="second_recipient",
     )
 
     class Meta:
         verbose_name = _("Destinataire")
 
     def _get_recipient(self, request, base_context):
+        from geocity.apps.submissions.models import ContactType
+
         properties = base_context["request_data"]["properties"]
         contacts = properties["contacts"]
 
@@ -738,15 +742,21 @@ class SectionRecipient(Section):
         # Empty string, if nothing is found, it won't return anything from json and will let empty the section instead of crashing
         selected_recipient = ""
 
+        author = ContactType.objects.get(name="Auteur")
+
         for recipient in recipients:
-            if recipient == 999 and "author" in properties:
+            if recipient == author and "author" in properties:
                 selected_recipient = properties["author"]
-            else:
-                contact = convert_string_to_api_key(
-                    dict(CONTACT_TYPE_CHOICES_RECIPIENT)[recipient]
-                )
-                if contact in contacts:
-                    selected_recipient = contacts[contact]
+            elif contacts:
+                for contact in contacts.values():
+                    for contact_prop in contact:
+                        if (
+                            "contact_form_display" in contact_prop
+                            and contact_prop["contact_form_display"] == recipient.name
+                        ):
+                            selected_recipient = contacts[
+                                convert_string_to_api_key(recipient.name)
+                            ][0]
 
         return selected_recipient
 

@@ -119,9 +119,9 @@ class PermitDepartment(models.Model):
     description = models.CharField(_("description"), max_length=100, default="Service")
     shortname = models.CharField(
         _("nom court"),
-        max_length=32,
+        max_length=100,
         help_text=_(
-            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
+            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 100 caractères)"
         ),
         blank=True,
     )
@@ -202,7 +202,7 @@ class PermitDepartment(models.Model):
         )
 
     def __str__(self):
-        return str(self.group)
+        return self.shortname if self.shortname else self.group.name
 
 
 class AdministrativeEntityQuerySet(models.QuerySet):
@@ -295,7 +295,7 @@ class AdministrativeEntity(models.Model):
     )
     is_single_form_submissions = models.BooleanField(
         _("Autoriser uniquement un objet par demande"),
-        default=False,
+        default=True,
         help_text=_("Nécessaire pour l'utilisation du système de paiement en ligne"),
     )
 

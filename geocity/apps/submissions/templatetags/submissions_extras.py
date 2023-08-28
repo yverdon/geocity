@@ -11,7 +11,6 @@ from django.utils.translation import gettext as _
 
 from geocity.apps.accounts.models import PermitDepartment
 from geocity.apps.submissions import forms, models, permissions
-from geocity.apps.submissions.contact_type_choices import *
 
 register = template.Library()
 
@@ -34,19 +33,17 @@ def basename(value):
 
 
 def get_contacts_summary(submission):
-    contact_types = dict(CONTACT_TYPE_CHOICES)
-
     contacts = [
         (
-            contact_types.get(contact["contact_type"].value(), ""),
+            models.ContactType.objects.get(id=contact["contact_form"].value()).name,
             [
                 (field.label, field.value())
                 for field in contact
-                if field.name not in {"id", "contact_type"}
+                if field.name not in {"id", "contact_form"}
             ],
         )
         for contact in forms.get_submission_contacts_formset_initiated(submission)
-        if contact["id"].value()
+        if contact["contact_form"].value()
     ]
 
     return contacts
@@ -78,7 +75,7 @@ def submission_summary(context, submission):
     creditor = ""
     if requires_payment:
         if submission.creditor_type is not None:
-            creditor = submission.get_creditor_type_display()
+            creditor = submission.creditor_type.name
         elif submission.author and submission.creditor_type is None:
             creditor = (
                 _("Auteur de la demande, ")

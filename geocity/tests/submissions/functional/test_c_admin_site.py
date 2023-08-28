@@ -10,7 +10,7 @@ from geocity.apps.submissions import models
 from geocity.tests import factories
 from geocity.tests.utils import LoggedInIntegratorMixin, get_parser
 
-# TODO: Write update/delete/create tests for [AdministrativeEntity, FormCategory, Form, Form, Field, ContactType, ContactType, SubmissionAmendField]
+# TODO: Write update/delete/create tests for [AdministrativeEntity, FormCategory, Form, Form, Field, ContactForm, SubmissionAmendField]
 
 # "$ ./manage.py show_urls" to show admin routes
 class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
@@ -45,13 +45,13 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.fields = factories.FieldFactory.create_batch(3)
         self.integrator_field = factories.FieldFactory(integrator=self.group)
 
-        self.contact_type = factories.ContactTypeFactory.create_batch(3)
-        self.integrator_contact_type = factories.ContactTypeFactory(
+        self.contact_form = factories.ContactFormFactory.create_batch(3)
+        self.integrator_contact_form = factories.ContactFormFactory(
             integrator=self.group
         )
 
-        self.contact_type = factories.ContactTypeFactory.create_batch(3)
-        self.integrator_contact_type = factories.ContactTypeFactory(
+        self.contact_form = factories.ContactFormFactory.create_batch(3)
+        self.integrator_contact_form = factories.ContactFormFactory(
             integrator=self.group
         )
 
@@ -245,23 +245,23 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             5,
         )
 
-    def test_integrator_can_only_see_own_contacttype(self):
+    def test_integrator_can_only_see_own_contactform(self):
         response = self.client.get(
-            reverse("admin:forms_contacttypeforadminsite_changelist")
+            reverse("admin:forms_contactformforadminsite_changelist")
         )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-sortable_str")), 2)
 
-    def test_admin_can_see_all_contacttype(self):
+    def test_admin_can_see_all_contactform(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
         response = self.client.get(
-            reverse("admin:forms_contacttypeforadminsite_changelist")
+            reverse("admin:forms_contactformforadminsite_changelist")
         )
         parser = get_parser(response.content)
 

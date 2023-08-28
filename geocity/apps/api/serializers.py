@@ -1,6 +1,6 @@
 import json
 from collections import OrderedDict
-from datetime import timedelta
+from datetime import timedelta, timezone
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Max, Min
@@ -305,7 +305,7 @@ class PostFinanceTransactionPrintSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostFinanceTransaction
         fields = (
-            "merchant_reference",
+            "transaction_id",
             "amount",
             "currency",
             "creation_date",
@@ -392,15 +392,23 @@ class SubmissionContactSerializer(serializers.Serializer):
         rep = {}
         for submission_contact in value.submission_contacts.select_related("contact"):
             contact_object = {
-                "contact_type_display": submission_contact.get_contact_type_display()
+                "contact_form_display": submission_contact.contact_form.name
             }
             for field in submission_contact.contact._meta.fields:
                 contact_object[field.name] = getattr(
                     submission_contact.contact, field.name
                 )
-            rep[
-                convert_string_to_api_key(submission_contact.get_contact_type_display())
-            ] = contact_object
+            if (
+                not convert_string_to_api_key(submission_contact.contact_form.name)
+                in rep
+            ):
+                rep[
+                    convert_string_to_api_key(submission_contact.contact_form.name)
+                ] = list()
+
+            rep[convert_string_to_api_key(submission_contact.contact_form.name)].append(
+                contact_object
+            )
 
         return rep
 
@@ -548,18 +556,21 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
                 )
 
+            local_tz = timezone(timedelta(hours=2))
             geotime_aggregated = {}
             geotime_aggregated["start_date"] = (
-                aggregated_geotime_qs["submission_geo_time_start_date"].strftime(
-                    "%d.%m.%Y %H:%M"
-                )
+                aggregated_geotime_qs["submission_geo_time_start_date"]
+                .replace(tzinfo=timezone.utc)
+                .astimezone(local_tz)
+                .strftime("%d.%m.%Y %H:%M")
                 if aggregated_geotime_qs["submission_geo_time_start_date"]
                 else ""
             )
             geotime_aggregated["end_date"] = (
-                aggregated_geotime_qs["submission_geo_time_end_date"].strftime(
-                    "%d.%m.%Y %H:%M"
-                )
+                aggregated_geotime_qs["submission_geo_time_end_date"]
+                .replace(tzinfo=timezone.utc)
+                .astimezone(local_tz)
+                .strftime("%d.%m.%Y %H:%M")
                 if aggregated_geotime_qs["submission_geo_time_end_date"]
                 else ""
             )
@@ -585,7 +596,7 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
 # Override of real ListSerializer from django-rest-framework-gis
 # If you want to add a new structure with dynamic values, just add it to OrderedDict and give him a new function like "super().prefix_to_representation(data)"
 # Then in SubmissionPrintSerializer write this class like the existant "to_representation"
-class SubmissionPrintListSerialier(gis_serializers.ListSerializer):
+class SubmissionPrintListSerializer(gis_serializers.ListSerializer):
     @property
     def data(self):
         return super(gis_serializers.ListSerializer, self).data
@@ -629,7 +640,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def get_creditor_type(self, obj):
         if obj.creditor_type is not None:
-            creditor = obj.get_creditor_type_display()
+            creditor = obj.creditor_type.name
         elif obj.author:
             creditor = (
                 _("Auteur de la demande, ")
@@ -678,7 +689,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
         meta = getattr(cls, "Meta", None)
         list_serializer_class = getattr(
-            meta, "list_serializer_class", SubmissionPrintListSerialier
+            meta, "list_serializer_class", SubmissionPrintListSerializer
         )
         return list_serializer_class(*args, **list_kwargs)
 

@@ -67,7 +67,7 @@
     </div>
     {% include "registration/_social_login.html" %}
   {% elif wizard.steps.current == 'token' %}
-    <p>{% translate "Veuillez entrer votre jeton (code à usage unique, code SMS)" %}</p>
+    <p>{% translate "Veuillez entrer votre jeton (code à usage unique), qui se trouve dans votre application d'authentification (Authenticator, Duo, LastPass, etc.) ou transmis par SMS." %}</p>
     <form method="post" action="">
       {% csrf_token %}
       {% include "two_factor/_wizard_forms.html" %}

@@ -145,7 +145,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "constance",
-    "constance.backends.database",
     "simple_history",
     "corsheaders",
     "django_filters",
@@ -306,7 +305,7 @@ CONSTANCE_CONFIG = {
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
         "pdf, jpg, png",
-        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et PDF sont supportés",
+        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et PDF sont supportés et doivent exister en tant que mimetypes python https://docs.python.org/3/library/mimetypes.html",
         str,
     ),
     "MAX_FILE_UPLOAD_SIZE": (

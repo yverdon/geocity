@@ -317,6 +317,7 @@ class DepartmentAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitDepartment
         fields = [
+            "shortname",
             "description",
             "administrative_entity",
             "is_validator",
