@@ -83,9 +83,11 @@ def get_selectable_categories(submission=None, category_tags=None):
     ).distinct()
 
 
-def get_selectable_form(user, quick_access_slug):
-    forms = models.Form.objects.filter(quick_access_slug=quick_access_slug)
-    if not user.has_perm("submissions.view_private_form"):
+def get_selectable_form(user, quick_access_slug, is_anonymous):
+    forms = models.Form.objects.filter(
+        quick_access_slug=quick_access_slug, is_anonymous=is_anonymous
+    )
+    if not is_anonymous and not user.has_perm("submissions.view_private_form"):
         forms = forms.filter(is_public=True)
     return forms.first()
 

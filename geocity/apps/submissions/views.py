@@ -1021,27 +1021,7 @@ def anonymous_submission_sent(request):
     )
 
 
-def anonymous_submission(request):
-    # Logout silently any real user
-    if request.user.is_authenticated and not request.user.userprofile.is_temporary:
-        logout(request)
-
-    # Accept only non-logged users, or temporary users
-    if not request.user.is_anonymous and not request.user.userprofile.is_temporary:
-        raise Http404
-
-    # Validate tags
-    entityfilter = request.GET.getlist("entityfilter")
-    typefilter = request.GET.getlist("typefilter")
-    if not entityfilter or not typefilter:
-        raise Http404
-
-    # Validate entity
-    entities_by_tag = AdministrativeEntity.objects.public().filter_by_tags(entityfilter)
-    if len(entities_by_tag) != 1:
-        raise Http404
-    entity = entities_by_tag[0]
-
+def validate_captcha_and_render_page(request, entity):
     # Validate captcha and temporary user connection
     captcha_refresh_url = (
         "/" + settings.PREFIX_URL + "captcha/refresh/"
@@ -1074,28 +1054,12 @@ def anonymous_submission(request):
                 },
             )
 
-    # Validate type
-    form_categories = (
-        models.FormCategory.objects.filter(forms__is_anonymous=True)
-        .filter_by_tags(typefilter)
-        .distinct()
-        .values_list("pk", flat=True)
-    )
+    return False
 
-    if len(form_categories) != 1:
-        raise Http404
-    form_category = form_categories[0]
 
-    # Validate available work objects types
-    anonymous_forms = models.Form.anonymous_objects.filter(
-        administrative_entities=entity,
-        category=form_category,
-    )
-
+def manage_steps_anonymous_form(form_category, entity, request, anonymous_forms):
     if not anonymous_forms:
         raise Http404
-
-    # Submission page
 
     # Never create a second submission for the same temp_author
     submission, _ = models.Submission.objects.get_or_create(
@@ -1120,6 +1084,99 @@ def anonymous_submission(request):
             return redirect(step.url)
 
 
+def get_anonymous_submission_by_tags(request, entityfilter, typefilter):
+    # Validate entity
+    entities = AdministrativeEntity.objects.public().filter_by_tags(entityfilter)
+    if len(entities) != 1:
+        raise Http404
+    entity = entities[0]
+
+    render_page = validate_captcha_and_render_page(request, entity)
+    if render_page:
+        return render_page
+
+    # Validate type
+    form_categories = (
+        models.FormCategory.objects.filter(forms__is_anonymous=True)
+        .filter_by_tags(typefilter)
+        .distinct()
+        .values_list("pk", flat=True)
+    )
+
+    if len(form_categories) != 1:
+        raise Http404
+    form_category = form_categories[0]
+
+    # Validate available work objects types
+    anonymous_forms = models.Form.anonymous_objects.filter(
+        administrative_entities=entity,
+        category=form_category,
+    )
+
+    return manage_steps_anonymous_form(form_category, entity, request, anonymous_forms)
+
+
+def get_anonymous_submission_by_slug(request, quick_access_slug):
+    anonymous_selected_forms = get_selectable_form(
+        user=request.user, quick_access_slug=quick_access_slug, is_anonymous=True
+    )
+
+    if not anonymous_selected_forms:
+        raise Http404
+
+    if anonymous_selected_forms:
+        entities = anonymous_selected_forms.administrative_entities.all()
+    else:
+        raise Http404
+
+    # Validate entity
+    if len(entities) != 1:
+        raise Http404
+    entity = entities[0]
+
+    render_page = validate_captcha_and_render_page(request, entity)
+    if render_page:
+        return render_page
+
+    # Validate type
+    form_categories = models.FormCategory.objects.filter(
+        forms__is_anonymous=True, forms__id=anonymous_selected_forms.pk
+    ).values_list("pk", flat=True)
+
+    if len(form_categories) != 1:
+        raise Http404
+    form_category = form_categories[0]
+
+    anonymous_forms = models.Form.anonymous_objects.filter(
+        id=anonymous_selected_forms.pk
+    )
+
+    return manage_steps_anonymous_form(form_category, entity, request, anonymous_forms)
+
+
+def anonymous_submission(request):
+    # Logout silently any real user
+    if request.user.is_authenticated and not request.user.userprofile.is_temporary:
+        logout(request)
+
+    # Accept only non-logged users, or temporary users
+    if not request.user.is_anonymous and not request.user.userprofile.is_temporary:
+        raise Http404
+
+    # Validate tags
+    entityfilter = request.GET.getlist("entityfilter")
+    typefilter = request.GET.getlist("typefilter")
+    quick_access_slug = request.GET.get("form")
+
+    # Selects the way to retrieve the anonymous submission to prevent code duplication
+    if entityfilter and typefilter:
+        return get_anonymous_submission_by_tags(request, entityfilter, typefilter)
+    elif quick_access_slug:
+        return get_anonymous_submission_by_slug(request, quick_access_slug)
+    else:
+        raise Http404
+
+
 @redirect_bad_status_to_detail
 @login_required
 @user_passes_test(has_profile)
@@ -1137,7 +1194,7 @@ def submission_select_administrative_entity(request, submission_id=None):
     quick_access_slug = request.GET.get("form")
     if not submission and quick_access_slug:
         form = get_selectable_form(
-            user=request.user, quick_access_slug=quick_access_slug
+            user=request.user, quick_access_slug=quick_access_slug, is_anonymous=False
         )
 
         if form:
