@@ -209,7 +209,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     ]
     list_display = [
         "sortable_str",
-        "api_name",
+        "custom_api_name",
         form_administrative_entities,
         "quick_access_slug",
         "can_always_update",
@@ -332,10 +332,26 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     )
 
     def sortable_str(self, obj):
-        return str(obj) if str(obj) != "" else str(obj.pk)
+        if str(obj) != "":
+            sortable_str = str(obj)[:25] + "..." if len(str(obj)) > 25 else str(obj)
+            tooltip_text = str(obj)
+        else:
+            sortable_str = str(obj.pk)
+            tooltip_text = None
+        return format_html('<span title="{}">{}</span>', tooltip_text, sortable_str)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Formulaire")
+
+    def custom_api_name(self, obj):
+        custom_api_name = (
+            obj.api_name[:25] + "..." if len(obj.api_name) > 25 else obj.api_name
+        )
+        tooltip_text = obj.api_name
+        return format_html('<span title="{}">{}</span>', tooltip_text, custom_api_name)
+
+    custom_api_name.admin_order_field = "api_name"
+    custom_api_name.short_description = _("Nom dans l'API")
 
     def max_submissions_nb_submissions(self, obj):
         nb_submissions_str = _("demandes actuellement")
@@ -593,7 +609,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = FieldAdminForm
     list_display = [
         "sortable_str",
-        "api_name",
+        "custom_api_name",
         "is_mandatory",
         "is_public_when_permitrequest_is_public",
         "input_type",
@@ -609,10 +625,24 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     ]
 
     def sortable_str(self, obj):
-        return obj.__str__()
+        sortable_str = (
+            obj.__str__()[:25] + "..." if len(obj.__str__()) > 25 else obj.__str__()
+        )
+        tooltip_text = obj.__str__()
+        return format_html('<span title="{}">{}</span>', tooltip_text, sortable_str)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Champ")
+
+    def custom_api_name(self, obj):
+        custom_api_name = (
+            obj.api_name[:25] + "..." if len(obj.api_name) > 25 else obj.api_name
+        )
+        tooltip_text = obj.api_name
+        return format_html('<span title="{}">{}</span>', tooltip_text, custom_api_name)
+
+    custom_api_name.admin_order_field = "api_name"
+    custom_api_name.short_description = _("Nom dans l'API")
 
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
