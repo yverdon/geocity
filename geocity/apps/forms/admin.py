@@ -209,6 +209,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     ]
     list_display = [
         "sortable_str",
+        "api_name",
         form_administrative_entities,
         "quick_access_slug",
         "can_always_update",
@@ -592,6 +593,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = FieldAdminForm
     list_display = [
         "sortable_str",
+        "api_name",
         "is_mandatory",
         "is_public_when_permitrequest_is_public",
         "input_type",
