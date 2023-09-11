@@ -26,6 +26,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from django_select2.forms import Select2MultipleWidget, Select2Widget
 
 from geocity.apps.accounts.models import (
     PUBLIC_TYPE_CHOICES,
@@ -675,13 +676,14 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         return {
             **default_kwargs,
             "choices": choices,
+            "widget": Select2Widget(),
         }
 
     def get_list_multiple_field_kwargs(self, field, default_kwargs):
         return {
             **default_kwargs,
             "choices": [(value, value) for value in field.choices.splitlines()],
-            "widget": forms.CheckboxSelectMultiple(),
+            "widget": Select2MultipleWidget(),
         }
 
     def save(self):

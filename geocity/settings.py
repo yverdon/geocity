@@ -165,7 +165,7 @@ INSTALLED_APPS = [
     "jazzmin",
     "jsoneditor",
     "django_jsonform",
-    'django_select2',
+    "django_select2",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
