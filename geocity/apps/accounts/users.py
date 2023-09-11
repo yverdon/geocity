@@ -51,10 +51,19 @@ def get_integrator_permissions():
     )
 
 
-def get_users_list_for_integrator_admin(user):
+def get_users_list_for_integrator_admin(user, remove_anonymous=False):
     # Integrators can only view users for restricted email domains.
     if user.is_superuser:
-        return User.objects.all()
+        qs = User.objects.all()
+
+        # Used to remove anonymous users from the list
+        anonymous_users = []
+        for user in qs:
+            if remove_anonymous and user.userprofile.is_anonymous:
+                anonymous_users.append(user.pk)
+        qs = qs.exclude(pk__in=anonymous_users)
+
+        return qs
 
     user_integrator_group = user.groups.get(permit_department__is_integrator_admin=True)
 
@@ -95,7 +104,9 @@ def get_users_list_for_integrator_admin(user):
     # Used to remove anonymous users from the list
     anonymous_users = []
     for user in qs:
-        if (
+        if remove_anonymous and user.userprofile.is_anonymous:
+            anonymous_users.append(user.pk)
+        elif (
             user.userprofile.is_anonymous
             and user.userprofile.administrative_entity.pk
             not in integrator_administrative_entities_list
