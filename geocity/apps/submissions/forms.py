@@ -676,14 +676,16 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         return {
             **default_kwargs,
             "choices": choices,
-            "widget": Select2Widget(),
+            "widget": Select2Widget() if len(choices) > 5 else forms.Select(),
         }
 
     def get_list_multiple_field_kwargs(self, field, default_kwargs):
         return {
             **default_kwargs,
             "choices": [(value, value) for value in field.choices.splitlines()],
-            "widget": Select2MultipleWidget(),
+            "widget": Select2MultipleWidget()
+            if len(field.choices) > 5
+            else forms.CheckboxSelectMultiple(),
         }
 
     def save(self):
