@@ -48,7 +48,7 @@ class BaseSubmissionFilterSet(django_filters.FilterSet):
     forms__administrative_entities = django_filters.filters.ModelChoiceFilter(
         queryset=_get_administrative_entities_queryset_for_current_user,
         label=_("Entité administrative"),
-        widget=Select2Widget(),
+        widget=Select2Widget(attrs={"class": "form-select"}),
     )
     forms__category = django_filters.filters.ModelChoiceFilter(
         queryset=_get_form_categories_queryset_for_current_user,
