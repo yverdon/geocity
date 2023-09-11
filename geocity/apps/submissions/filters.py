@@ -2,6 +2,7 @@ import django_filters
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from django.db.models import Max, Min
 from django.utils.translation import gettext_lazy as _
+from django_select2.forms import Select2Widget
 
 from geocity.apps.accounts.models import AdministrativeEntity
 from geocity.apps.forms.models import Form, FormCategory
@@ -47,14 +48,17 @@ class BaseSubmissionFilterSet(django_filters.FilterSet):
     forms__administrative_entities = django_filters.filters.ModelChoiceFilter(
         queryset=_get_administrative_entities_queryset_for_current_user,
         label=_("Entité administrative"),
+        widget=Select2Widget(),
     )
     forms__category = django_filters.filters.ModelChoiceFilter(
         queryset=_get_form_categories_queryset_for_current_user,
         label=_("Type de demande"),
+        widget=Select2Widget(),
     )
     forms = django_filters.filters.ModelChoiceFilter(
         queryset=_get_forms_queryset_for_current_user,
         label=_("Objet de la demande"),
+        widget=Select2Widget(),
     )
     created_at = django_filters.DateFilter(
         field_name="created_at",
@@ -119,6 +123,11 @@ class DepartmentSubmissionFilterSet(BaseSubmissionFilterSet):
     shortname = django_filters.filters.CharFilter(
         lookup_expr="icontains",
         label=_("Nom court"),
+    )
+    status = django_filters.filters.ChoiceFilter(
+        choices=models.Submission.STATUS_CHOICES,
+        label=_("État"),
+        widget=Select2Widget(),
     )
 
     class Meta:
