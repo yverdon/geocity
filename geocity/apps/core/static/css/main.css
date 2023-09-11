@@ -905,3 +905,10 @@ img.captcha {
   bottom: 0;
   margin-top: 20px;
 }
+
+
+/* Django-Select2 tuning */
+
+.select2-container {
+  width: 100% !important;
+}
