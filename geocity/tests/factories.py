@@ -57,6 +57,7 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
     password = "password"
     is_superuser = True
     is_staff = True
+    userprofile = factory.RelatedFactory(UserProfileFactory, "user")
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
