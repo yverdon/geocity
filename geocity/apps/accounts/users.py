@@ -58,10 +58,11 @@ def get_users_list_for_integrator_admin(user, remove_anonymous=False):
 
         # Used to remove anonymous users from the list
         anonymous_users = []
-        for user in qs:
-            if remove_anonymous and user.userprofile.is_anonymous:
-                anonymous_users.append(user.pk)
-        qs = qs.exclude(pk__in=anonymous_users)
+        if remove_anonymous:
+            for user in qs:
+                if user.userprofile.is_anonymous:
+                    anonymous_users.append(user.pk)
+            qs = qs.exclude(pk__in=anonymous_users)
 
         return qs
 
