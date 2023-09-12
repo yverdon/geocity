@@ -51,3 +51,4 @@ postfinancecheckout
 tzdata
 pandas
 Unidecode
+django-select2

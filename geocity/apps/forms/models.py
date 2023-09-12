@@ -527,7 +527,8 @@ class Form(models.Model):
         validators=[validate_slug],
         verbose_name=_("URL courte"),
         help_text=_(
-            "Permettant d'accéder directement au formulaire par l'url: https://geocity.ch/?form=demande-macaron"
+            """Permettant d'accéder directement au formulaire par l'url: https://geocity.ch/?form=URL_COURTE<br>
+            Pour une demande anonyme https://geocity.ch/submissions/anonymous/?form=URL_COURTE"""
         ),
     )
 
