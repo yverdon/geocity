@@ -756,6 +756,7 @@ INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
 INPUT_TYPE_TEXT = "text"
+INPUT_TYPE_GEOM = "geom"
 DISPLAY_TEXT = "text_output"
 DISPLAY_TITLE = "title_output"
 
@@ -771,6 +772,7 @@ class Field(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
+    INPUT_TYPE_GEOM = "geom"
     DISPLAY_TEXT = DISPLAY_TEXT
     DISPLAY_TITLE = DISPLAY_TITLE
 
@@ -786,6 +788,7 @@ class Field(models.Model):
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
+        (INPUT_TYPE_GEOM, _("Géométrie (points)")),
         (DISPLAY_TEXT, _("Texte à afficher")),
         (DISPLAY_TITLE, _("Titre à afficher")),
     )
@@ -866,6 +869,14 @@ class Field(models.Model):
         help_text=_(
             "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
         ),
+    )
+    map_widget_configuration = models.ForeignKey(
+        MapWidgetConfiguration,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="map_widget_configuration_field",
+        verbose_name=_("Configuration de la carte avancée"),
     )
     is_public_when_permitrequest_is_public = models.BooleanField(
         _("Afficher ce champs au grand public si la demande est publique"),

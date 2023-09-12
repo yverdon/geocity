@@ -538,6 +538,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             models.Field.INPUT_TYPE_REGEX: self.get_regex_field_kwargs,
             models.Field.INPUT_TYPE_LIST_SINGLE: self.get_list_single_field_kwargs,
             models.Field.INPUT_TYPE_LIST_MULTIPLE: self.get_list_multiple_field_kwargs,
+            models.Field.INPUT_TYPE_GEOM: self.get_geom_field_kwargs,
         }
 
         try:
@@ -688,9 +689,17 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             else forms.CheckboxSelectMultiple(),
         }
 
+    def get_geom_field_kwargs(self, field, default_kwargs):
+        print("***get_geom_field_kwargs***")
+        return {
+            **default_kwargs,
+            "widget": GeometryWidgetAdvanced()
+        }
+
     def save(self):
         to_geocode_addresses = []
         for form, field in self.get_fields():
+            # TODO: process geomtime stuff separately as it must be saved to other model
             if field.is_value_field():
                 self.instance.set_field_value(
                     form=form,

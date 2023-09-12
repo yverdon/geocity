@@ -1485,6 +1485,9 @@ class SubmissionGeoTime(models.Model):
     comes_from_automatic_geocoding = models.BooleanField(
         _("Géométrie obtenue par géocodage d'adresse"), default=False
     )
+    form = models.ForeignKey(
+        Form, on_delete=models.CASCADE, related_name="geo_time", null=True
+    )
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
     history = HistoricalRecords()
 
