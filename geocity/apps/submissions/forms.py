@@ -50,7 +50,7 @@ input_type_mapping = {
     models.Field.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
     models.Field.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
     models.Field.INPUT_TYPE_REGEX: forms.CharField,
-    models.Field.INPUT_TYPE_GEOM: forms.CharField,  # TODO: check django gis doc
+    models.Field.INPUT_TYPE_GEOM: geoforms.fields.GeometryCollectionField,
 }
 
 
@@ -406,8 +406,10 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         disable_fields = kwargs.pop("disable_fields", False)
 
         # Compute initial values for fields
+        # Geom type field values need to be initiated separately as data are stored in SubmissionGeotime Model
         initial = {}
         prop_values = self.get_values()
+
         for prop_value in prop_values:
             initial[
                 self.get_field_name(
@@ -415,6 +417,20 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                     prop_value.field,
                 )
             ] = prop_value.get_value()
+
+        # Get geom field values from SubmissionGeotime Model
+        forms = instance.selected_forms.all().values_list("form__pk")
+        geom_field_values = models.SubmissionGeoTime.objects.filter(
+            form__in=forms, submission=instance
+        )
+        for geom_field_value in geom_field_values:
+            if geom_field_value.form and geom_field_value.field:
+                initial[
+                    self.get_field_name(
+                        geom_field_value.form,
+                        geom_field_value.field,
+                    )
+                ] = geom_field_value.geom
 
         kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
 
@@ -716,11 +732,15 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                     field=field,
                     value=self.cleaned_data[self.get_field_name(form, field)],
                 )
-            if field.input_type == models.Field.INPUT_TYPE_GEOM:
+            if (
+                field.input_type == models.Field.INPUT_TYPE_GEOM
+                and self.cleaned_data[self.get_field_name(form, field)]
+            ):
                 models.SubmissionGeoTime.objects.create(
                     submission=self.instance,
                     comes_from_automatic_geocoding=False,
                     form=form,
+                    field=field,
                     geom=self.cleaned_data[self.get_field_name(form, field)],
                 )
             if (

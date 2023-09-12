@@ -1488,6 +1488,9 @@ class SubmissionGeoTime(models.Model):
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="geo_time", null=True
     )
+    field = models.ForeignKey(
+        Field, on_delete=models.CASCADE, related_name="geo_time", null=True
+    )
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
     history = HistoricalRecords()
 

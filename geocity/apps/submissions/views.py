@@ -1630,7 +1630,9 @@ def submission_geo_time(request, submission_id):
     formset = SubmissionGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
         form_kwargs={"submission": submission},
-        queryset=submission.geo_time.filter(comes_from_automatic_geocoding=False).all(),
+        queryset=submission.geo_time.filter(
+            comes_from_automatic_geocoding=False, form=None, field=None
+        ).all(),
     )
 
     if request.method == "POST":
