@@ -772,7 +772,7 @@ class Field(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
-    INPUT_TYPE_GEOM = "geom"
+    INPUT_TYPE_GEOM = INPUT_TYPE_GEOM
     DISPLAY_TEXT = DISPLAY_TEXT
     DISPLAY_TITLE = DISPLAY_TITLE
 
@@ -924,6 +924,7 @@ class Field(models.Model):
             Field.INPUT_TYPE_LIST_SINGLE,
             Field.INPUT_TYPE_LIST_MULTIPLE,
             Field.INPUT_TYPE_REGEX,
+            Field.INPUT_TYPE_GEOM,
         ]
 
     def clean(self):

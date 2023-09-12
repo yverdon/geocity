@@ -50,6 +50,7 @@ input_type_mapping = {
     models.Field.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
     models.Field.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
     models.Field.INPUT_TYPE_REGEX: forms.CharField,
+    models.Field.INPUT_TYPE_GEOM: forms.CharField,  # TODO: check django gis doc
 }
 
 
@@ -690,21 +691,37 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_geom_field_kwargs(self, field, default_kwargs):
-        print("***get_geom_field_kwargs***")
+
+        options = {
+            "map_widget_configuration": [field.map_widget_configuration.configuration],
+        }
+
+        widget = GeometryWidgetAdvanced(attrs={"options": options})
+        widget.attrs["options"]["edit_geom"] = True
+
         return {
             **default_kwargs,
-            "widget": GeometryWidgetAdvanced()
+            "widget": widget,
         }
 
     def save(self):
         to_geocode_addresses = []
         for form, field in self.get_fields():
-            # TODO: process geomtime stuff separately as it must be saved to other model
-            if field.is_value_field():
+            if (
+                field.is_value_field()
+                and not field.input_type == models.Field.INPUT_TYPE_GEOM
+            ):
                 self.instance.set_field_value(
                     form=form,
                     field=field,
                     value=self.cleaned_data[self.get_field_name(form, field)],
+                )
+            if field.input_type == models.Field.INPUT_TYPE_GEOM:
+                models.SubmissionGeoTime.objects.create(
+                    submission=self.instance,
+                    comes_from_automatic_geocoding=False,
+                    form=form,
+                    geom=self.cleaned_data[self.get_field_name(form, field)],
                 )
             if (
                 field.input_type == models.Field.INPUT_TYPE_ADDRESS
