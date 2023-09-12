@@ -861,6 +861,7 @@ class SubmissionContactForm(forms.ModelForm):
     contact_form = forms.ModelChoiceField(
         queryset=models.ContactType.objects.all(),
         empty_label="Sélectionner un contact...",
+        label=_("Type de contact"),
     )
 
     class Meta:
