@@ -921,4 +921,9 @@ img.captcha {
   height: calc(1.5em + .75rem + 2px) !important;
 }
 
+.select2-container .select2-selection--single .select2-selection__rendered {
+  padding-left: 12px !important;
+  padding-top: 4px !important;
+}
+
 /* END Django-Select2 tuning */
