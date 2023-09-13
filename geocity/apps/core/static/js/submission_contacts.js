@@ -16,7 +16,7 @@ let update_form_value = function(item, userprofile) {
 
 // Create a label to replace .form-control without .extra-form in classes inside of forms-container
 window.addEventListener('load', function () {
-  var forms_control = document.querySelectorAll("[id=forms-container] select[class=form-control]");
+  var forms_control = document.querySelectorAll("[id=forms-container] select[class*=form-control]");
   for (form_control of forms_control) {
     let elem = document.createElement('label');
     let text = form_control.querySelector("option[selected]").text
