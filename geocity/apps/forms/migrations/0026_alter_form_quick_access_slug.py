@@ -10,7 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0026_geom_field_input_type_for_form"),
+        ("forms", "0025_alter_form_quick_access_slug"),
     ]
 
     operations = [
