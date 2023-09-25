@@ -25,7 +25,7 @@ django-simple-history
 djangorestframework
 djangorestframework-gis
 django-cors-headers
-django-constance[database]
+django-constance
 django-two-factor-auth[phonenumbers]==1.14.0
 django-taggit
 filetype
@@ -51,3 +51,4 @@ postfinancecheckout
 tzdata
 pandas
 Unidecode
+django-select2

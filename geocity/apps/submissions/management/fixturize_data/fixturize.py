@@ -53,7 +53,7 @@ field_width = {
 }
 field_title = {
     "name": "Texte permettant de séparer visuellement les champs",
-    "input_type": "title",
+    "input_type": "title_output",
     "help_text": "Ce texte permet d'expliquer en détail à l'utilisateur les pourquoi et le comment des informations à fournir",
     "is_mandatory": False,
 }

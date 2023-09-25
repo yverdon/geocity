@@ -28,7 +28,7 @@ class PaymentProcessor:
         """
         Returns a dict with the merchant transaction data. Example:
         {
-            'merchant_reference': <payment processors' transaction id>,
+            'transaction_id': <payment processors' transaction id>,
             'payment_page_url': <payment_page_url>
         }
         """
@@ -39,7 +39,7 @@ class PaymentProcessor:
         return (
             self.transaction_class.objects.create(
                 submission_price=price,
-                merchant_reference=0,  # TODO: field null=True instead of this?
+                transaction_id=0,  # TODO: field null=True instead of this?
                 amount=price.amount,
                 currency=price.currency,
             ),
@@ -47,7 +47,7 @@ class PaymentProcessor:
         )
 
     def _save_merchant_data(self, transaction, merchant_transaction_data):
-        transaction.merchant_reference = merchant_transaction_data["merchant_reference"]
+        transaction.transaction_id = merchant_transaction_data["transaction_id"]
         transaction.save()
 
     def create_transaction_and_return_payment_page_url(self, submission, request):

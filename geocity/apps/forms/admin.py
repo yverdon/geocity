@@ -1,7 +1,11 @@
+import string
+
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
+from constance import config
 from django import forms
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
@@ -85,6 +89,7 @@ class FormAdminForm(forms.ModelForm):
                     + "mapserver&CRS=EPSG%3A2056",
                 }
             ),
+            "quick_access_slug": forms.TextInput(),
         }
         help_texts = {
             "wms_layers": "URL pour la ou les couches WMS utiles à la saisie de la demande pour ce type d'objet",
@@ -204,7 +209,9 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     ]
     list_display = [
         "sortable_str",
+        "custom_api_name",
         form_administrative_entities,
+        "quick_access_slug",
         "can_always_update",
         "is_public",
         "requires_payment",
@@ -231,6 +238,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "name",
         "category__name",
         "administrative_entities__name",
+        "quick_access_slug",
     ]
     fieldsets = (
         (
@@ -239,6 +247,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 "fields": (
                     "name",
                     "api_name",
+                    "quick_access_slug",
                     "category",
                     "administrative_entities",
                     "can_always_update",
@@ -323,10 +332,26 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     )
 
     def sortable_str(self, obj):
-        return str(obj) if str(obj) != "" else str(obj.pk)
+        if str(obj) != "":
+            sortable_str = str(obj)[:25] + "..." if len(str(obj)) > 25 else str(obj)
+            tooltip_text = str(obj)
+        else:
+            sortable_str = str(obj.pk)
+            tooltip_text = None
+        return format_html('<span title="{}">{}</span>', tooltip_text, sortable_str)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Formulaire")
+
+    def custom_api_name(self, obj):
+        custom_api_name = (
+            obj.api_name[:25] + "..." if len(obj.api_name) > 25 else obj.api_name
+        )
+        tooltip_text = obj.api_name
+        return format_html('<span title="{}">{}</span>', tooltip_text, custom_api_name)
+
+    custom_api_name.admin_order_field = "api_name"
+    custom_api_name.short_description = _("Nom dans l'API")
 
     def max_submissions_nb_submissions(self, obj):
         nb_submissions_str = _("demandes actuellement")
@@ -391,10 +416,24 @@ class FormWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
         return f"{obj} ({obj.category}) - {entities}"
 
 
+class ReadOnlyTextInput(forms.TextInput):
+    def render(self, name, value, attrs=None, renderer=None):
+        return value
+
+
 class FieldAdminForm(forms.ModelForm):
+    form_list = forms.CharField(
+        required=False, label="Formulaire(s) avec ce champ", widget=forms.HiddenInput()
+    )
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
+        instance = kwargs.get("instance")
+
+        if instance:
+            self.fields["form_list"].widget = ReadOnlyTextInput()
+            self.initial["form_list"] = self.get_form_list()
 
     class Meta:
         model = models.Field
@@ -414,14 +453,70 @@ class FieldAdminForm(forms.ModelForm):
             "is_public_when_permitrequest_is_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
+            "allowed_file_types",
             "integrator",
+            "form_list",
         ]
+
+    def get_form_list(self):
+        forms_fields = self.instance.form_fields.all().order_by(
+            "form__name", "form__id"
+        )
+        if forms_fields:
+            list_content = []
+            for ff in forms_fields:
+                url = reverse(
+                    "admin:forms_form_change", kwargs={"object_id": ff.form.id}
+                )
+                list_content.append(
+                    format_html("<li><a href='{}'>{}</a></li>", url, ff.form.name)
+                )
+            list_html = "\n".join(list_content)
+            return f"<ul>{list_html}</ul>"
+        else:
+            return "—"
 
     def clean_file_download(self):
         if self.cleaned_data["input_type"] == "file_download":
             if not self.cleaned_data["file_download"]:
                 raise forms.ValidationError(_("This field is required."))
         return self.cleaned_data["file_download"]
+
+    def clean_allowed_file_types(self):
+        if (
+            self.cleaned_data["input_type"] == "file"
+            and self.cleaned_data["allowed_file_types"]
+        ):
+            global_allowed_file_extensions_list = (
+                config.ALLOWED_FILE_EXTENSIONS.translate(
+                    str.maketrans("", "", string.whitespace)
+                )
+                .lower()
+                .split(",")
+            )
+
+            field_allowed_file_extensions_list = (
+                self.cleaned_data["allowed_file_types"]
+                .translate(str.maketrans("", "", string.whitespace))
+                .lower()
+                .split(",")
+            )
+
+            extensions_intersect = list(
+                set(global_allowed_file_extensions_list).intersection(
+                    set(field_allowed_file_extensions_list)
+                )
+            )
+
+            if len(extensions_intersect) == 0:
+                raise forms.ValidationError(
+                    _(
+                        "Ces extensions ne sont pas autorisées au niveau global de l'application. Les extentensions actuellement autorisées sont: "
+                    )
+                    + config.ALLOWED_FILE_EXTENSIONS
+                )
+
+        return self.cleaned_data["allowed_file_types"]
 
     class Media:
         js = ("js/admin/form_field.js",)
@@ -514,6 +609,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = FieldAdminForm
     list_display = [
         "sortable_str",
+        "custom_api_name",
         "is_mandatory",
         "is_public_when_permitrequest_is_public",
         "input_type",
@@ -529,10 +625,24 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     ]
 
     def sortable_str(self, obj):
-        return obj.__str__()
+        sortable_str = (
+            obj.__str__()[:25] + "..." if len(obj.__str__()) > 25 else obj.__str__()
+        )
+        tooltip_text = obj.__str__()
+        return format_html('<span title="{}">{}</span>', tooltip_text, sortable_str)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Champ")
+
+    def custom_api_name(self, obj):
+        custom_api_name = (
+            obj.api_name[:25] + "..." if len(obj.api_name) > 25 else obj.api_name
+        )
+        tooltip_text = obj.api_name
+        return format_html('<span title="{}">{}</span>', tooltip_text, custom_api_name)
+
+    custom_api_name.admin_order_field = "api_name"
+    custom_api_name.short_description = _("Nom dans l'API")
 
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):

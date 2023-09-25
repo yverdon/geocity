@@ -55,7 +55,7 @@ from .exceptions import BadSubmissionStatus, NonProlongableSubmission
 from .payments.services import (
     get_payment_processor,
     get_transaction_from_id,
-    get_transaction_from_merchant_reference,
+    get_transaction_from_transaction_id,
 )
 from .search import search_result_to_json, search_submissions
 from .services import send_refund_email
@@ -69,6 +69,7 @@ from .steps import (
     get_progress_bar_steps,
     get_selectable_categories,
     get_selectable_entities,
+    get_selectable_form,
 )
 from .tables import (
     CustomFieldValueAccessibleSubmission,
@@ -165,7 +166,6 @@ def progress_bar_context(request, submission, current_step_type):
 @method_decorator(permanent_user_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class SubmissionDetailView(View):
-
     actions = models.ACTIONS
 
     def dispatch(self, request, *args, **kwargs):
@@ -368,7 +368,6 @@ class SubmissionDetailView(View):
         if permissions.has_permission_to_amend_submission(
             self.request.user, self.submission
         ):
-
             # Get the first form selected as a shorname suggestion for pilot
             first_selected_form = (
                 self.submission.get_selected_forms()
@@ -408,7 +407,6 @@ class SubmissionDetailView(View):
             ) and not permissions.can_always_be_updated(
                 self.request.user, self.submission
             ):
-
                 forms.disable_form(
                     form, self.submission.get_amend_field_list_always_amendable()
                 )
@@ -657,9 +655,7 @@ class SubmissionDetailView(View):
             validation_message = _("Le commentaire a été enregistré.")
 
         try:
-
             if not self.submission.get_pending_validations():
-
                 initial_permit_status = self.submission.status
                 self.submission.status = models.Submission.STATUS_PROCESSING
                 self.submission.save()
@@ -673,7 +669,6 @@ class SubmissionDetailView(View):
                         is not form.instance.validation_status
                     )
                 ):
-
                     data = {
                         "subject": "{} ({})".format(
                             _(
@@ -887,7 +882,6 @@ class ArchivedSubmissionListView(SingleTableMixin, ListView):
     archive_failed_error_message = _("Une erreur est survenue lors de l'archivage")
 
     def post(self, request, *args, **kwargs):
-
         if request.POST.get("action") == "archive-requests":
             return self.archive()
 
@@ -945,7 +939,6 @@ class ArchivedSubmissionDeleteView(DeleteView):
     error_message = _("Vous n'avez pas les permissions pour supprimer cette archive")
 
     def post(self, request, *args, **kwargs):
-
         try:
             archive = models.ArchivedSubmission.objects.get(pk=kwargs.get("pk"))
 
@@ -1028,27 +1021,7 @@ def anonymous_submission_sent(request):
     )
 
 
-def anonymous_submission(request):
-    # Logout silently any real user
-    if request.user.is_authenticated and not request.user.userprofile.is_temporary:
-        logout(request)
-
-    # Accept only non-logged users, or temporary users
-    if not request.user.is_anonymous and not request.user.userprofile.is_temporary:
-        raise Http404
-
-    # Validate tags
-    entityfilter = request.GET.getlist("entityfilter")
-    typefilter = request.GET.getlist("typefilter")
-    if not entityfilter or not typefilter:
-        raise Http404
-
-    # Validate entity
-    entities_by_tag = AdministrativeEntity.objects.public().filter_by_tags(entityfilter)
-    if len(entities_by_tag) != 1:
-        raise Http404
-    entity = entities_by_tag[0]
-
+def validate_captcha_and_render_page(request, entity):
     # Validate captcha and temporary user connection
     captcha_refresh_url = (
         "/" + settings.PREFIX_URL + "captcha/refresh/"
@@ -1081,28 +1054,12 @@ def anonymous_submission(request):
                 },
             )
 
-    # Validate type
-    form_categories = (
-        models.FormCategory.objects.filter(forms__is_anonymous=True)
-        .filter_by_tags(typefilter)
-        .distinct()
-        .values_list("pk", flat=True)
-    )
+    return False
 
-    if len(form_categories) != 1:
-        raise Http404
-    form_category = form_categories[0]
 
-    # Validate available work objects types
-    anonymous_forms = models.Form.anonymous_objects.filter(
-        administrative_entities=entity,
-        category=form_category,
-    )
-
+def manage_steps_anonymous_form(form_category, entity, request, anonymous_forms):
     if not anonymous_forms:
         raise Http404
-
-    # Submission page
 
     # Never create a second submission for the same temp_author
     submission, _ = models.Submission.objects.get_or_create(
@@ -1127,6 +1084,99 @@ def anonymous_submission(request):
             return redirect(step.url)
 
 
+def get_anonymous_submission_by_tags(request, entityfilter, typefilter):
+    # Validate entity
+    entities = AdministrativeEntity.objects.public().filter_by_tags(entityfilter)
+    if len(entities) != 1:
+        raise Http404
+    entity = entities[0]
+
+    render_page = validate_captcha_and_render_page(request, entity)
+    if render_page:
+        return render_page
+
+    # Validate type
+    form_categories = (
+        models.FormCategory.objects.filter(forms__is_anonymous=True)
+        .filter_by_tags(typefilter)
+        .distinct()
+        .values_list("pk", flat=True)
+    )
+
+    if len(form_categories) != 1:
+        raise Http404
+    form_category = form_categories[0]
+
+    # Validate available work objects types
+    anonymous_forms = models.Form.anonymous_objects.filter(
+        administrative_entities=entity,
+        category=form_category,
+    )
+
+    return manage_steps_anonymous_form(form_category, entity, request, anonymous_forms)
+
+
+def get_anonymous_submission_by_slug(request, quick_access_slug):
+    anonymous_selected_forms = get_selectable_form(
+        user=request.user, quick_access_slug=quick_access_slug, is_anonymous=True
+    )
+
+    if not anonymous_selected_forms:
+        raise Http404
+
+    if anonymous_selected_forms:
+        entities = anonymous_selected_forms.administrative_entities.all()
+    else:
+        raise Http404
+
+    # Validate entity
+    if len(entities) != 1:
+        raise Http404
+    entity = entities[0]
+
+    render_page = validate_captcha_and_render_page(request, entity)
+    if render_page:
+        return render_page
+
+    # Validate type
+    form_categories = models.FormCategory.objects.filter(
+        forms__is_anonymous=True, forms__id=anonymous_selected_forms.pk
+    ).values_list("pk", flat=True)
+
+    if len(form_categories) != 1:
+        raise Http404
+    form_category = form_categories[0]
+
+    anonymous_forms = models.Form.anonymous_objects.filter(
+        id=anonymous_selected_forms.pk
+    )
+
+    return manage_steps_anonymous_form(form_category, entity, request, anonymous_forms)
+
+
+def anonymous_submission(request):
+    # Logout silently any real user
+    if request.user.is_authenticated and not request.user.userprofile.is_temporary:
+        logout(request)
+
+    # Accept only non-logged users, or temporary users
+    if not request.user.is_anonymous and not request.user.userprofile.is_temporary:
+        raise Http404
+
+    # Validate tags
+    entityfilter = request.GET.getlist("entityfilter")
+    typefilter = request.GET.getlist("typefilter")
+    quick_access_slug = request.GET.get("form")
+
+    # Selects the way to retrieve the anonymous submission to prevent code duplication
+    if entityfilter and typefilter:
+        return get_anonymous_submission_by_tags(request, entityfilter, typefilter)
+    elif quick_access_slug:
+        return get_anonymous_submission_by_slug(request, quick_access_slug)
+    else:
+        raise Http404
+
+
 @redirect_bad_status_to_detail
 @login_required
 @user_passes_test(has_profile)
@@ -1140,6 +1190,25 @@ def submission_select_administrative_entity(request, submission_id=None):
         if submission_id
         else None
     )
+
+    quick_access_slug = request.GET.get("form")
+    if not submission and quick_access_slug:
+        form = get_selectable_form(
+            user=request.user, quick_access_slug=quick_access_slug, is_anonymous=False
+        )
+
+        if form:
+            entities = form.administrative_entities.all()
+
+            if len(entities) == 1:
+                submission = models.Submission.objects.create(
+                    administrative_entity=entities[0],
+                    author=request.user,
+                )
+                submission.forms.set([form])
+
+                steps = get_progress_bar_steps(request=request, submission=submission)
+                return redirect(steps[StepType.FIELDS].url)
 
     entity_tags = request.GET.getlist("entityfilter")
     entities = get_selectable_entities(
@@ -1361,7 +1430,6 @@ def submission_prolongation(request, submission_id):
         return redirect("submissions:submissions_list")
 
     if request.method == "POST":
-
         form = forms.SubmissionProlongationForm(instance=submission, data=request.POST)
         del form.fields["prolongation_status"]
         del form.fields["prolongation_comment"]
@@ -1487,6 +1555,7 @@ def submission_contacts(request, submission_id):
         current_step_type=StepType.CONTACTS,
     )
     requires_payment = submission.requires_payment()
+    has_any_dynamic_contacts_forms = submission.has_any_dynamic_contacts_forms()
 
     creditorform = forms.SubmissionCreditorForm(
         request.POST or None, instance=submission
@@ -1533,6 +1602,7 @@ def submission_contacts(request, submission_id):
             "creditorform": creditorform,
             "submission": submission,
             "requires_payment": requires_payment,
+            "has_any_dynamic_contacts_forms": has_any_dynamic_contacts_forms,
             "userprofile": userprofile,
             **steps_context,
         },
@@ -1742,7 +1812,6 @@ class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
 @login_required
 @check_mandatory_2FA
 def submission_submit(request, submission_id):
-
     submission = get_submission_for_edition(request.user, submission_id)
 
     incomplete_steps = [
@@ -1789,7 +1858,6 @@ def submission_submit(request, submission_id):
 @login_required
 @check_mandatory_2FA
 def submission_submit_confirmed(request, submission_id):
-
     submission = get_submission_for_edition(request.user, submission_id)
     if submission.has_any_form_with_exceeded_submissions():
         messages.add_message(
@@ -1873,7 +1941,6 @@ def submission_submit_confirmed(request, submission_id):
     ):
         return redirect("submissions:submission_detail", submission_id=submission_id)
     else:
-
         if request.user.userprofile.is_temporary and submission.author == request.user:
             try:
                 anonymous_user = submission.administrative_entity.anonymous_user
@@ -1924,7 +1991,6 @@ def submission_reject(request, submission_id):
 @permission_required("submissions.classify_submission")
 @check_mandatory_2FA
 def submission_classify(request, submission_id, approve):
-
     submission = get_submission_for_user_or_404(
         request.user,
         submission_id,
@@ -2083,10 +2149,10 @@ class ChangeTransactionStatus(View):
 
     def get(self, request, *args, **kwargs):
         try:
-            merchant_reference = kwargs.get("merchant_reference")
+            transaction_id = kwargs.get("transaction_id")
             new_status = request.GET.get("new_status")
 
-            transaction = get_transaction_from_merchant_reference(merchant_reference)
+            transaction = get_transaction_from_transaction_id(transaction_id)
             submission = transaction.submission_price.submission
             if not permissions.user_has_permission_to_change_transaction_status(
                 request.user, transaction, new_status
@@ -2112,12 +2178,12 @@ class ChangeTransactionStatus(View):
                 request,
                 mark_safe(
                     _(
-                        """Le statut de la transaction {merchant_reference} a été mis à jour en
+                        """Le statut de la transaction {transaction_id} a été mis à jour en
                     <strong>{new_status_display}</strong>
                     """
                     ).format(
                         new_status_display=new_status_display,
-                        merchant_reference=merchant_reference,
+                        transaction_id=transaction_id,
                     )
                 ),
             )
@@ -2235,7 +2301,6 @@ class SubmissionPaymentRedirect(View):
 @login_required
 @check_mandatory_2FA
 def submission_validations_edit(request, submission_id):
-
     # Check that user is authorize to see submission
     submission = get_object_or_404(
         models.Submission.objects.filter_for_user(request.user), pk=submission_id
@@ -2245,7 +2310,7 @@ def submission_validations_edit(request, submission_id):
     if not permissions.has_permission_to_edit_submission_validations(
         request.user, submission
     ):
-        # TODO: be nicer whith user
+        # TODO: be nicer with user
         raise PermissionDenied
 
     submissionValidationFormset = modelformset_factory(

@@ -6,7 +6,6 @@ from .models import MapWidgetConfiguration
 
 @login_required
 def map_widget_configuration(request, form_id):
-
     form_map_widget_configuration = MapWidgetConfiguration.objects.get(
         map_widget_configuration_form__pk=form_id
     )

@@ -311,7 +311,7 @@ def search_transactions(search_str, submissions_qs, limit=None):
         # Add an aggregate of all transactions ids just for information
         .annotate(
             transaction_ids=StringAgg(
-                "price__transactions__merchant_reference", delimiter=", "
+                "price__transactions__transaction_id", delimiter=", "
             )
         )
         .annotate(
@@ -322,7 +322,7 @@ def search_transactions(search_str, submissions_qs, limit=None):
             )
         )
         # Actual search (by equality, not by trigram similarity)
-        .filter(price__transactions__merchant_reference=search_str)
+        .filter(price__transactions__transaction_id=search_str)
         .values(
             "id",
             "status",

@@ -38,7 +38,7 @@ class SubmissionProgressBarTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory()
         submission.administrative_entity.forms.set([form])
         submission.forms.set([form])
-        factories.ContactTypeFactory(form_category=form.category)
+        factories.ContactFormFactory(form_category=form.category)
 
         response = self.client.get(
             reverse(

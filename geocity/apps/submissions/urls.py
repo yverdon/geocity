@@ -112,7 +112,7 @@ urlpatterns = [
         name="archived_submission_bulk_download",
     ),
     path(
-        "transactions/<str:merchant_reference>/change-status",
+        "transactions/<str:transaction_id>/change-status",
         views.ChangeTransactionStatus.as_view(),
         name="change_transaction_status",
     ),

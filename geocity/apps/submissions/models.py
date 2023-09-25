@@ -37,7 +37,6 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-from .contact_type_choices import *
 from .payments.models import SubmissionPrice
 
 # Actions
@@ -140,6 +139,26 @@ class SubmissionQuerySet(models.QuerySet):
         return qs
 
 
+class ContactType(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _("1.9 Type de contact")
+        verbose_name_plural = _("1.9 Types de contacts")
+
+
+# Change the app_label in order to regroup models under the same app in admin
+class ContactTypeForAdminSite(ContactType):
+    class Meta:
+        proxy = True
+        app_label = "forms"
+        verbose_name = _("1.9 Type de contact")
+        verbose_name_plural = _("1.9 Types de contacts")
+
+
 class Submission(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
@@ -153,16 +172,16 @@ class Submission(models.Model):
     STATUS_ARCHIVED = 9
 
     STATUS_CHOICES = (
-        (STATUS_DRAFT, _("Brouillon")),
-        (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),
-        (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),
-        (STATUS_PROCESSING, _("En traitement")),
-        (STATUS_AWAITING_VALIDATION, _("En validation")),
-        (STATUS_APPROVED, _("Approuvée")),
-        (STATUS_REJECTED, _("Refusée")),
-        (STATUS_RECEIVED, _("Réceptionnée")),
-        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),
-        (STATUS_ARCHIVED, _("Archivée")),
+        (STATUS_DRAFT, _("Brouillon")),  # 0
+        (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),  # 1
+        (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),  # 4
+        (STATUS_PROCESSING, _("En traitement")),  # 3
+        (STATUS_AWAITING_VALIDATION, _("En validation")),  # 5
+        (STATUS_APPROVED, _("Approuvée")),  # 2
+        (STATUS_REJECTED, _("Refusée")),  # 6
+        (STATUS_RECEIVED, _("Réceptionnée")),  # 7
+        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),  # 8
+        (STATUS_ARCHIVED, _("Archivée")),  # 9
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -242,11 +261,12 @@ class Submission(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         upload_to="validations",
     )
-    creditor_type = models.PositiveSmallIntegerField(
-        _("Destinataire de la facture"),
-        choices=CONTACT_TYPE_CHOICES,
+    creditor_type = models.ForeignKey(
+        ContactType,
         null=True,
         blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Destinataire de la facture"),
     )
     is_public = models.BooleanField(_("Publication calendrier"), default=False)
     prolongation_date = models.DateTimeField(
@@ -487,7 +507,8 @@ class Submission(models.Model):
             site_domain = settings.SITE_DOMAIN
         else:
             url_split = relative_url.split("/")
-            submission_id = url_split.index("submissions") + 1
+            submission_id_index = url_split.index("submissions") + 1
+            submission_id = url_split[submission_id_index]
             submission = Submission.objects.get(id=submission_id)
             site_domain = submission.get_site(use_default=False)
 
@@ -820,26 +841,34 @@ class Submission(models.Model):
             if GeoTimeInfo.GEOMETRY not in geotime_required_info:
                 geotime_objects.update(geom=None)
 
-    def get_contacts_types(self):
+    def get_contacts_forms(self):
         """
-        Get contacts types defined for each form defined for the submission.
+        Get contacts forms defined for each form defined for the submission.
         """
         return (
-            ContactType.objects.filter(form_category__in=self.get_form_categories())
-            .values_list("type", "is_mandatory")
+            ContactForm.objects.filter(form_category__in=self.get_form_categories())
+            .values_list("type", "is_mandatory", "is_dynamic")
             .distinct()
             .order_by("-is_mandatory", "type")
         )
 
-    def get_missing_required_contact_types(self):
+    def has_any_dynamic_contacts_forms(self):
         """
-        Get contacts types required but not filled
+        Get contacts forms assigned as dynamic, defined for each form defined for the submission
+        """
+        return ContactForm.objects.filter(
+            form_category__in=self.get_form_categories(), is_dynamic=True
+        ).exists()
+
+    def get_missing_required_contact_forms(self):
+        """
+        Get contacts forms required but not filled
         """
 
-        return self.filter_only_missing_contact_types(
+        return self.filter_only_missing_contact_forms(
             [
-                (actor_type, is_mandatory)
-                for actor_type, is_mandatory in self.get_contacts_types()
+                (actor_form, is_mandatory)
+                for actor_form, is_mandatory, is_dynamic in self.get_contacts_forms()
                 if is_mandatory
             ],
         )
@@ -998,19 +1027,19 @@ class Submission(models.Model):
     def has_document_enabled(self):
         return self.forms.filter(document_enabled=True).exists()
 
-    def filter_only_missing_contact_types(self, contact_types):
+    def filter_only_missing_contact_forms(self, contact_forms):
         """
-        Filter the given `contact_types` to return only the ones that have not been set in the given `submission`.
+        Filter the given `contact_forms` to return only the ones that have not been set in the given `submission`.
         """
 
-        existing_contact_types = self.contacts.values_list(
-            "submissioncontact__contact_type", flat=True
+        existing_contact_forms = self.contacts.values_list(
+            "submissioncontact__contact_form", flat=True
         )
 
         return [
-            contact_type
-            for contact_type in contact_types
-            if contact_type[0] not in existing_contact_types
+            contact_form
+            for contact_form in contact_forms
+            if contact_form[0] not in existing_contact_forms
         ]
 
     def get_geotime_objects(self, exlude_geocoded_geom=False):
@@ -1246,7 +1275,7 @@ class Submission(models.Model):
 
         complementary_document_attrs[
             "description"
-        ] = f"{description} {transaction.merchant_reference}"
+        ] = f"{description} {transaction.transaction_id}"
         complementary_document_attrs["owner"] = self.author
         complementary_document_attrs["submission"] = self
         complementary_document_attrs[
@@ -1325,18 +1354,28 @@ class SelectedForm(models.Model):
         unique_together = [("submission", "form")]
 
 
-class ContactType(models.Model):
+class ContactForm(models.Model):
 
-    type = models.PositiveSmallIntegerField(
-        _("type de contact"), choices=CONTACT_TYPE_CHOICES, default=CONTACT_TYPE_OTHER
+    type = models.ForeignKey(
+        ContactType,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("type de contact"),
     )
     form_category = models.ForeignKey(
         FormCategory,
         on_delete=models.CASCADE,
         verbose_name=_("type de demande"),
-        related_name="contact_types",
+        related_name="contact_forms",
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=True)
+    is_dynamic = models.BooleanField(
+        _("Dynamique"),
+        help_text=_(
+            "Permet à l'utilisateur d'ajouter ce type de contact lors de la saisie, autant de fois que souhaité."
+        ),
+        default=False,
+    )
     integrator = models.ForeignKey(
         Group,
         null=True,
@@ -1351,11 +1390,11 @@ class ContactType(models.Model):
         unique_together = [["type", "form_category"]]
 
     def __str__(self):
-        return self.get_type_display() + " (" + str(self.form_category) + ")"
+        return str(self.type) + " (" + str(self.form_category) + ")"
 
 
 # Change the app_label in order to regroup models under the same app in admin
-class ContactTypeForAdminSite(ContactType):
+class ContactFormForAdminSite(ContactForm):
     class Meta:
         proxy = True
         app_label = "forms"
@@ -1368,8 +1407,10 @@ class SubmissionContact(models.Model):
     submission = models.ForeignKey(
         "Submission", on_delete=models.CASCADE, related_name="submission_contacts"
     )
-    contact_type = models.PositiveSmallIntegerField(
-        _("type de contact"), choices=CONTACT_TYPE_CHOICES, default=CONTACT_TYPE_OTHER
+    contact_form = models.ForeignKey(
+        ContactType,
+        on_delete=models.DO_NOTHING,
+        verbose_name=_("type de contact"),
     )
 
     class Meta:
@@ -1377,7 +1418,7 @@ class SubmissionContact(models.Model):
         verbose_name_plural = _("Relations demande-contact")
 
     def __str__(self):
-        return "{} - {}".format(str(self.contact), str(self.get_contact_type_display()))
+        return "{} - {}".format(str(self.contact), str(self.contact_form.name))
 
 
 class FieldValue(models.Model):

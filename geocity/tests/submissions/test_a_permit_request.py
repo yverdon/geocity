@@ -1641,6 +1641,32 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             ["Sélectionnez un choix valide. baz n’en fait pas partie."],
         )
 
+    def test_file_input_extensions_restrictions_sets_accept_correctly_in_template(self):
+
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory()
+        submission.administrative_entity.forms.set([form])
+        submission.forms.set([form])
+        field = factories.FieldFactory(
+            input_type=forms_models.Field.INPUT_TYPE_FILE,
+            allowed_file_types="jpg,png",
+        )
+        field.forms.set([form])
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_appendices",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        parser = get_parser(response.content)
+        items = parser.select(".form-control-file")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(items[0].has_attr("accept"), True)
+        self.assertIn("image/jpeg", items[0]["accept"])
+        self.assertIn("image/png", items[0]["accept"])
+
 
 class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
@@ -2363,7 +2389,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             "form-MIN_NUM_FORMS": ["0"],
             "form-MAX_NUM_FORMS": ["1000"],
             "creditor_type": [""],
-            "form-0-contact_type": "",
+            "form-0-contact_form": "",
             "form-0-first_name": ["John"],
             "form-0-last_name": ["Doe"],
             "form-0-phone": ["000 000 00 00"],
@@ -2380,11 +2406,11 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory()
         form_category = form.category
 
-        contact_required = factories.ContactTypeFactory(
+        contact_required = factories.ContactFormFactory(
             is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-contact_type"] = contact_required.type
+        self.test_formset_data["form-0-contact_form"] = contact_required.type.id
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
@@ -2411,11 +2437,11 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory()
         form_category = form.category
 
-        contact_required = factories.ContactTypeFactory(
+        contact_required = factories.ContactFormFactory(
             is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-contact_type"] = contact_required.type
+        self.test_formset_data["form-0-contact_form"] = contact_required.type
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
@@ -2447,7 +2473,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory(requires_payment=False)
         form_category = form.category
 
-        factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
+        factories.ContactFormFactory(is_mandatory=True, form_category=form_category)
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
@@ -2489,7 +2515,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         form_categories = [form.category for form in free_forms] + [paid_form.category]
 
         for form_category in form_categories:
-            factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
+            factories.ContactFormFactory(is_mandatory=True, form_category=form_category)
 
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT

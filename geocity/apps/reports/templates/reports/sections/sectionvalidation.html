@@ -9,10 +9,22 @@
         <div class="flex_container">
             <div class="flex_item-100">
                 {% for group, validation in request_data.properties.validations.items %}
-                    <h3>Validation: {{group}}</h3>
-                    <span class="bold">Statut : </span>{{validation.validation_status}}<br>
-                    {% if validation.comment_is_visible_by_author %}
-                        <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">Commentaire : </span>{{validation.comment}}</div><br>
+                    {% if section.show_empty_comment or validation.comment %}
+                        <span class="{{section.service_style}}">{{validation.description}}</span>
+                        {% if section.show_status %}
+                            {% if section.style == 0 %}
+                                <span class="bold">Statut : </span>{{validation.validation_status}}<br>
+                            {% elif section.style == 1 %}
+                                {{validation.validation_status}}<br>
+                            {% endif %}
+                        {% endif %}
+                        {% if validation.comment_is_visible_by_author %}
+                            {% if section.style == 0 %}
+                                <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;"><span class="bold">Commentaire : </span>{{validation.comment}}</div><br>
+                            {% elif section.style == 1 %}
+                                <div class="flex_item-100" style="text-align: justify; text-justify: inter-character;">{{validation.comment}}</div><br>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </div>

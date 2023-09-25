@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block content %}
-    {% if submission.get_creditor_type_display %}
+    {% if submission.creditor_type.name %}
         <div class="flex_container">
             <div class="flex_item-100">
-                <p>{{submission.get_creditor_type_display}}</p>
+                <p>{{submission.creditor_type.name}}</p>
             </div>
         </div>
     {% else %}

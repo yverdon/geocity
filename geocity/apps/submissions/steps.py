@@ -83,6 +83,15 @@ def get_selectable_categories(submission=None, category_tags=None):
     ).distinct()
 
 
+def get_selectable_form(user, quick_access_slug, is_anonymous):
+    forms = models.Form.objects.filter(
+        quick_access_slug=quick_access_slug, is_anonymous=is_anonymous
+    )
+    if not is_anonymous and not user.has_perm("submissions.view_private_form"):
+        forms = forms.filter(is_public=True)
+    return forms.first()
+
+
 def get_administrative_entity_step(submission):
     return Step(
         name=_("Entité"),
@@ -248,11 +257,11 @@ def get_appendices_step(submission, enabled):
 
 
 def get_contacts_step(submission, enabled):
-    if submission and len(submission.get_contacts_types()) == 0:
+    if submission and len(submission.get_contacts_forms()) == 0:
         return None
 
     contact_errors = (
-        len(submission.get_missing_required_contact_types()) if submission else 0
+        len(submission.get_missing_required_contact_forms()) if submission else 0
     )
     contacts_url = (
         reverse_submission_url("submissions:submission_contacts", submission)

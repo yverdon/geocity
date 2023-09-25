@@ -20,6 +20,7 @@ from geocity.apps.reports.models import (
     SectionStatus,
     SectionValidation,
 )
+from geocity.apps.submissions.models import ContactType
 
 from .base import ReportsTestsBase
 
@@ -94,6 +95,8 @@ class ReportsTests(ReportsTestsBase):
         # Clean all blocks
         for section in self.report.sections.all():
             section.delete()
+
+        contact_type, created = ContactType.objects.get_or_create(name="Auteur")
 
         # Add one block of each type
         sections_config = {
@@ -239,9 +242,49 @@ class ReportsTests(ReportsTestsBase):
                     # "is_new_page": bool,
                     "title": "Section validation",
                     "title_size": "h3",
+                    "service_style": "h3",
+                    "style": 0,
+                    "show_status": True,
+                    "show_empty_comment": True,
                 }
             },
             13: {
+                SectionValidation: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section validation",
+                    "title_size": "h3",
+                    "service_style": "bold",
+                    "style": 1,
+                    "show_status": False,
+                    "show_empty_comment": False,
+                }
+            },
+            14: {
+                SectionValidation: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section validation",
+                    "title_size": "h3",
+                    "service_style": "italic",
+                    "style": 1,
+                    "show_status": False,
+                    "show_empty_comment": False,
+                }
+            },
+            15: {
+                SectionValidation: {
+                    # "padding_top": int,
+                    # "is_new_page": bool,
+                    "title": "Section validation",
+                    "title_size": "h3",
+                    "service_style": "underline",
+                    "style": 1,
+                    "show_status": False,
+                    "show_empty_comment": False,
+                }
+            },
+            16: {
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -251,7 +294,7 @@ class ReportsTests(ReportsTestsBase):
                     # "undesired_properties": string,
                 }
             },
-            14: {
+            17: {
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -261,7 +304,7 @@ class ReportsTests(ReportsTestsBase):
                     # "undesired_properties": string,
                 }
             },
-            15: {
+            18: {
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -271,7 +314,7 @@ class ReportsTests(ReportsTestsBase):
                     # "undesired_properties": string,
                 }
             },
-            16: {
+            19: {
                 SectionAmendProperty: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -281,7 +324,7 @@ class ReportsTests(ReportsTestsBase):
                     # "undesired_properties": string,
                 }
             },
-            17: {
+            20: {
                 SectionStatus: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -289,7 +332,7 @@ class ReportsTests(ReportsTestsBase):
                     "title_size": "h3",
                 }
             },
-            18: {
+            21: {
                 SectionCreditor: {
                     # "padding_top": int,
                     # "is_new_page": bool,
@@ -297,11 +340,13 @@ class ReportsTests(ReportsTestsBase):
                     "title_size": "h3",
                 }
             },
-            19: {
+            22: {
                 SectionRecipient: {
                     "padding_top": 20,
                     # "is_new_page": bool,
                     "is_recommended": True,
+                    "first_recipient": contact_type,
+                    "second_recipient": contact_type,
                 }
             },
         }

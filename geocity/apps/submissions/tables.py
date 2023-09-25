@@ -350,9 +350,7 @@ class TransactionsTable(tables.Table):
     updated_date = tables.Column(
         verbose_name=_("Date de modification"), orderable=False
     )
-    merchant_reference = tables.Column(
-        verbose_name=_("Référence du marchand"), orderable=False
-    )
+    transaction_id = tables.Column(verbose_name=_("ID transaction"), orderable=False)
     amount = tables.Column(verbose_name=_("Montant"), orderable=False)
     currency = tables.Column(verbose_name=_("Devise"), orderable=False)
     status = tables.Column(verbose_name=_("Statut"), orderable=False)
@@ -365,7 +363,7 @@ class TransactionsTable(tables.Table):
     class Meta:
         model = Transaction
         fields = (
-            "merchant_reference",
+            "transaction_id",
             "creation_date",
             "updated_date",
             "amount",
