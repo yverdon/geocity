@@ -417,12 +417,8 @@ class PandasExportMixin(ExportMixin):
             record = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
 
             if sheet_name not in records.keys():
-                records[sheet_name] = record
-            else:
-                record_list = []
-                record_list.append(records[sheet_name])
-                record_list.append(record)
-                records[sheet_name] = record_list
+                records[sheet_name] = []
+            records[sheet_name].append(record)
 
         now = timezone.now()
 
