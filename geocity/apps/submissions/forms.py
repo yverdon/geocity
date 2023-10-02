@@ -795,7 +795,7 @@ class SubmissionContactForm(forms.ModelForm):
         ),
         validators=[
             RegexValidator(
-                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                regex=r"^((\\+|00)\\d{1,3}\\s?)?(\\d{2})\\s?(\\d{3})\\s?(\\d{2})\\s?(\\d{2})$",
                 message=mark_safe(
                     'Veuillez saisir un <a target="_blank" href="https://www.bakom.admin.ch/bakom/fr/page-daccueil/telecommunication/numerotation-et-telephonie.html">numéro de téléphone suisse valide</a>.'
                 ),

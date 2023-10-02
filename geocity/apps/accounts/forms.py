@@ -260,7 +260,7 @@ class SocialSignupForm(SignupForm):
         widget=forms.TextInput(attrs={"placeholder": "ex: +41 24 111 22 22"}),
         validators=[
             RegexValidator(
-                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                regex=r"^((\\+|00)\\d{1,3}\\s?)?(\\d{2})\\s?(\\d{3})\\s?(\\d{2})\\s?(\\d{2})$",
                 message="Seuls les chiffres et les espaces sont autorisés.",
             )
         ],
