@@ -69,7 +69,7 @@
       {% if formsets.complementary_documents and document_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                {% translate "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
+                {% translate "Documents et impressions" %}
             </a>
           </li>
       {% endif %}
@@ -146,7 +146,7 @@
 
               {% if publication_enabled %}
               <hr>
-              <h4>{% translate "Mise en consultation publique" %}</h4><span class="badge badge-beta badge-success">Beta</span>
+              <h4>{% translate "Mise en consultation publique" %}</h4>
               <form method="post">
                 {% csrf_token %}
 

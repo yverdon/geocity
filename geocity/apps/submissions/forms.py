@@ -790,7 +790,7 @@ class SubmissionContactForm(forms.ModelForm):
         label=_("Téléphone"),
         widget=forms.TextInput(
             attrs={
-                "placeholder": "ex: 024 111 22 22",
+                "placeholder": "ex: +41 24 111 22 22",
             }
         ),
         validators=[

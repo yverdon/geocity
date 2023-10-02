@@ -253,7 +253,7 @@ class AdministrativeEntity(models.Model):
         max_length=20,
         validators=[
             RegexValidator(
-                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                regex=r"^((\+|00)\d{1,3}\s?)?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
                 message="Seuls les chiffres et les espaces sont autorisés.",
             )
         ],
@@ -482,7 +482,7 @@ class UserProfile(models.Model):
     )
     zipcode = models.PositiveIntegerField(
         _("NPA"),
-        validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+        validators=[MinValueValidator(1000), MaxValueValidator(99999)],
     )
     city = models.CharField(
         _("Ville"),
@@ -493,7 +493,7 @@ class UserProfile(models.Model):
         max_length=20,
         validators=[
             RegexValidator(
-                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                regex=r"^((\+|00)\d{1,3}\s?)?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
                 message="Seuls les chiffres et les espaces sont autorisés.",
             )
         ],
@@ -504,7 +504,7 @@ class UserProfile(models.Model):
         max_length=20,
         validators=[
             RegexValidator(
-                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                regex=r"^((\+|00)\d{1,3}\s?)?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
                 message="Seuls les chiffres et les espaces sont autorisés.",
             )
         ],

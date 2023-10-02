@@ -38,7 +38,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
             "address": "an address",
             "zipcode": 1007,
             "city": "Lausanne",
-            "phone_first": "0789124692",
+            "phone_first": "+41789124692",
         }
 
     def test_user_cannot_register_if_email_is_used(self):

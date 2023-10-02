@@ -202,8 +202,12 @@ class GenericUserProfileForm(forms.ModelForm):
             "notify_per_email": "Permet d'activer la réception des notifications automatiques de suivi dans votre boîte mail, par exemple lorsqu'une demande a été soumise ou est en attente de validation.",
         }
         widgets = {
-            "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
-            "phone_second": forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
+            "phone_first": forms.TextInput(
+                attrs={"placeholder": "ex: +41 24 111 22 22"}
+            ),
+            "phone_second": forms.TextInput(
+                attrs={"placeholder": "ex: +41 79 111 22 22"}
+            ),
             "vat_number": forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
             "iban": forms.TextInput(
                 attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}
@@ -253,7 +257,7 @@ class SocialSignupForm(SignupForm):
         label=_("Téléphone principal"),
         max_length=20,
         required=True,
-        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
+        widget=forms.TextInput(attrs={"placeholder": "ex: +41 24 111 22 22"}),
         validators=[
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
@@ -266,7 +270,7 @@ class SocialSignupForm(SignupForm):
         required=False,
         label=_("Téléphone secondaire"),
         max_length=20,
-        widget=forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
+        widget=forms.TextInput(attrs={"placeholder": "ex: +41 79 111 22 22"}),
     )
 
     company_name = forms.CharField(
