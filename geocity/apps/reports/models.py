@@ -768,6 +768,11 @@ class SectionRecipient(Section):
         }
 
 
+class SectionImage(Section):
+    class Meta:
+        verbose_name = _("Image(s)")
+
+
 class SectionBuildHelper(Section):
     class Meta:
         verbose_name = _("Aide")
