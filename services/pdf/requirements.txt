@@ -36,7 +36,7 @@ tinycss2==1.2.1
     # via
     #   cssselect2
     #   weasyprint
-urllib3==1.26.15
+urllib3==1.26.17
     # via requests
 weasyprint==55.0
     # via -r requirements.in
