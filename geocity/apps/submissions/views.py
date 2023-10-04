@@ -1829,6 +1829,9 @@ def submission_submit(request, submission_id):
         and submission.status == models.Submission.STATUS_DRAFT
     )
 
+    if submission.submission_price and not submission.submission_price.amount:
+        should_go_to_payment = False
+
     has_any_form_with_exceeded_submissions = (
         submission.has_any_form_with_exceeded_submissions()
     )
@@ -1873,6 +1876,21 @@ def submission_submit_confirmed(request, submission_id):
         return redirect(
             "submissions:submission_select_forms", submission_id=submission_id
         )
+
+    if (
+        submission.requires_online_payment()
+        and submission.status == models.Submission.STATUS_DRAFT
+    ):
+        if submission.submission_price.amount:
+            # Redirect to payment processor if user is here by mistake
+            return redirect(
+                "submissions:submission_payment_redirect", submission_id=submission_id
+            )
+        else:
+            # Submission price is 0
+            processor = get_payment_processor(submission.get_form_for_payment())
+            empty_transaction = processor.create_free_transaction(submission)
+            submission.generate_and_save_pdf("confirmation", empty_transaction)
 
     incomplete_steps = [
         step.url

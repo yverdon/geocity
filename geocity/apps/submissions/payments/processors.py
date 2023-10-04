@@ -50,8 +50,15 @@ class PaymentProcessor:
         transaction.transaction_id = merchant_transaction_data["transaction_id"]
         transaction.save()
 
+    def create_free_transaction(self, submission):
+        empty_transaction, __ = self._create_internal_transaction(submission)
+        empty_transaction.transaction_id = str(submission.pk)
+        empty_transaction.set_paid()
+        empty_transaction.save()
+        return empty_transaction
+
     def create_transaction_and_return_payment_page_url(self, submission, request):
-        transaction, is_new_transaction = self._create_internal_transaction(submission)
+        transaction, is_new_transaction = self.create_transaction(submission)
         if is_new_transaction:
             merchant_transaction_data = self.create_merchant_transaction(
                 request, submission, transaction
