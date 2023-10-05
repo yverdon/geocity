@@ -587,6 +587,8 @@ REST_FRAMEWORK = {
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
         # Full API for search
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
+        # Full API for agenda app
+        "agenda": os.getenv("DRF_THROTTLE_RATE_AGENDA_API"),
     },
 }
 

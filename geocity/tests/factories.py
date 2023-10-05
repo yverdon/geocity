@@ -464,7 +464,7 @@ class FieldFactory(factory.django.DjangoModelFactory):
     placeholder = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TEXT
-    is_public_when_permitrequest_is_public = True
+    public_info = True
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):

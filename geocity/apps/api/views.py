@@ -466,3 +466,37 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 SubmissionPointViewSet = submission_view_set_subset_factory("points")
 SubmissionLineViewSet = submission_view_set_subset_factory("lines")
 SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
+
+
+class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    To get detail use /rest/agenda/:id
+        Example : /rest/agenda/1
+    """
+
+    throttle_scope = "agenda"
+    serializer_class = serializers.AgendaSerializer
+    permission_classes = [permissions.AllowAllRequesters]
+
+    def get_queryset(self):
+        """
+        This view should return a list of events for agenda with minimal information when id is not given
+        """
+
+        # TODO: Replace with this queryset to prevent to see data that isn't public
+        # qs = Submission.objects.filter(
+        #     Q(selected_forms__field_values__value__val__isnull=False)
+        #     & Q(is_public=True)
+        #     & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
+        # )
+        # TODO: Delete this queryset, that is used for tests but shows too much information
+
+        qs = (
+            Submission.objects.filter(
+                Q(selected_forms__field_values__value__val__isnull=False)
+                & Q(selected_forms__form__agenda_visible=True)
+            )
+            .distinct()
+            .order_by("id")
+        )
+        return qs

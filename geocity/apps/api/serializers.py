@@ -54,7 +54,7 @@ def get_form_fields(
         "form__name",
         "form__api_name",
         "form__category__name",
-        "field_values__field__is_public_when_permitrequest_is_public",
+        "field_values__field__public_info",
         "submission__administrative_entity",
         "submission__author",
     )
@@ -113,9 +113,7 @@ def get_form_fields(
                         in administrative_entities_associated_to_user_list
                     )
                     or (current_user and field["submission__author"] == current_user.id)
-                    or field[
-                        "field_values__field__is_public_when_permitrequest_is_public"
-                    ]
+                    or field["field_values__field__public_info"]
                 ):
                     # get_property_value return None if file does not exist
                     file = get_field_value_based_on_field(field)
@@ -136,9 +134,7 @@ def get_form_fields(
                         in administrative_entities_associated_to_user_list
                     )
                     or (current_user and field["submission__author"] == current_user.id)
-                    or field[
-                        "field_values__field__is_public_when_permitrequest_is_public"
-                    ]
+                    or field["field_values__field__public_info"]
                 ):
                     # Properties of form
                     property.append(
@@ -756,3 +752,69 @@ class SubmissionFiltersSerializer(serializers.Serializer):
 class SearchSerializer(serializers.Serializer):
     def to_representation(self, value):
         return search.search_result_to_json(value)
+
+
+# ///////////////////////////////////
+# Agenda api
+# ///////////////////////////////////
+
+
+def get_agenda_form_fields(value, detailed):
+    """
+    Return form fields for agenda-embed
+    """
+    obj = value.get_selected_forms().all()
+    form_fields = obj.values(
+        "field_values__field__name",
+        "field_values__field__api_name",
+        "field_values__field_id",
+        "field_values__field__input_type",
+        "field_values__value__val",
+        "form_id",
+        "id",
+        "form__name",
+        "form__api_name",
+        "form__category__name",
+        "field_values__field__public_info",
+        "field_values__field__api_light",
+        "field_values__field__used_as_api_filter",
+        "submission__administrative_entity",
+        "submission__author",
+    )
+
+    result = {
+        "type": "Feature",
+        "properties": {
+            "id": value.id,
+        },
+    }
+
+    # TODO: Use thoses : api_light, used_as_api_filter
+    for field in form_fields:
+        if field["field_values__value__val"]:
+            if detailed:
+                result["properties"][field["field_values__field__api_name"]] = field[
+                    "field_values__value__val"
+                ]
+            elif field["field_values__field__api_light"]:
+                result["properties"][field["field_values__field__api_name"]] = field[
+                    "field_values__value__val"
+                ]
+
+    # if len(result["properties"]) <= 1:
+    #     return None
+
+    return result
+
+
+class AgendaSerializer(serializers.Serializer):
+    def to_representation(self, value):
+
+        # Check if there's a pk of submission given
+        request = self.context.get("request")
+        kwargs = request.parser_context["kwargs"]
+        detailed = True if kwargs and kwargs["pk"] else False
+
+        fields = get_agenda_form_fields(value, detailed)
+
+        return fields

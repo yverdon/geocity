@@ -14,6 +14,7 @@ router.register(r"search", views.SearchViewSet, "search")
 router.register(
     r"submissions_details", views.SubmissionDetailsViewSet, "submissions_details"
 )
+router.register(r"agenda", views.AgendaViewSet, "agenda")
 
 urlpatterns = router.urls + [
     path("current_user/", views.CurrentUserAPIView.as_view(), name="current_user"),

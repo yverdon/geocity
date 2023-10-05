@@ -427,9 +427,7 @@ class Command(BaseCommand):
         store_geometry_for_address_field = field.get(
             "store_geometry_for_address_field", False
         )
-        is_public_when_permitrequest_is_public = field.get(
-            "is_public_when_permitrequest_is_public", False
-        )
+        public_info = field.get("public_info", False)
 
         field, created = Field.objects.get_or_create(
             integrator=integrator,
@@ -446,7 +444,7 @@ class Command(BaseCommand):
             file_download=file_download,
             additional_searchtext_for_address_field=additional_searchtext_for_address_field,
             store_geometry_for_address_field=store_geometry_for_address_field,
-            is_public_when_permitrequest_is_public=is_public_when_permitrequest_is_public,
+            public_info=public_info,
         )
         return field
 
