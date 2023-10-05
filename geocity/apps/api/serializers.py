@@ -771,6 +771,9 @@ def get_agenda_form_fields(value, detailed):
         "field_values__field__input_type",
         "field_values__value__val",
         "form_id",
+        "amend_fields__value",
+        "form__amend_fields__api_name",
+        "form__amend_fields__api_light",
         "id",
         "form__name",
         "form__api_name",
@@ -792,17 +795,23 @@ def get_agenda_form_fields(value, detailed):
     # TODO: Use thoses : api_light, used_as_api_filter
     for field in form_fields:
         if field["field_values__value__val"]:
+            print(field["form__amend_fields__api_name"])
             if detailed:
                 result["properties"][field["field_values__field__api_name"]] = field[
                     "field_values__value__val"
                 ]
-            elif field["field_values__field__api_light"]:
-                result["properties"][field["field_values__field__api_name"]] = field[
-                    "field_values__value__val"
+                result["properties"][field["form__amend_fields__api_name"]] = field[
+                    "amend_fields__value"
                 ]
-
-    # if len(result["properties"]) <= 1:
-    #     return None
+            else:
+                if field["field_values__field__api_light"]:
+                    result["properties"][
+                        field["field_values__field__api_name"]
+                    ] = field["field_values__value__val"]
+                if field["form__amend_fields__api_light"]:
+                    result["properties"][field["form__amend_fields__api_name"]] = field[
+                        "amend_fields__value"
+                    ]
 
     return result
 

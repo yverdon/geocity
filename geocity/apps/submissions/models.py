@@ -1809,6 +1809,15 @@ class SubmissionAmendField(models.Model):
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
+    api_light = models.BooleanField(
+        _("Visible dans l'API light"),
+        default=False,
+        help_text=_(
+            """Lorsque cette case est cochée, ce champ est affichée dans la version light de l'api (/rest/RESSOURCE).<br>
+            Afin de ne pas afficher trop d'informations, le champ est masqué pour améliorer la rapidité de l'API.<br>
+            Pour afficher la version normale de l'api, il faut se rendre sur une seule ressource (/rest/RESSOURCE/:ID)."""
+        ),
+    )
 
     class Meta:
         verbose_name = _("2.1 Champ de traitement des demandes")
