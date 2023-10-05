@@ -8,8 +8,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
-from geocity.apps.forms.models import Form
+from geocity.apps.forms.models import Field, Form
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
     Submission,
@@ -477,6 +478,41 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     throttle_scope = "agenda"
     serializer_class = serializers.AgendaSerializer
     permission_classes = [permissions.AllowAllRequesters]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+        available_filters = Field.objects.filter(
+            Q(used_as_api_filter=True)
+            & (
+                Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
+                | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
+            )
+        )
+
+        result = {
+            "filters": {},
+        }
+
+        for available_filter in available_filters:
+            result["filters"][available_filter.api_name] = {
+                "label": available_filter.name
+            }
+            result["filters"][available_filter.api_name]["values"] = [
+                {
+                    "slug": convert_string_to_api_key(choice.strip()),
+                    "label": choice.strip(),
+                }
+                for choice in available_filter.choices.strip().splitlines()
+            ]
+
+        data = serializer.data
+        data.append(result)
+
+        return Response(data)
 
     def get_queryset(self):
         """

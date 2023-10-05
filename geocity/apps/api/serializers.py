@@ -792,18 +792,25 @@ def get_agenda_form_fields(value, detailed):
         },
     }
 
-    # TODO: Use thoses : api_light, used_as_api_filter
     for field in form_fields:
         if field["field_values__value__val"]:
             if detailed:
-                result["properties"][field["field_values__field__api_name"]] = field[
-                    "field_values__value__val"
-                ]
+                if field["field_values__field__used_as_api_filter"]:
+                    result["categories"][
+                        field["field_values__field__api_name"]
+                    ] = field["field_values__value__val"]
+                else:
+                    result["properties"][
+                        field["field_values__field__api_name"]
+                    ] = field["field_values__value__val"]
                 result["properties"][field["form__amend_fields__api_name"]] = field[
                     "form__amend_fields__amend_field_value__value"
                 ]
             else:
-                if field["field_values__field__api_light"]:
+                if (
+                    field["field_values__field__api_light"]
+                    and not field["field_values__field__used_as_api_filter"]
+                ):
                     result["properties"][
                         field["field_values__field__api_name"]
                     ] = field["field_values__value__val"]
@@ -812,6 +819,33 @@ def get_agenda_form_fields(value, detailed):
                         "form__amend_fields__amend_field_value__value"
                     ]
 
+    result["properties"]["starts_at"] = value.geo_time.get().starts_at
+    result["properties"]["ends_at"] = value.geo_time.get().ends_at
+    return result
+
+
+def get_categories_for_agenda(value):
+    obj = value.get_selected_forms().all()
+    form_fields = obj.values(
+        "field_values__value__val",
+        "field_values__field__api_name",
+        "field_values__field__public_info",
+        "field_values__field__used_as_api_filter",
+    )
+
+    result = {
+        "categories": {},
+    }
+
+    for field in form_fields:
+        if (
+            field["field_values__value__val"]
+            and field["field_values__field__used_as_api_filter"]
+        ):
+            result["categories"][field["field_values__field__api_name"]] = field[
+                "field_values__value__val"
+            ]
+    print(result)
     return result
 
 
@@ -824,5 +858,10 @@ class AgendaSerializer(serializers.Serializer):
         detailed = True if kwargs and kwargs["pk"] else False
 
         fields = get_agenda_form_fields(value, detailed)
+
+        # Retrieve all the fields that are field_values__field__used_as_api_filter for this submission
+        # if not detailed:
+        #     categories = get_categories_for_agenda(value)
+        #     print(categories)
 
         return fields
