@@ -1881,12 +1881,7 @@ def submission_submit_confirmed(request, submission_id):
         submission.requires_online_payment()
         and submission.status == models.Submission.STATUS_DRAFT
     ):
-        if submission.submission_price.amount:
-            # Redirect to payment processor if user is here by mistake
-            return redirect(
-                "submissions:submission_payment_redirect", submission_id=submission_id
-            )
-        else:
+        if not submission.submission_price.amount:
             # Submission price is 0
             processor = get_payment_processor(submission.get_form_for_payment())
             empty_transaction = processor.create_free_transaction(submission)
