@@ -1849,7 +1849,7 @@ class SubmissionAmendFieldValue(models.Model):
         SubmissionAmendField,
         verbose_name=_("caractéristique"),
         on_delete=models.PROTECT,
-        related_name="+",
+        related_name="amend_field_value",
     )
     form = models.ForeignKey(
         SelectedForm,
