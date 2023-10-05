@@ -58,7 +58,7 @@ class PaymentProcessor:
         return empty_transaction
 
     def create_transaction_and_return_payment_page_url(self, submission, request):
-        transaction, is_new_transaction = self.create_transaction(submission)
+        transaction, is_new_transaction = self._create_internal_transaction(submission)
         if is_new_transaction:
             merchant_transaction_data = self.create_merchant_transaction(
                 request, submission, transaction
