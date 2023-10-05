@@ -255,6 +255,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "requires_validation_document",
                     "max_submissions",
                     "max_submissions_message",
+                    "max_submissions_bypass_enabled",
                     "is_anonymous",
                     "integrator",
                 )

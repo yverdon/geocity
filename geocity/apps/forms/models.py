@@ -501,6 +501,12 @@ class Form(models.Model):
         null=True,
         blank=True,
     )
+    max_submissions_bypass_enabled = models.BooleanField(
+        _(
+            "Autoriser les utilisateurs avec permission à soumettre des demandes même si le nombre maximal est atteint"
+        ),
+        default=False,
+    )
     GEO_WIDGET_GENERIC = 1
     GEO_WIDGET_ADVANCED = 2
     GEO_WIDGET_CHOICES = (
@@ -583,12 +589,19 @@ class Form(models.Model):
             .count()
         )
 
-    def has_exceeded_maximum_submissions(self):
-        return (
+    def has_exceeded_maximum_submissions(self, user_for_bypass=None):
+        from ..submissions.permissions import has_permission_to_amend_submission_in_form
+
+        has_exceeded = (
             self.max_submissions
             and self.nb_submissions_taken_into_account_for_max_submissions
             >= self.max_submissions
         )
+
+        if has_exceeded and self.max_submissions_bypass_enabled and user_for_bypass:
+            return not has_permission_to_amend_submission_in_form(user_for_bypass, self)
+
+        return has_exceeded
 
     def clean(self):
         if self.max_submissions is not None and self.max_submissions < 1:
