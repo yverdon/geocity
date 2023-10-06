@@ -791,6 +791,8 @@ def get_agenda_form_fields(value, detailed):
             "id": value.id,
         },
     }
+    if detailed:
+        result["properties"]["categories"] = {}
 
     for field in form_fields:
         if field["field_values__value__val"]:

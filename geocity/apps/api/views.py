@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
-from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.forms.models import Field, Form
 from geocity.apps.submissions import search
@@ -503,10 +502,12 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             }
             result["filters"][available_filter.api_name]["values"] = [
                 {
-                    "slug": convert_string_to_api_key(choice.strip()),
+                    "id": key,
                     "label": choice.strip(),
                 }
-                for choice in available_filter.choices.strip().splitlines()
+                for key, choice in enumerate(
+                    available_filter.choices.strip().splitlines()
+                )
             ]
 
         data = serializer.data
