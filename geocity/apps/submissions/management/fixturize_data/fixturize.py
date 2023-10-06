@@ -5,10 +5,10 @@
 
 # Defines the number of each type of user to create on each entity
 iterations = {
-    "integrator_iterations": 3,
-    "pilot_iterations": 5,
-    "validator_iterations": 6,
-    "user_iterations": 8,
+    "integrator_iterations": 1,
+    "pilot_iterations": 1,
+    "validator_iterations": 1,
+    "user_iterations": 1,
 }
 
 # domain:entity

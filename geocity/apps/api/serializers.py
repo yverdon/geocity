@@ -795,32 +795,78 @@ def get_agenda_form_fields(value, detailed):
         result["properties"]["categories"] = {}
 
     for field in form_fields:
+        # If there is a value, means we are not checking a "None"
         if field["field_values__value__val"]:
+
+            # Detailed API for agenda
             if detailed:
+
+                # Categories used as filter, that are defined by "field_values__field__used_as_api_filter"
                 if field["field_values__field__used_as_api_filter"]:
-                    result["categories"][
+
+                    # Label name for the properties
+                    result["properties"]["categories"][
                         field["field_values__field__api_name"]
-                    ] = field["field_values__value__val"]
+                    ] = {"label": field["field_values__field__name"]}
+
+                    # Retrieving the list of categories
+                    # When there's only 1 of len, it means the for loop, looped on 1 element, so we use field_values__value__val
+                    # When there's more than 1 of len, it means it's a list of multiple elements, so we use category_value
+                    category_value_list = []
+                    for key, category_value in enumerate(
+                        field["field_values__value__val"]
+                    ):
+                        if len(category_value) == 1:
+                            category_value_list.append(
+                                {"id": key, "label": field["field_values__value__val"]}
+                            )
+                        else:
+                            category_value_list.append(
+                                {"id": key, "label": category_value}
+                            )
+
+                    # Store the list of categories in the format for agenda api
+                    result["properties"]["categories"][
+                        field["field_values__field__api_name"]
+                    ]["values"] = category_value_list
+
+                # Properties for detailed API
                 else:
                     result["properties"][
                         field["field_values__field__api_name"]
                     ] = field["field_values__value__val"]
-                result["properties"][field["form__amend_fields__api_name"]] = field[
-                    "form__amend_fields__amend_field_value__value"
-                ]
+
+                # Custom way to transform a string "True" and "False" to True and False
+                # FIXME: Not a good practice, need to develop a real boolean field instead of string to bool
+                result["properties"][field["form__amend_fields__api_name"]] = (
+                    True
+                    if field["form__amend_fields__amend_field_value__value"] == "True"
+                    else False
+                    if field["form__amend_fields__amend_field_value__value"] == "False"
+                    else field["form__amend_fields__amend_field_value__value"]
+                )
+            # Light API for agenda
             else:
+                # Field visible on light API and it's not used as filter
                 if (
                     field["field_values__field__api_light"]
                     and not field["field_values__field__used_as_api_filter"]
                 ):
+                    # Properties for ligh API
                     result["properties"][
                         field["field_values__field__api_name"]
                     ] = field["field_values__value__val"]
+
+                # Amend field for Light API
                 if field["form__amend_fields__api_light"]:
+
+                    # Store amend properties for light API
                     result["properties"][field["form__amend_fields__api_name"]] = field[
                         "form__amend_fields__amend_field_value__value"
                     ]
 
+    # Custom way to retrieve starts_at and ends_at for both light and detailed
+    # TODO: Check for aggregated_geotime, to prevent : geocity.apps.submissions.models.SubmissionGeoTime.MultipleObjectsReturned: get() returned more than one SubmissionGeoTime -- it returned 2!
     result["properties"]["starts_at"] = value.geo_time.get().starts_at
     result["properties"]["ends_at"] = value.geo_time.get().ends_at
     return result
