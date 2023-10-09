@@ -2633,16 +2633,16 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
 
-    def test_price_at_0chf_and_submit(self):
-        zero_price = factories.PriceFactory.create(amount=0)
-        self.parent_type.form.prices.add(zero_price)
+    def test_free_price_and_submit(self):
+        free_price = factories.PriceFactory.create(amount=0)
+        self.parent_type.form.prices.add(free_price)
 
         submission = factories.SubmissionFactory(
             author=self.user,
         )
         submission.forms.set([self.parent_type.form])
         response = self._add_fields_select_price_and_save(
-            submission, {"selected_price": zero_price.pk}
+            submission, {"selected_price": free_price.pk}
         )
         assert response.status_code == 302
 

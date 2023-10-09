@@ -59,6 +59,10 @@ class Transaction(models.Model):
         abstract = True
         ordering = ("-creation_date",)
 
+    @property
+    def can_have_status_changed(self):
+        return self.amount > 0
+
     def set_refunded(self):
         self.status = self.STATUS_REFUNDED
         self.save()

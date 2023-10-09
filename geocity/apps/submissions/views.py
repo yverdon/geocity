@@ -2164,8 +2164,11 @@ class ChangeTransactionStatus(View):
 
             transaction = get_transaction_from_transaction_id(transaction_id)
             submission = transaction.submission_price.submission
-            if not permissions.user_has_permission_to_change_transaction_status(
-                request.user, transaction, new_status
+            if (
+                not permissions.user_has_permission_to_change_transaction_status(
+                    request.user, transaction, new_status
+                )
+                or not transaction.can_have_status_changed
             ):
                 raise PermissionDenied
 
