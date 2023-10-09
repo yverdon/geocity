@@ -503,7 +503,7 @@ class Form(models.Model):
     )
     max_submissions_bypass_enabled = models.BooleanField(
         _(
-            "Autoriser les utilisateurs avec permission à soumettre des demandes même si le nombre maximal est atteint"
+            "Autoriser le secrétariat à soumettre des demandes même si le nombre maximal est atteint"
         ),
         default=False,
     )

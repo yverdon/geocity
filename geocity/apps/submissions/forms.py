@@ -273,14 +273,14 @@ class FormsSelectForm(forms.Form):
             for form in forms:
                 form_name = form.name
                 if form.has_exceeded_maximum_submissions():
-                    max_submission_msg = f"<span class='px-5 text-danger'>{form.max_submissions_message}</span>"
+                    max_submission_msg = f"<span class='pl-3 text-danger'>{form.max_submissions_message}</span>"
                     if (
                         form.max_submissions_bypass_enabled
                         and has_permission_to_amend_submission(self.user, self.instance)
                     ):
-                        form_name = f"{form_name} <s>{max_submission_msg}</s> <span class='px-5 text-danger'>(formulaire actif pour l'utilisateur courant)</span>"
+                        form_name = f"{form_name} <s class='text-danger'>{max_submission_msg}</s> <span class='px-5 text-danger'>(formulaire actif pour l'utilisateur courant)</span>"
                     else:
-                        form_name = f"{form_name} {max_submission_msg}</span>"
+                        form_name = f"{form_name} {max_submission_msg}"
                         disabled_choices.add(form.pk)
                 forms_list.append((form.pk, form_name))
 
