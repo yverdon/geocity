@@ -278,7 +278,7 @@ class FormsSelectForm(forms.Form):
                         form.max_submissions_bypass_enabled
                         and has_permission_to_amend_submission(self.user, self.instance)
                     ):
-                        form_name = f"{form_name} <s class='text-danger'>{max_submission_msg}</s> <span class='px-5 text-danger'>(formulaire actif pour l'utilisateur courant)</span>"
+                        form_name = f"{form_name} <s class='text-danger'>{max_submission_msg}</s> <span class='pl-1 text-danger'>(formulaire actif pour l'utilisateur courant)</span>"
                     else:
                         form_name = f"{form_name} {max_submission_msg}"
                         disabled_choices.add(form.pk)
