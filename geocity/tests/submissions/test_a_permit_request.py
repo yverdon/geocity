@@ -2614,7 +2614,7 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
             field.forms.set([self.parent_type.form])
         return list_single_field, list_multiple_field
 
-    def _add_fields_select_price_and_save(self, submission):
+    def _add_fields_select_price_and_save(self, submission, override_data=None):
         list_single_field, list_multiple_field = self._add_fields_to_form()
 
         data = {
@@ -2622,6 +2622,8 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
             f"fields-{self.parent_type.form.pk}_{list_single_field.pk}": "foo",
             f"fields-{self.parent_type.form.pk}_{list_multiple_field.pk}": ["bar"],
         }
+        if override_data:
+            data.update(override_data)
 
         return self.client.post(
             reverse(
@@ -2630,6 +2632,29 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
             ),
             data=data,
         )
+
+    def test_free_price_and_submit(self):
+        free_price = factories.PriceFactory.create(amount=0)
+        self.parent_type.form.prices.add(free_price)
+
+        submission = factories.SubmissionFactory(
+            author=self.user,
+        )
+        submission.forms.set([self.parent_type.form])
+        response = self._add_fields_select_price_and_save(
+            submission, {"selected_price": free_price.pk}
+        )
+        assert response.status_code == 302
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        content = response.content.decode()
+        self.assertIn("/submitconfirmed/", content)
+        self.assertNotIn("/submissions/payment/", content)
 
     def test_price_selection_and_submit_page(self):
         submission = factories.SubmissionFactory(
