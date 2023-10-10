@@ -163,6 +163,116 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         self.assertIn("Ce formulaire est désactivé", response.content.decode())
 
+    def test_cant_select_exceeded_submissions_single_forms_step_if_bypass_enabled_and_not_pilot(
+        self,
+    ):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            administrative_entity__is_single_form_submissions=True,
+        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        submission.status = submissions_models.Submission.STATUS_APPROVED
+        submission.save()
+
+        for form in submission.forms.all():
+            form.max_submissions = 1
+            form.max_submissions_bypass_enabled = True
+            form.save()
+
+        new_submission = factories.SubmissionFactory(
+            author=self.user, administrative_entity=submission.administrative_entity
+        )
+
+        response = self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": new_submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        self.assertIn("Ce formulaire est désactivé", response.content.decode())
+
+    def test_pilot_can_select_exceeded_submissions_single_forms_step_if_bypass_enabled(
+        self,
+    ):
+        # Create pilot group
+        pilot_group = factories.GroupFactory(name="pilot")
+
+        # Create department
+        department = factories.PermitDepartmentFactory(
+            group=pilot_group, is_backoffice=True
+        )
+
+        # Create pilot user
+        pilot = factories.SecretariatUserFactory(
+            groups=[pilot_group], email="secretary@geocity.ch"
+        )
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            administrative_entity=department.administrative_entity,
+        )
+        submission.save()
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        submission.status = submissions_models.Submission.STATUS_APPROVED
+        submission.save()
+
+        for form in submission.forms.all():
+            form.max_submissions = 1
+            form.max_submissions_bypass_enabled = True
+            form.save()
+
+        self.client.login(username=pilot.username, password="password")
+        new_submission = factories.SubmissionFactory(
+            author=pilot, administrative_entity=submission.administrative_entity
+        )
+
+        response = self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": new_submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+            follow=True,
+        )
+
+        # We were redirected to the fields step, because we bypassed the max_submissions limit
+        assert response.resolver_match.url_name == "submission_fields"
+
     def test_form_cant_be_submitted_if_exceeded_submissions_in_between(self):
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(

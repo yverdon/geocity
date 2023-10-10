@@ -1290,13 +1290,15 @@ class Submission(models.Model):
         comp_doc.authorised_departments.set(PermitDepartment.objects.all())
         return comp_doc
 
-    def has_any_form_with_exceeded_submissions(self):
-        return any(form.has_exceeded_maximum_submissions() for form in self.forms.all())
+    def has_any_form_with_exceeded_submissions(self, user_for_bypass=None):
+        return any(
+            form.has_exceeded_maximum_submissions(user_for_bypass)
+            for form in self.forms.all()
+        )
 
     def get_maximum_submissions_message(self):
         for form in self.forms.all():
-            if form.has_exceeded_maximum_submissions():
-                return form.max_submissions_message
+            return form.max_submissions_message
 
 
 class Contact(models.Model):

@@ -39,6 +39,7 @@ from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
 from .payments.models import SubmissionPrice
+from .permissions import has_permission_to_amend_submission
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -272,8 +273,15 @@ class FormsSelectForm(forms.Form):
             for form in forms:
                 form_name = form.name
                 if form.has_exceeded_maximum_submissions():
-                    form_name = f"{form_name} <span class='px-5 text-danger'>{form.max_submissions_message}</span>"
-                    disabled_choices.add(form.pk)
+                    max_submission_msg = f"<span class='pl-3 text-danger'>{form.max_submissions_message}</span>"
+                    if (
+                        form.max_submissions_bypass_enabled
+                        and has_permission_to_amend_submission(self.user, self.instance)
+                    ):
+                        form_name = f"{form_name} <s class='text-danger'>{max_submission_msg}</s> <span class='pl-1 text-danger'>(formulaire actif pour l'utilisateur courant)</span>"
+                    else:
+                        form_name = f"{form_name} {max_submission_msg}"
+                        disabled_choices.add(form.pk)
                 forms_list.append((form.pk, form_name))
 
             forms_by_category.append((category, forms_list))
@@ -288,7 +296,12 @@ class FormsSelectForm(forms.Form):
         selected_forms = models.Form.objects.filter(
             pk__in=self.cleaned_data["selected_forms"]
         )
-        if any([form.has_exceeded_maximum_submissions() for form in selected_forms]):
+        if any(
+            [
+                form.has_exceeded_maximum_submissions(self.user)
+                for form in selected_forms
+            ]
+        ):
             raise forms.ValidationError(selected_forms.first().max_submissions_message)
         return self.cleaned_data["selected_forms"]
 
@@ -325,7 +338,7 @@ class FormsSingleSelectForm(FormsSelectForm):
 
     def clean_selected_forms(self):
         selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
-        if selected_form.has_exceeded_maximum_submissions():
+        if selected_form.has_exceeded_maximum_submissions(self.user):
             raise forms.ValidationError(selected_form.max_submissions_message)
         return self.cleaned_data["selected_forms"]
 
