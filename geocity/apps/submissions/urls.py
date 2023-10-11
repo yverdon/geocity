@@ -25,6 +25,10 @@ anonymous_submission_urlpatterns = [
     ),
 ]
 
+agenda_urlpatterns = [
+    path("agenda/", views.agenda, name="agenda"),
+]
+
 existing_submission_urlpatterns = [
     path("", views.SubmissionDetailView.as_view(), name="submission_detail"),
     path(
@@ -53,6 +57,7 @@ existing_submission_urlpatterns = [
 ]
 
 urlpatterns = [
+    path("", include(agenda_urlpatterns)),
     path(
         "<int:submission_id>/",
         include(submission_urlpatterns + existing_submission_urlpatterns),

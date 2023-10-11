@@ -1021,6 +1021,14 @@ def anonymous_submission_sent(request):
     )
 
 
+def agenda(request):
+    return render(
+        request,
+        "submissions/agenda.html",
+        {},
+    )
+
+
 def validate_captcha_and_render_page(request, entity):
     # Validate captcha and temporary user connection
     captcha_refresh_url = (

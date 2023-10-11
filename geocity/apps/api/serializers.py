@@ -817,9 +817,9 @@ def get_agenda_form_fields(value, detailed):
                         field["field_values__value__val"]
                     ):
                         if len(category_value) == 1:
-                            category_value_list.append(
-                                {"id": key, "label": field["field_values__value__val"]}
-                            )
+                            category_value_list = [
+                                {"id": 0, "label": field["field_values__value__val"]}
+                            ]
                         else:
                             category_value_list.append(
                                 {"id": key, "label": category_value}
@@ -869,31 +869,14 @@ def get_agenda_form_fields(value, detailed):
     # TODO: Check for aggregated_geotime, to prevent : geocity.apps.submissions.models.SubmissionGeoTime.MultipleObjectsReturned: get() returned more than one SubmissionGeoTime -- it returned 2!
     result["properties"]["starts_at"] = value.geo_time.get().starts_at
     result["properties"]["ends_at"] = value.geo_time.get().ends_at
-    return result
 
-
-def get_categories_for_agenda(value):
-    obj = value.get_selected_forms().all()
-    form_fields = obj.values(
-        "field_values__value__val",
-        "field_values__field__api_name",
-        "field_values__field__public_info",
-        "field_values__field__used_as_api_filter",
-    )
-
-    result = {
-        "categories": {},
+    # TODO: do this without hardcode
+    result["properties"]["poster"] = {
+        "src": "https://cataas.com/cat",
+        "width": "1365",
+        "height": "2048",
     }
 
-    for field in form_fields:
-        if (
-            field["field_values__value__val"]
-            and field["field_values__field__used_as_api_filter"]
-        ):
-            result["categories"][field["field_values__field__api_name"]] = field[
-                "field_values__value__val"
-            ]
-    print(result)
     return result
 
 
@@ -906,10 +889,5 @@ class AgendaSerializer(serializers.Serializer):
         detailed = True if kwargs and kwargs["pk"] else False
 
         fields = get_agenda_form_fields(value, detailed)
-
-        # Retrieve all the fields that are field_values__field__used_as_api_filter for this submission
-        # if not detailed:
-        #     categories = get_categories_for_agenda(value)
-        #     print(categories)
 
         return fields

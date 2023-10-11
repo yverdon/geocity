@@ -1,0 +1,18 @@
+<!-- Customize the style -->
+{% load i18n l10n %}
+{% load static %}
+<style>
+    agenda-embed {
+      --agd-color-primary: #008c6f;
+      --agd-color-accent: #005d95;
+      --agd-headings-font-family: 'Playfair Display', serif;
+      --agd-headings-font-weight: 500;
+      /* ... */
+    }
+  </style>
+
+  <!-- Render the component -->
+  <agenda-embed api-base-url="http://localhost:9095/rest"></agenda-embed>
+
+  <!-- Initialize the component -->
+  <script type="module" src="{% static 'js/agenda-embed/agenda-embed.js' %}"></script>

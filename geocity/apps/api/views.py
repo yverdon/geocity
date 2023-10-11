@@ -484,6 +484,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
 
         # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
         available_filters = Field.objects.filter(
             Q(used_as_api_filter=True)
             & (
@@ -492,15 +493,14 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             )
         )
 
-        result = {
-            "filters": {},
-        }
+        agenda_filters = []
 
         for available_filter in available_filters:
-            result["filters"][available_filter.api_name] = {
-                "label": available_filter.name
+            actual_filter = {
+                "label": available_filter.name,
+                "slug": available_filter.api_name,
             }
-            result["filters"][available_filter.api_name]["values"] = [
+            actual_filter["options"] = [
                 {
                     "id": key,
                     "label": choice.strip(),
@@ -509,11 +509,19 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
                     available_filter.choices.strip().splitlines()
                 )
             ]
+            agenda_filters.append(actual_filter)
 
-        data = serializer.data
-        data.append(result)
+        data_dict = {
+            "type": "FeatureCollection",
+            "crs": {
+                "type": "name",
+                "properties": {"name": "urn:ogc:def:crs:EPSG::2056"},
+            },
+            "features": serializer.data,
+            "filters": agenda_filters,
+        }
 
-        return Response(data)
+        return Response(data_dict)
 
     def get_queryset(self):
         """

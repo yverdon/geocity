@@ -246,6 +246,7 @@ class Command(BaseCommand):
                 form_category.startswith("RENEWAL_REMINDER")
                 or form_category.startswith("NO_GEOM_NOR_TIME")
                 or form_category.startswith("ADVANCED_MAP_PLUGIN")
+                or form_category.startswith("AGENDA")
             ):
                 # Remove first word
                 form_category_name = form_category.split(" ", 1)[1]
@@ -327,6 +328,7 @@ class Command(BaseCommand):
             days_before_reminder=result.get("days_before_reminder"),
             map_widget_configuration=result.get("map_widget_configuration"),
             geo_widget_option=result.get("geo_widget_option"),
+            agenda_visible=result.get("agenda_visible"),
         )
         form_obj.administrative_entities.add(administrative_entity)
         form_order += 1
@@ -343,6 +345,7 @@ class Command(BaseCommand):
         expiration_reminder = False
         days_before_reminder = None
         map_widget_configuration = None
+        agenda_visible = None
         geo_widget_option = Form.GEO_WIDGET_GENERIC
 
         # Configure specific form in order to illustrate full potential of Geocity
@@ -362,13 +365,13 @@ class Command(BaseCommand):
             has_geometry_polygon = False
             needs_date = False
         elif form_category.startswith("ADVANCED_MAP_PLUGIN"):
-
             map_widget_configuration, _ = MapWidgetConfiguration.objects.get_or_create(
                 name="Sélection d'objets",
                 configuration=advanced_map_config,
             )
             geo_widget_option = Form.GEO_WIDGET_ADVANCED
-
+        elif form_category.startswith("AGENDA"):
+            agenda_visible = True
         result = {
             "has_geometry_point": has_geometry_point,
             "has_geometry_line": has_geometry_line,
@@ -380,6 +383,7 @@ class Command(BaseCommand):
             "days_before_reminder": days_before_reminder,
             "map_widget_configuration": map_widget_configuration,
             "geo_widget_option": geo_widget_option,
+            "agenda_visible": agenda_visible,
         }
         return result
 
@@ -428,7 +432,8 @@ class Command(BaseCommand):
             "store_geometry_for_address_field", False
         )
         public_info = field.get("public_info", False)
-
+        api_light = field.get("api_light", False)
+        used_as_api_filter = field.get("used_as_api_filter", False)
         field, created = Field.objects.get_or_create(
             integrator=integrator,
             name=name,
@@ -445,6 +450,8 @@ class Command(BaseCommand):
             additional_searchtext_for_address_field=additional_searchtext_for_address_field,
             store_geometry_for_address_field=store_geometry_for_address_field,
             public_info=public_info,
+            api_light=api_light,
+            used_as_api_filter=used_as_api_filter,
         )
         return field
 
@@ -454,7 +461,7 @@ class Command(BaseCommand):
     def setup_submission(self, entity, user_iterations, administrative_entity, text):
         forms = administrative_entity.forms
         first_form = forms.first()
-        form_no_validation_document = forms.order_by("id")[5]
+        form_no_validation_document = forms.order_by("id")[0]
         form_no_validation_document.requires_validation_document = False
         form_no_validation_document.save()
         last_form = forms.last()
@@ -1047,7 +1054,9 @@ Après : Excellent projet qui bénéficiera à la communauté."""
         return submission
 
     def create_selected_form(self, submission, form):
-        selected_form = SelectedForm.objects.create(submission=submission, form=form)
+        selected_form, created = SelectedForm.objects.get_or_create(
+            submission=submission, form=form
+        )
         return selected_form
 
     def create_submission_validation(
@@ -1075,7 +1084,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
         is_visible_by_author=True,
         is_visible_by_validators=False,
     ):
-        amend_field = SubmissionAmendField.objects.create(
+        amend_field, created = SubmissionAmendField.objects.get_or_create(
             name=name,
             api_name=convert_string_to_api_key(name),
             placeholder=placeholder,
@@ -1089,7 +1098,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
         return amend_field
 
     def create_submission_amend_field_value(self, amend_field, selected_form, text):
-        SubmissionAmendFieldValue.objects.create(
+        SubmissionAmendFieldValue.objects.get_or_create(
             field=amend_field,
             form=selected_form,
             value=text,
@@ -1102,37 +1111,37 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                 selected_form_2,
             ]:
                 if field_obj.input_type == Field.INPUT_TYPE_DATE:
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": "01.01.2021"},
                     )
                 if field_obj.input_type == Field.INPUT_TYPE_ADDRESS:
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"},
                     )
                 if field_obj.input_type == Field.INPUT_TYPE_CHECKBOX:
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": True},
                     )
                 if field_obj.input_type == Field.INPUT_TYPE_NUMBER:
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": 42},
                     )
                 if field_obj.input_type == Field.INPUT_TYPE_LIST_SINGLE:
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": "Oui"},
                     )
                 if field_obj.input_type == Field.INPUT_TYPE_LIST_MULTIPLE:
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": "Le bon choix"},
@@ -1143,7 +1152,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                     or field_obj.input_type == Field.DISPLAY_TITLE
                     or field_obj.input_type == Field.DISPLAY_TEXT
                 ):
-                    FieldValue.objects.create(
+                    FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": text},
