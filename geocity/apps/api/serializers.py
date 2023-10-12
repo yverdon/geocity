@@ -3,7 +3,7 @@ from collections import OrderedDict
 from datetime import timedelta, timezone
 
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Max, Min
+from django.db.models import Max, Min, Q
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -11,6 +11,7 @@ from rest_framework_gis import serializers as gis_serializers
 from geocity import geometry, settings
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.api.services import convert_string_to_api_key
+from geocity.apps.forms.models import Field
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
     FieldValue,
@@ -759,7 +760,7 @@ class SearchSerializer(serializers.Serializer):
 # ///////////////////////////////////
 
 
-def get_agenda_form_fields(value, detailed):
+def get_agenda_form_fields(value, detailed, available_filters):
     """
     Return form fields for agenda-embed
     """
@@ -813,18 +814,20 @@ def get_agenda_form_fields(value, detailed):
                     # When there's only 1 of len, it means the for loop, looped on 1 element, so we use field_values__value__val
                     # When there's more than 1 of len, it means it's a list of multiple elements, so we use category_value
                     category_value_list = []
-                    for key, category_value in enumerate(
-                        field["field_values__value__val"]
-                    ):
-                        if len(category_value) == 1:
-                            category_value_list = [
-                                {"id": 0, "label": field["field_values__value__val"]}
-                            ]
-                        else:
-                            category_value_list.append(
-                                {"id": key, "label": category_value}
-                            )
 
+                    # Get id of the category, the id is related to the line in choices
+                    category = available_filters.get(
+                        Q(api_name=field["field_values__field__api_name"])
+                    )
+                    for category_value in field["field_values__value__val"]:
+                        if len(category_value) == 1:
+                            label = field["field_values__value__val"]
+                            id = category.choices.strip().splitlines().index(label)
+                            category_value_list = [{"id": id, "label": label}]
+                        else:
+                            label = category_value
+                            id = category.choices.strip().splitlines().index(label)
+                            category_value_list.append({"id": id, "label": label})
                     # Store the list of categories in the format for agenda api
                     result["properties"]["categories"][
                         field["field_values__field__api_name"]
@@ -888,6 +891,16 @@ class AgendaSerializer(serializers.Serializer):
         kwargs = request.parser_context["kwargs"]
         detailed = True if kwargs and kwargs["pk"] else False
 
-        fields = get_agenda_form_fields(value, detailed)
+        # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
+        available_filters = Field.objects.filter(
+            Q(used_as_api_filter=True)
+            & (
+                Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
+                | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
+            )
+        )
+
+        fields = get_agenda_form_fields(value, detailed, available_filters)
 
         return fields

@@ -471,7 +471,12 @@ SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
 class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     """
     To get detail use /rest/agenda/:id
-        Example : /rest/agenda/1
+    Example : /rest/agenda/7
+    Page can be given
+    Example : /rest/agenda/7/?page=1
+    It's possible to filter by categories
+    Example : /rest/agenda/7/?publics=3
+    Every filter can be cumulated
     """
 
     throttle_scope = "agenda"
@@ -525,7 +530,8 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """
-        This view should return a list of events for agenda with minimal information when id is not given
+        This view should return a list of events for agenda with minimal information when id is not given.
+        Use used_as_api_filter to filter field by values, values (id = line of the value)
         """
 
         # TODO: Replace with this queryset to prevent to see data that isn't public
@@ -536,12 +542,65 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         # )
         # TODO: Delete this queryset, that is used for tests but shows too much information
 
-        qs = (
+        submissions = (
             Submission.objects.filter(
                 Q(selected_forms__field_values__value__val__isnull=False)
                 & Q(selected_forms__form__agenda_visible=True)
             )
             .distinct()
             .order_by("id")
+            .prefetch_related("selected_forms__field_values")
         )
-        return qs
+
+        # List every available filter
+        # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
+        available_filters = Field.objects.filter(
+            Q(used_as_api_filter=True)
+            & (
+                Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
+                | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
+            )
+        )
+
+        # List params given by the request as query_params
+        query_params = self.request.query_params
+
+        # Do the required actions fo every query_param
+        for field_name in query_params:
+
+            # Check if the given query_param is used to filter (is it a category ?)
+            field_name_is_api_filter = any(
+                field_name in api_filter
+                for api_filter in available_filters.values_list("api_name")
+            )
+            if field_name_is_api_filter:
+
+                # Prepare queryset to filter by categories
+                conditions = Q()
+
+                # Get the Field object related to the query_param
+                field = available_filters.get(Q(api_name=field_name))
+
+                # Get every value for each id given in query_param
+                for value in query_params.getlist(field_name):
+                    value = int(value)
+
+                    # Get the choice corresponding to the id given in query_param
+                    # The id = line of choice
+                    category_choice = field.choices.strip().splitlines()[value]
+
+                    # Filter submission according to the category choices
+                    conditions |= Q(
+                        selected_forms__field_values__value__val=category_choice
+                    )
+                    conditions |= Q(
+                        selected_forms__field_values__value__val__contains=[
+                            category_choice
+                        ]
+                    )
+
+                # Filter with every category
+                submissions = submissions.filter(conditions)
+
+        return submissions
