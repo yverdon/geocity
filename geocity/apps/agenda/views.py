@@ -5,7 +5,6 @@ from django.http import FileResponse, JsonResponse
 from django.shortcuts import render
 
 
-# TODO: Place this view in the form or submission, so we have direct access to the image settings, public or not ? From API
 def image_display(request, form_id, image_name):
     image_dir = settings.PRIVATE_MEDIA_ROOT
 

@@ -899,7 +899,6 @@ def get_agenda_form_fields(value, detailed, available_filters):
             "width": "1365",
             "height": "2048",
         }
-    # print(result["properties"]["poster"])
 
     return result
 

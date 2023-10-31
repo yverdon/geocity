@@ -488,8 +488,10 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """
-        This view should return a list of events for agenda with minimal information when id is not given.
-        Use used_as_api_filter to filter field by values, values (id = line of the value)
+        This view has a detailed result and a simple result
+        The detailed result is built with AgendaResultsSetPagination,
+        this is required to be able to make pagination and return features and filters
+        The simple result just return informations for une submission
         """
 
         # TODO: Replace with this queryset to prevent to see data that isn't public
