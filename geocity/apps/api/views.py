@@ -157,7 +157,7 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             For standard geometric endpoints, please use the following endpoints
             1.- Points: /rest/submissions_point/
             2.- Lines: /rest/submissions_line/
-            3.- Polygons: /rest/submissions_polygon/
+            3.- Polygons: /rest/submissions_poly/
     """
 
     throttle_scope = "submissions"
