@@ -9,7 +9,8 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
-from geocity.apps.forms.models import Field, Form
+from geocity.apps.django_wfs3.pagination import AgendaResultsSetPagination
+from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
     Submission,
@@ -247,6 +248,7 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             )
             .prefetch_related(forms_prefetch)
             .prefetch_related(geotime_prefetch)
+            .prefetch_related(current_inquiry_prefetch)
             .prefetch_related("selected_forms", "contacts")
             .select_related(
                 "administrative_entity",
@@ -473,60 +475,16 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     To get detail use /rest/agenda/:id
     Example : /rest/agenda/7
     Page can be given
-    Example : /rest/agenda/7/?page=1
+    Example : /rest/agenda/?page=1
     It's possible to filter by categories
-    Example : /rest/agenda/7/?publics=3
+    Example : /rest/agenda/?publics=3
     Every filter can be cumulated
     """
 
     throttle_scope = "agenda"
     serializer_class = serializers.AgendaSerializer
+    pagination_class = AgendaResultsSetPagination
     permission_classes = [permissions.AllowAllRequesters]
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-
-        serializer = self.get_serializer(queryset, many=True)
-
-        # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
-        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
-        available_filters = Field.objects.filter(
-            Q(used_as_api_filter=True)
-            & (
-                Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
-                | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
-            )
-        )
-
-        agenda_filters = []
-
-        for available_filter in available_filters:
-            actual_filter = {
-                "label": available_filter.name,
-                "slug": available_filter.api_name,
-            }
-            actual_filter["options"] = [
-                {
-                    "id": key,
-                    "label": choice.strip(),
-                }
-                for key, choice in enumerate(
-                    available_filter.choices.strip().splitlines()
-                )
-            ]
-            agenda_filters.append(actual_filter)
-
-        data_dict = {
-            "type": "FeatureCollection",
-            "crs": {
-                "type": "name",
-                "properties": {"name": "urn:ogc:def:crs:EPSG::2056"},
-            },
-            "features": serializer.data,
-            "filters": agenda_filters,
-        }
-
-        return Response(data_dict)
 
     def get_queryset(self):
         """
@@ -555,13 +513,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         # List every available filter
         # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
         # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
-        available_filters = Field.objects.filter(
-            Q(used_as_api_filter=True)
-            & (
-                Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
-                | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
-            )
-        )
+        available_filters = serializers.get_available_filters_for_agenda_as_qs(None)
 
         # List params given by the request as query_params
         query_params = self.request.query_params

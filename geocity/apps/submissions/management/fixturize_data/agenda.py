@@ -8,7 +8,7 @@ iterations = {
     "integrator_iterations": 1,
     "pilot_iterations": 1,
     "validator_iterations": 1,
-    "user_iterations": 10,
+    "user_iterations": 40,
 }
 
 # domain:entity
@@ -181,3 +181,5 @@ de remise en état après une fouille sur le domaine public
 """
 
 small_text = "This is a small text"
+
+images_folder = "posters"

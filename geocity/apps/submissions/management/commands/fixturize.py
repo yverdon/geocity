@@ -1,4 +1,5 @@
 import re
+import shutil
 import unicodedata
 from io import StringIO
 
@@ -109,6 +110,18 @@ class Command(BaseCommand):
         self.stdout.write("██████╔╝███████╗███████╗██████╔╝")
         self.stdout.write("╚═════╝░╚══════╝╚══════╝╚═════╝░")
         self.stdout.write("")
+
+        image_dir = os.path.join(
+            settings.PRIVATE_MEDIA_ROOT, f"permit_requests_uploads/0/"
+        )
+
+        if os.path.exists(image_dir):
+            shutil.rmtree(image_dir)
+
+        source_dir = (
+            "geocity/apps/submissions/management/fixturize_data/images/posters/"
+        )
+        shutil.copytree(source_dir, image_dir)
 
         with transaction.atomic():
             self.stdout.write("Creating default site...")
@@ -628,7 +641,9 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             self.create_submission_amend_field_value(amend_field, selected_form_2, text)
 
             # Set default values for fields
-            self.set_default_values_for_field(selected_form_1, selected_form_2, text)
+            self.set_default_values_for_field(
+                selected_form_1, selected_form_2, text, user_iteration
+            )
 
     def create_template_customization(self):
         TemplateCustomization.objects.create(
@@ -1104,7 +1119,9 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             value=text,
         )
 
-    def set_default_values_for_field(self, selected_form_1, selected_form_2, text):
+    def set_default_values_for_field(
+        self, selected_form_1, selected_form_2, text, user_iteration
+    ):
         for field_obj in Field.objects.all():
             for selected_form in [
                 selected_form_1,
@@ -1134,17 +1151,14 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         selected_form=selected_form,
                         value={"val": 42},
                     )
-                if field_obj.input_type == Field.INPUT_TYPE_LIST_SINGLE:
+                if (
+                    field_obj.input_type == Field.INPUT_TYPE_LIST_SINGLE
+                    or field_obj.input_type == Field.INPUT_TYPE_LIST_MULTIPLE
+                ):
                     FieldValue.objects.get_or_create(
                         field=field_obj,
                         selected_form=selected_form,
-                        value={"val": "Oui"},
-                    )
-                if field_obj.input_type == Field.INPUT_TYPE_LIST_MULTIPLE:
-                    FieldValue.objects.get_or_create(
-                        field=field_obj,
-                        selected_form=selected_form,
-                        value={"val": "Le bon choix"},
+                        value={"val": field_obj.choices.strip().splitlines()[0]},
                     )
                 if (
                     field_obj.input_type == Field.INPUT_TYPE_TEXT
@@ -1156,4 +1170,16 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         field=field_obj,
                         selected_form=selected_form,
                         value={"val": text},
+                    )
+                if field_obj.input_type == Field.INPUT_TYPE_FILE:
+                    source_dir = "geocity/apps/submissions/management/fixturize_data/images/posters/"
+                    num_images = len(os.listdir(source_dir))
+                    image_path = (
+                        f"permit_requests_uploads/0/{user_iteration%num_images}.jpg"
+                    )
+
+                    FieldValue.objects.get_or_create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": image_path},
                     )

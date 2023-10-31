@@ -855,12 +855,12 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     field["field_values__field__api_light"]
                     and not field["field_values__field__used_as_api_filter"]
                 ):
-                    # Properties for ligh API
+                    # Properties for light API
                     result["properties"][
                         field["field_values__field__api_name"]
                     ] = field["field_values__value__val"]
 
-                # Amend field for Light API
+                # Amend field for light API
                 if field["form__amend_fields__api_light"]:
 
                     # Store amend properties for light API
@@ -869,37 +869,90 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     ]
 
     # Custom way to retrieve starts_at and ends_at for both light and detailed
-    # TODO: Check for aggregated_geotime, to prevent : geocity.apps.submissions.models.SubmissionGeoTime.MultipleObjectsReturned: get() returned more than one SubmissionGeoTime -- it returned 2!
-    result["properties"]["starts_at"] = value.geo_time.get().starts_at
-    result["properties"]["ends_at"] = value.geo_time.get().ends_at
+    geo_time_qs = value.geo_time.all()
 
-    # TODO: do this without hardcode
-    result["properties"]["poster"] = {
-        "src": "https://cataas.com/cat",
-        "width": "1365",
-        "height": "2048",
-    }
+    aggregated_geotime_qs = geo_time_qs.values("submission_id").aggregate(
+        submission_geo_time_start_date=Min("starts_at"),
+        submission_geo_time_end_date=Max("ends_at"),
+    )
+
+    local_tz = timezone(timedelta(hours=2))
+    result["properties"]["starts_at"] = (
+        aggregated_geotime_qs["submission_geo_time_start_date"]
+        .replace(tzinfo=timezone.utc)
+        .astimezone(local_tz)
+        if aggregated_geotime_qs["submission_geo_time_start_date"]
+        else ""
+    )
+    result["properties"]["ends_at"] = (
+        aggregated_geotime_qs["submission_geo_time_end_date"]
+        .replace(tzinfo=timezone.utc)
+        .astimezone(local_tz)
+        if aggregated_geotime_qs["submission_geo_time_end_date"]
+        else ""
+    )
+
+    # Rewrite poster to match agenda-embed
+    if "poster" in result["properties"]:
+        result["properties"]["poster"] = {
+            "src": f'http://localhost:9095/agenda/image/display/{result["properties"]["poster"]}',
+            "width": "1365",
+            "height": "2048",
+        }
+    # print(result["properties"]["poster"])
 
     return result
 
 
+def get_available_filters_for_agenda_as_qs(user):
+    """
+    Returns a list of filters available for a specific user.
+    The order is important, agenda-embed has no logic, everything is set here
+    """
+    # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+    # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
+    # TODO: Try to put this outside of AgendaSerializer, and pass the data trough views.py>AgendaViewSet so we reduce number of actions and execution time
+    available_filters = Field.objects.filter(
+        Q(used_as_api_filter=True)
+        & (
+            Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
+            | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
+        )
+    )
+    return available_filters
+
+
+def get_available_filters_for_agenda_as_json(user):
+    """
+    Returns the list of filters for api
+    """
+    available_filters = get_available_filters_for_agenda_as_qs(user)
+
+    agenda_filters = []
+    for available_filter in available_filters:
+        actual_filter = {
+            "label": available_filter.name,
+            "slug": available_filter.api_name,
+        }
+        actual_filter["options"] = [
+            {
+                "id": key,
+                "label": choice.strip(),
+            }
+            for key, choice in enumerate(available_filter.choices.strip().splitlines())
+        ]
+        agenda_filters.append(actual_filter)
+    return agenda_filters
+
+
 class AgendaSerializer(serializers.Serializer):
     def to_representation(self, value):
-
         # Check if there's a pk of submission given
         request = self.context.get("request")
         kwargs = request.parser_context["kwargs"]
         detailed = True if kwargs and kwargs["pk"] else False
 
-        # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
-        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
-        available_filters = Field.objects.filter(
-            Q(used_as_api_filter=True)
-            & (
-                Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
-                | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
-            )
-        )
+        available_filters = get_available_filters_for_agenda_as_qs(None)
 
         fields = get_agenda_form_fields(value, detailed, available_filters)
 
