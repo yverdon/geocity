@@ -443,9 +443,9 @@ class Command(BaseCommand):
         store_geometry_for_address_field = field.get(
             "store_geometry_for_address_field", False
         )
-        public_info = field.get("public_info", False)
+        public_if_submission_public = field.get("public_if_submission_public", False)
         api_light = field.get("api_light", False)
-        used_as_api_filter = field.get("used_as_api_filter", False)
+        filter_for_api = field.get("filter_for_api", False)
         field, created = Field.objects.get_or_create(
             integrator=integrator,
             name=name,
@@ -461,9 +461,9 @@ class Command(BaseCommand):
             file_download=file_download,
             additional_searchtext_for_address_field=additional_searchtext_for_address_field,
             store_geometry_for_address_field=store_geometry_for_address_field,
-            public_info=public_info,
+            public_if_submission_public=public_if_submission_public,
             api_light=api_light,
-            used_as_api_filter=used_as_api_filter,
+            filter_for_api=filter_for_api,
         )
         return field
 

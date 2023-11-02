@@ -535,7 +535,7 @@ class Form(models.Model):
         _("Visible dans l'agenda"),
         default=False,
         help_text=_(
-            """Lorsque cette case est cochée, les données de ce formulaire sont accessibles dans l'API <b>/rest/agenda/</b>"""
+            """Lorsque cette case est cochée, les données de ce formulaire sont accessibles dans l'API <b>/rest/agenda/ si la demande est rendue publique par le pilote</b>"""
         ),
     )
 
@@ -864,7 +864,7 @@ class Field(models.Model):
         max_length=255,
         blank=True,
         help_text=_(
-            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
+            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.Sgeo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
         ),
     )
     store_geometry_for_address_field = models.BooleanField(
@@ -874,11 +874,11 @@ class Field(models.Model):
             "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
         ),
     )
-    public_info = models.BooleanField(
+    public_if_submission_public = models.BooleanField(
         _("Information publique"),
         default=False,
         help_text=_(
-            """Lorsque cette case est cochée, ce champ ainsi que l'information est affichée si la demande est publique.<br>
+            """Lorsque cette case est cochée, ce champ est affiché <b>si la demande est rendue publique par le pilote</b>.<br>
             Actuellement utilisé pour l'application geocalendrier et agenda"""
         ),
     )
@@ -892,17 +892,17 @@ class Field(models.Model):
         _("Visible dans l'API light"),
         default=False,
         help_text=_(
-            """Lorsque cette case est cochée, ce champ est affichée dans la version light de l'api (/rest/RESSOURCE).<br>
+            """Lorsque cette case est cochée, ce champ est affiché dans la version light de l'api (/rest/RESSOURCE) <b>si la demande est rendue publique par le pilote</b>.<br>
             Afin de ne pas afficher trop d'informations, le champ est masqué pour améliorer la rapidité de l'API.<br>
             Pour afficher la version normale de l'api, il faut se rendre sur une seule ressource (/rest/RESSOURCE/:ID)."""
         ),
     )
-    used_as_api_filter = models.BooleanField(
+    filter_for_api = models.BooleanField(
         _("Filtre pour API"),
         default=False,
         help_text=_(
-            """Lorsque cette case est cochée, ce champ peut-être utilisé pour filtrer.<br>
-            Actuellement ne fonctionne que pour les champs à choix simple ou multiples."""
+            """Lorsque cette case est cochée, ce champ peut être utilisé pour filtrer <b>si la demande est rendue publique par le pilote</b>.<br>
+            Actuellement ne fonctionne que pour les champs à choix simple ou multiples dans agenda."""
         ),
     )
 

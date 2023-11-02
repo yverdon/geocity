@@ -55,7 +55,7 @@ def get_form_fields(
         "form__name",
         "form__api_name",
         "form__category__name",
-        "field_values__field__public_info",
+        "field_values__field__public_if_submission_public",
         "submission__administrative_entity",
         "submission__author",
     )
@@ -114,7 +114,7 @@ def get_form_fields(
                         in administrative_entities_associated_to_user_list
                     )
                     or (current_user and field["submission__author"] == current_user.id)
-                    or field["field_values__field__public_info"]
+                    or field["field_values__field__public_if_submission_public"]
                 ):
                     # get_property_value return None if file does not exist
                     file = get_field_value_based_on_field(field)
@@ -135,7 +135,7 @@ def get_form_fields(
                         in administrative_entities_associated_to_user_list
                     )
                     or (current_user and field["submission__author"] == current_user.id)
-                    or field["field_values__field__public_info"]
+                    or field["field_values__field__public_if_submission_public"]
                 ):
                     # Properties of form
                     property.append(
@@ -759,7 +759,7 @@ class SearchSerializer(serializers.Serializer):
 # Agenda api
 # ///////////////////////////////////
 
-
+# TODO: USE field_values__field__public_if_submission_public to secure information + check if submission status = Public
 def get_agenda_form_fields(value, detailed, available_filters):
     """
     Return form fields for agenda-embed
@@ -779,9 +779,9 @@ def get_agenda_form_fields(value, detailed, available_filters):
         "form__name",
         "form__api_name",
         "form__category__name",
-        "field_values__field__public_info",
+        "field_values__field__public_if_submission_public",
         "field_values__field__api_light",
-        "field_values__field__used_as_api_filter",
+        "field_values__field__filter_for_api",
         "submission__administrative_entity",
         "submission__author",
     )
@@ -802,8 +802,8 @@ def get_agenda_form_fields(value, detailed, available_filters):
             # Detailed API for agenda
             if detailed:
 
-                # Categories used as filter, that are defined by "field_values__field__used_as_api_filter"
-                if field["field_values__field__used_as_api_filter"]:
+                # Categories used as filter, that are defined by "field_values__field__filter_for_api"
+                if field["field_values__field__filter_for_api"]:
 
                     # Label name for the properties
                     result["properties"]["categories"][
@@ -819,6 +819,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     category = available_filters.get(
                         Q(api_name=field["field_values__field__api_name"])
                     )
+                    # TODO: is not "category_value" the same as field["field_values__value__val"] but with the name of the
                     for category_value in field["field_values__value__val"]:
                         if len(category_value) == 1:
                             label = field["field_values__value__val"]
@@ -853,7 +854,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
                 # Field visible on light API and it's not used as filter
                 if (
                     field["field_values__field__api_light"]
-                    and not field["field_values__field__used_as_api_filter"]
+                    and not field["field_values__field__filter_for_api"]
                 ):
                     # Properties for light API
                     result["properties"][
@@ -908,11 +909,11 @@ def get_available_filters_for_agenda_as_qs(user):
     Returns a list of filters available for a specific user.
     The order is important, agenda-embed has no logic, everything is set here
     """
-    # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+    # TODO: Improve queryset to secure it. Actually we can just tag something as filter_for_api and it will appear
     # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
     # TODO: Try to put this outside of AgendaSerializer, and pass the data trough views.py>AgendaViewSet so we reduce number of actions and execution time
     available_filters = Field.objects.filter(
-        Q(used_as_api_filter=True)
+        Q(filter_for_api=True)
         & (
             Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
             | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)

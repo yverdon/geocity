@@ -455,7 +455,7 @@ class FieldAdminForm(forms.ModelForm):
             "regex_pattern",
             "file_download",
             "is_mandatory",
-            "public_info",
+            "public_if_submission_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
             "allowed_file_types",
@@ -463,7 +463,7 @@ class FieldAdminForm(forms.ModelForm):
             "form_list",
             "api_name",
             "api_light",
-            "used_as_api_filter",
+            "filter_for_api",
         ]
 
     def get_form_list(self):
@@ -619,7 +619,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "sortable_str",
         "custom_api_name",
         "is_mandatory",
-        "public_info",
+        "public_if_submission_public",
         "input_type",
         "placeholder",
         "help_text",
@@ -661,8 +661,8 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 "fields": (
                     "api_name",
                     "api_light",
-                    "used_as_api_filter",
-                    "public_info",
+                    "filter_for_api",
+                    "public_if_submission_public",
                 ),
             },
         ),

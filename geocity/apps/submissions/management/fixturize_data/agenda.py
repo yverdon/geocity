@@ -108,7 +108,7 @@ field_publics = {
     "input_type": "list_multiple",
     "is_mandatory": True,
     "api_light": False,
-    "used_as_api_filter": True,
+    "filter_for_api": True,
     "choices": "Tous publics\nFamilles\nJeunes\nSeniors",
 }
 field_regions = {
@@ -116,7 +116,7 @@ field_regions = {
     "input_type": "list_single",
     "is_mandatory": True,
     "api_light": False,
-    "used_as_api_filter": True,
+    "filter_for_api": True,
     "choices": "Grandson\nOrbe\nRomainmôtier\nSainte-Croix\nVallée de Joux\nVallorbe\nYverdon\nYvonand",
 }
 field_types = {
@@ -124,7 +124,7 @@ field_types = {
     "input_type": "list_multiple",
     "is_mandatory": True,
     "api_light": False,
-    "used_as_api_filter": True,
+    "filter_for_api": True,
     "choices": "Concert\nSpectacle\nExposition\nFestival\nAtelier, Animation & Médiation\nPerformance\nInstallation\nCompétition",
 }
 field_domaines = {
@@ -132,7 +132,7 @@ field_domaines = {
     "input_type": "list_multiple",
     "is_mandatory": True,
     "api_light": False,
-    "used_as_api_filter": True,
+    "filter_for_api": True,
     "choices": "Art vivant\nArt visuel\nAudiovisuel\nPatrimoine & Architecture\nMusique\nLittérature\nArtisanat & Tradition\nSport",
 }
 field_poster = {

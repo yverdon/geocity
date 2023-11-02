@@ -140,7 +140,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.draft_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.draft_submission_1)
 
@@ -155,7 +155,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.draft_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.draft_submission_2)
 
@@ -174,7 +174,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.submited_for_validation_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.submited_for_validation_submission_1
@@ -194,7 +194,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.submited_for_validation_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.submited_for_validation_submission_2
@@ -218,7 +218,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.approved_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.approved_submission_1)
         factories.SubmissionValidationFactory(submission=self.approved_submission_1)
@@ -234,7 +234,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.approved_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.approved_submission_2)
         factories.SubmissionValidationFactory(submission=self.approved_submission_2)
@@ -251,7 +251,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.approved_submission_3,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.approved_submission_3)
         factories.SubmissionValidationFactory(submission=self.approved_submission_3)
@@ -271,7 +271,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.processing_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.processing_submission_1)
 
@@ -286,7 +286,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.processing_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.processing_submission_2)
 
@@ -305,7 +305,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.awaiting_supplement_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.awaiting_supplement_submission_1
@@ -322,7 +322,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.awaiting_supplement_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.awaiting_supplement_submission_2
@@ -343,7 +343,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.awaiting_validation_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.awaiting_validation_submission_1
@@ -360,7 +360,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.awaiting_validation_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.awaiting_validation_submission_2
@@ -381,7 +381,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.rejected_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.rejected_submission_1)
 
@@ -396,7 +396,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.rejected_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.rejected_submission_2)
 
@@ -415,7 +415,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.received_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.received_submission_1)
 
@@ -430,7 +430,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.received_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.received_submission_2)
 
@@ -449,7 +449,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.inquiry_in_progress_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.inquiry_in_progress_submission_1
@@ -473,7 +473,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.inquiry_in_progress_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(
             submission=self.inquiry_in_progress_submission_2
@@ -501,7 +501,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.archived_submission_1,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=True)
+        field = factories.FieldFactory(public_if_submission_public=True)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.archived_submission_1)
         factories.ArchivedSubmissionFactory(submission=self.archived_submission_1)
@@ -517,7 +517,7 @@ class SubmissionAPITestCase(TestCase):
             submission=self.archived_submission_2,
             form=self.forms[0],
         )
-        field = factories.FieldFactory(public_info=False)
+        field = factories.FieldFactory(public_if_submission_public=False)
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.archived_submission_2)
         factories.ArchivedSubmissionFactory(submission=self.archived_submission_2)

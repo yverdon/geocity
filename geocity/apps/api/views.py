@@ -493,7 +493,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         this is required to be able to make pagination and return features and filters
         The simple result just return informations for une submission
         """
-
+        # TODO: Filter domain = entity, sports and culture want their own site, so they should be able to filter, to prevent useless filters to show
         # TODO: Replace with this queryset to prevent to see data that isn't public
         # qs = Submission.objects.filter(
         #     Q(selected_forms__field_values__value__val__isnull=False)
@@ -513,7 +513,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         # List every available filter
-        # TODO: Improve queryset to secure it. Actually we can just tag something as used_as_api_filter and it will appear
+        # TODO: Improve queryset to secure it. Actually we can just tag something as filter_for_api and it will appear
         # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
         available_filters = serializers.get_available_filters_for_agenda_as_qs(None)
 
