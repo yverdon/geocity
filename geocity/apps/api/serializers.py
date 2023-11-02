@@ -819,16 +819,24 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     category = available_filters.get(
                         Q(api_name=field["field_values__field__api_name"])
                     )
-                    # TODO: is not "category_value" the same as field["field_values__value__val"] but with the name of the
-                    for category_value in field["field_values__value__val"]:
-                        if len(category_value) == 1:
-                            label = field["field_values__value__val"]
-                            id = category.choices.strip().splitlines().index(label)
-                            category_value_list = [{"id": id, "label": label}]
-                        else:
-                            label = category_value
-                            id = category.choices.strip().splitlines().index(label)
-                            category_value_list.append({"id": id, "label": label})
+
+                    # Multiple values in a list (MultipleChoiceField)
+                    if isinstance(field["field_values__value__val"], list):
+                        category_value_list = [
+                            {
+                                "id": category.choices.strip()
+                                .splitlines()
+                                .index(label),
+                                "label": label,
+                            }
+                            for label in field["field_values__value__val"]
+                        ]
+                    # Only one value in a list (MultipleChoiceField) or just a string
+                    else:
+                        label = field["field_values__value__val"]
+                        id = category.choices.strip().splitlines().index(label)
+                        category_value_list.append({"id": id, "label": label})
+
                     # Store the list of categories in the format for agenda api
                     result["properties"]["categories"][
                         field["field_values__field__api_name"]
@@ -894,6 +902,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
     )
 
     # Rewrite poster to match agenda-embed
+    # TODO: Change http://localhost:9095/ to host
     if "poster" in result["properties"]:
         result["properties"]["poster"] = {
             "src": f'http://localhost:9095/agenda/image/display/{result["properties"]["poster"]}',
