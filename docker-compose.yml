@@ -76,6 +76,7 @@ services:
     networks:
       - isolated
       - default
+      - geocity_network
 
   # Builder for the geocity_qgis image.
   qgis:
@@ -112,3 +113,6 @@ networks:
   # Use this for containers that should only be able to communicate with Django
   isolated:
     name: ${ISOLATED_NETWORK_NAME}
+  geocity_network:
+    name: geocity_network
+    driver: bridge
