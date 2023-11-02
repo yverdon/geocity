@@ -12,7 +12,7 @@ def image_display(request, form_id, image_name, thumbor_params):
     INTERNAL_WEB_ROOT_URL = "http://web:9000"
     image_url = f"{INTERNAL_WEB_ROOT_URL}/agenda/image/display/permit_requests_uploads/{form_id}/{image_name}"
     resp = requests.get(
-        f"{config.THUMBOR_SERVICE_URL}/unsafe/{thumbor_params}/{image_url}"
+        f"http://nginx-proxy/unsafe/{thumbor_params}/{image_url}"/unsafe/{thumbor_params}/{image_url}"
     )
     thumbor_response = FileResponse(resp, content_type="image/jpeg")
     return thumbor_response
