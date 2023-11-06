@@ -60,7 +60,7 @@ django==4.2.7
     #   djangorestframework
 django-admin-sortable2==2.1.9
     # via -r requirements.in
-django-allauth==0.55.0
+django-allauth==0.58.2
     # via -r requirements.in
 django-appconf==1.0.5
     # via django-select2
