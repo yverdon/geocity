@@ -1,7 +1,7 @@
 FROM node:slim
 
 WORKDIR /app
-
+# advanced map plugin
 RUN apt-get -yq update \
   && apt-get -yq upgrade \
   && DEBIAN_FRONTEND=noninteractive apt-get -yq install \
@@ -17,3 +17,7 @@ RUN cd /app/geocity-wc-map \
   && npm ci \
   && npm run build \
   && echo "static files for advanced mapping build successfully!"
+
+# Install agenda-embed web component
+RUN mkdir /app/agenda-embed \
+  && npm install npm i @geocity/agenda-embed
