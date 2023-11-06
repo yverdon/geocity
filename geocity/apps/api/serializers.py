@@ -904,8 +904,11 @@ def get_agenda_form_fields(value, detailed, available_filters):
     # Rewrite poster to match agenda-embed
     # TODO: Change http://localhost:9095/ to host
     if "poster" in result["properties"]:
+        file_name = result["properties"]["poster"].replace(
+            "permit_requests_uploads/", ""
+        )
         result["properties"]["poster"] = {
-            "src": f'http://localhost:9095/agenda/image/display/{result["properties"]["poster"]}',
+            "src": f"http://localhost:9095/rest/image/{file_name}",
             "width": "1365",
             "height": "2048",
         }

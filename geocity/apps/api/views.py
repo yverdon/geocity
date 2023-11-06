@@ -1,7 +1,10 @@
 import datetime
+import os
 
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
+from django.http import FileResponse, JsonResponse
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -468,6 +471,22 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 SubmissionPointViewSet = submission_view_set_subset_factory("points")
 SubmissionLineViewSet = submission_view_set_subset_factory("lines")
 SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
+
+
+def image_display(request, form_id, image_name):
+    image_dir = settings.PRIVATE_MEDIA_ROOT
+
+    image_path = os.path.join(
+        image_dir, f"permit_requests_uploads/{form_id}/{image_name}"
+    )
+
+    # TODO: Ajouter de la sécurité afin de savoir si l'image peut-être affichée ou non
+    if os.path.exists(image_path):
+        image_file = open(image_path, "rb")
+        response = FileResponse(image_file, content_type="image/jpeg")
+        return response
+    else:
+        return JsonResponse({"message": "Image non trouvée."}, status=404)
 
 
 class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
