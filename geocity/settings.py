@@ -200,8 +200,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "axes.middleware.AxesMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 if ENABLE_2FA:
@@ -479,7 +479,6 @@ SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
 ACCOUNT_SIGNUP_REDIRECT_URL = "submissions:submissions_list"
 SOCIALACCOUNT_LOGIN_ON_GET = True
-# Anticipate issues with upcoming 0.52.0 update
 OAUTH_PKCE_ENABLED = False
 
 BOOTSTRAP4 = {
