@@ -266,6 +266,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "IP_WHITELIST",
         "NETWORK_WHITELIST",
         "LOGOUT_REDIRECT_HOSTNAME_WHITELIST",
+        "THUMBOR_SERVICE_URL",
     ),
 }
 
@@ -410,6 +411,11 @@ CONSTANCE_CONFIG = {
     "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
         "localhost,geocity.ch",
         "Domaines autorisés à la redirection après logout",
+    ),
+    "THUMBOR_SERVICE_URL": (
+        "http://host.docker.internal:8083",
+        "URL du service thumbor (https://github.com/thumbor/thumbor), recommandé pour l'optimisation des images du module Agenda",
+        str,
     ),
 }
 
