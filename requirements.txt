@@ -14,11 +14,11 @@ certifi==2023.7.22
     # via
     #   postfinancecheckout
     #   requests
-cffi==1.15.1
+cffi==1.16.0
     # via cryptography
-charset-normalizer==3.2.0
+charset-normalizer==3.3.2
     # via requests
-cryptography==41.0.3
+cryptography==41.0.5
     # via
     #   django-rest-knox
     #   jwcrypto
@@ -58,9 +58,9 @@ django==4.2.7
     #   django-taggit
     #   django-two-factor-auth
     #   djangorestframework
-django-admin-sortable2==2.1.9
+django-admin-sortable2==2.1.10
     # via -r requirements.in
-django-allauth==0.55.0
+django-allauth==0.58.2
     # via -r requirements.in
 django-appconf==1.0.5
     # via django-select2
@@ -74,17 +74,17 @@ django-ckeditor==6.7.0
     # via -r requirements.in
 django-constance==3.1.0
     # via -r requirements.in
-django-cors-headers==4.2.0
+django-cors-headers==4.3.0
     # via -r requirements.in
 django-crispy-forms==1.14.0
     # via -r requirements.in
 django-cron==0.6.0
     # via -r requirements.in
-django-filter==23.2
+django-filter==23.3
     # via -r requirements.in
 django-formtools==2.4.1
     # via django-two-factor-auth
-django-ipware==5.0.0
+django-ipware==5.0.2
     # via django-axes
 django-jazzmin==2.6.0
     # via -r requirements.in
@@ -92,11 +92,11 @@ django-js-asset==2.1.0
     # via django-ckeditor
 django-jsoneditor==0.2.4
     # via -r requirements.in
-django-jsonform==2.19.0
+django-jsonform==2.19.1
     # via -r requirements.in
 django-oauth-toolkit==2.3.0
     # via -r requirements.in
-django-otp==1.2.2
+django-otp==1.2.4
     # via django-two-factor-auth
 django-phonenumber-field==6.4.0
     # via django-two-factor-auth
@@ -110,9 +110,9 @@ django-rest-knox==4.2.0
     # via -r requirements.in
 django-select2==8.1.2
     # via -r requirements.in
-django-simple-captcha==0.5.18
+django-simple-captcha==0.5.20
     # via -r requirements.in
-django-simple-history==3.3.0
+django-simple-history==3.4.0
     # via -r requirements.in
 django-tables2==2.6.0
     # via
@@ -120,7 +120,7 @@ django-tables2==2.6.0
     #   django-tables2-column-shifter
 django-tables2-column-shifter==2.2.0
     # via -r requirements.in
-django-taggit==4.0.0
+django-taggit==5.0.1
     # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.14.0
     # via
@@ -155,7 +155,7 @@ jwcrypto==1.5.0
     # via django-oauth-toolkit
 markupsafe==2.1.3
     # via jinja2
-numpy==1.25.2
+numpy==1.26.1
     # via pandas
 oauthlib==3.2.2
     # via
@@ -163,16 +163,16 @@ oauthlib==3.2.2
     #   requests-oauthlib
 openpyxl==3.1.2
     # via tablib
-packaging==23.1
+packaging==23.2
     # via
     #   django-jsoneditor
     #   docker
     #   gunicorn
-pandas==2.0.3
+pandas==2.1.2
     # via -r requirements.in
 pdf2image==1.16.3
     # via -r requirements.in
-phonenumbers==8.13.19
+phonenumbers==8.13.24
     # via django-two-factor-auth
 pillow==10.1.0
     # via
@@ -181,7 +181,7 @@ pillow==10.1.0
     #   pdf2image
 postfinancecheckout==4.0.0
     # via -r requirements.in
-psycopg2-binary==2.9.7
+psycopg2-binary==2.9.9
     # via -r requirements.in
 pycparser==2.21
     # via cffi
@@ -197,7 +197,7 @@ python-dateutil==2.8.2
     #   postfinancecheckout
 python3-openid==3.2.0
     # via django-allauth
-pytz==2023.3
+pytz==2023.3.post1
     # via
     #   djangorestframework
     #   pandas
@@ -219,13 +219,13 @@ six==1.16.0
     #   html5lib
     #   postfinancecheckout
     #   python-dateutil
-soupsieve==2.4.1
+soupsieve==2.5
     # via beautifulsoup4
 sqlparse==0.4.4
     # via django
 tablib[xlsx]==3.5.0
     # via -r requirements.in
-typing-extensions==4.7.1
+typing-extensions==4.8.0
     # via
     #   asgiref
     #   qrcode
@@ -233,20 +233,20 @@ tzdata==2023.3
     # via
     #   -r requirements.in
     #   pandas
-unidecode==1.3.6
+unidecode==1.3.7
     # via -r requirements.in
 uritemplate==4.1.1
     # via -r requirements.in
-urllib3==2.0.4
+urllib3==2.0.7
     # via
     #   docker
     #   postfinancecheckout
     #   requests
 webencodings==0.5.1
     # via html5lib
-websocket-client==1.6.2
+websocket-client==1.6.4
     # via docker
-whitenoise==6.5.0
+whitenoise==6.6.0
     # via -r requirements.in
 wrapt==1.15.0
     # via deprecated
