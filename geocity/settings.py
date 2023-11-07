@@ -413,7 +413,7 @@ CONSTANCE_CONFIG = {
         "Domaines autorisés à la redirection après logout",
     ),
     "THUMBOR_SERVICE_URL": (
-        "http://host.docker.internal:8083",
+        "http://nginx-proxy",
         "URL du service thumbor (https://github.com/thumbor/thumbor), recommandé pour l'optimisation des images du module Agenda",
         str,
     ),

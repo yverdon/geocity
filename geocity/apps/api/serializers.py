@@ -908,7 +908,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
             "permit_requests_uploads/", ""
         )
         result["properties"]["poster"] = {
-            "src": f"http://localhost:9095/rest/image/{file_name}",
+            "src": f"http://localhost:9095/rest/image/thumbor/{file_name}",
             "width": "1365",
             "height": "2048",
         }

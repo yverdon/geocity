@@ -2,6 +2,7 @@ import datetime
 import os
 
 import requests
+from constance import config
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
@@ -475,34 +476,45 @@ SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
 
 
 def image_display(request, form_id, image_name):
-    no_thumbor = request.GET.get("no_thumbor", False)
     height = request.GET.get("height", None)
     width = request.GET.get("width", None)
-    # query_params = request.query_params
 
-    # print(query_params)
+    image_dir = settings.PRIVATE_MEDIA_ROOT
 
-    if no_thumbor:
-        image_dir = settings.PRIVATE_MEDIA_ROOT
+    image_path = os.path.join(
+        image_dir, f"permit_requests_uploads/{form_id}/{image_name}"
+    )
 
-        image_path = os.path.join(
-            image_dir, f"permit_requests_uploads/{form_id}/{image_name}"
-        )
-
-        # TODO: Ajouter de la sécurité afin de savoir si l'image peut-être affichée ou non
-        if os.path.exists(image_path):
-            image_file = open(image_path, "rb")
-            response = FileResponse(image_file, content_type="image/jpeg")
-            return response
-        else:
-            return JsonResponse({"message": "Image non trouvée."}, status=404)
+    # TODO: Secure access
+    if os.path.exists(image_path):
+        image_file = open(image_path, "rb")
+        response = FileResponse(image_file, content_type="image/jpeg")
+        return response
     else:
-        INTERNAL_WEB_ROOT_URL = "http://web:9000"
-        image_url = f"{INTERNAL_WEB_ROOT_URL}/agenda/image/display/permit_requests_uploads/{form_id}/{image_name}?no_thumbor=true"
-        thumbor_params = "300x200"
-        resp = requests.get(f"http://nginx-proxy/unsafe/{thumbor_params}/{image_url}")
-        thumbor_response = FileResponse(resp, content_type="image/jpeg")
-        return thumbor_response
+        return JsonResponse({"message": "Image non trouvée."}, status=404)
+
+
+def image_thumbor_display(request, form_id, image_name):
+    width = request.GET.get("width", None)
+    height = request.GET.get("height", None)
+
+    INTERNAL_WEB_ROOT_URL = "http://web:9000"
+    image_url = f"{INTERNAL_WEB_ROOT_URL}/rest/image/{form_id}/{image_name}"
+
+    thumbor_params = f"unsafe"
+
+    if width and height:
+        thumbor_params += f"/{width}x{height}"
+    else:
+        thumbor_params += "/397x562"
+
+    response = requests.get(
+        f"{config.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
+    )
+    # TODO: support PNG or other types
+    thumbor_response = FileResponse(response, content_type="image/jpeg")
+
+    return thumbor_response
 
 
 class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
