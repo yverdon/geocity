@@ -27,7 +27,7 @@ defusedxml==0.7.1
     # via python3-openid
 deprecated==1.2.14
     # via jwcrypto
-django==4.2.4
+django==4.2.7
     # via
     #   -r requirements.in
     #   django-admin-sortable2
