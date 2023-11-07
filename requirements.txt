@@ -123,7 +123,9 @@ django-tables2-column-shifter==2.2.0
 django-taggit==4.0.0
     # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.14.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   django-two-factor-auth
 djangorestframework==3.14.0
     # via
     #   -r requirements.in
@@ -184,7 +186,9 @@ psycopg2-binary==2.9.7
 pycparser==2.21
     # via cffi
 pyjwt[crypto]==2.8.0
-    # via django-allauth
+    # via
+    #   django-allauth
+    #   pyjwt
 pypng==0.20220715.0
     # via qrcode
 python-dateutil==2.8.2

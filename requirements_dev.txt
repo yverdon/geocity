@@ -177,7 +177,9 @@ django-tables2-column-shifter==2.2.0
 django-taggit==4.0.0
     # via -r requirements.txt
 django-two-factor-auth[phonenumbers]==1.14.0
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   django-two-factor-auth
 djangorestframework==3.14.0
     # via
     #   -r requirements.txt
@@ -307,6 +309,7 @@ pyjwt[crypto]==2.8.0
     # via
     #   -r requirements.txt
     #   django-allauth
+    #   pyjwt
 pypng==0.20220715.0
     # via
     #   -r requirements.txt
@@ -367,7 +370,9 @@ sqlparse==0.4.4
 stack-data==0.6.2
     # via ipython
 tablib[xlsx]==3.5.0
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   tablib
 tomli==2.0.1
     # via
     #   build
