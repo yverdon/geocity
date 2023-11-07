@@ -15,12 +15,14 @@ charset-normalizer==2.0.12
 cssselect2==0.7.0
     # via weasyprint
 fonttools[woff]==4.39.2
-    # via weasyprint
+    # via
+    #   fonttools
+    #   weasyprint
 html5lib==1.1
     # via weasyprint
 idna==3.4
     # via requests
-pillow==9.4.0
+pillow==10.0.1
     # via weasyprint
 pycparser==2.21
     # via cffi
