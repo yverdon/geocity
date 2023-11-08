@@ -74,3 +74,6 @@ class GeomapfishOAuth2Tests(OAuth2TestsMixin, TestCase):
 
         self.assertContains(signup_response, "example@test.org")
         self.assertContains(signup_response, "Victoire")
+
+    def test_authentication_error(self):
+        pass
