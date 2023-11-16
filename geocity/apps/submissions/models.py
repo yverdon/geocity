@@ -1819,7 +1819,7 @@ class SubmissionAmendField(models.Model):
         _("Visible dans l'API light"),
         default=False,
         help_text=_(
-            """Lorsque cette case est cochée, ce champ est affichée dans la version light de l'api (/rest/RESSOURCE).<br>
+            """Lorsque cette case est cochée, ce champ est affichée dans la version light de l'api (/rest/RESSOURCE) si la demande est rendue publique par le pilote.<br>
             Afin de ne pas afficher trop d'informations, le champ est masqué pour améliorer la rapidité de l'API.<br>
             Pour afficher la version normale de l'api, il faut se rendre sur une seule ressource (/rest/RESSOURCE/:ID)."""
         ),
