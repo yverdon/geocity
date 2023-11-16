@@ -44,7 +44,7 @@ class SiteProfile(models.Model):
         null=True,
         default=None,
         on_delete=models.SET_NULL,
-        verbose_name=_("Intégrateur"),
+        verbose_name=_("Groupe des administrateurs"),
         related_name="site_profiles",
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )

@@ -8,11 +8,11 @@ from . import models
 from .models import ComplementaryDocumentType, Submission
 
 
-def is_backoffice_of_submission(user, submission):
-    """Check user is_backoffice for an submission"""
+def is_backoffice_of_entity(user, entity):
+    """Check user is_backoffice for an entity"""
     # Find the department of this submission and filter by backoffice
     departments = PermitDepartment.objects.filter(
-        administrative_entity=submission.administrative_entity, is_backoffice=True
+        administrative_entity=entity, is_backoffice=True
     )
     # Tuple of groups related to the user and to this submission department
     user_groups = set(user.groups.all().values_list("id", flat=True))
@@ -22,12 +22,26 @@ def is_backoffice_of_submission(user, submission):
     return any(user_groups.intersection(department_groups))
 
 
+def is_backoffice_of_submission(user, submission):
+    """Check user is_backoffice for an submission"""
+    return is_backoffice_of_entity(user, submission.administrative_entity)
+
+
 def has_permission_to_amend_submission(user, submission):
     return (
         user.has_perm("submissions.amend_submission")
         and submission.administrative_entity
         in AdministrativeEntity.objects.associated_to_user(user)
         and is_backoffice_of_submission(user, submission)
+    )
+
+
+def has_permission_to_amend_submission_in_form(user, form):
+    return (
+        user.has_perm("submissions.amend_submission")
+        and form.administrative_entities.first()
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_entity(user, form.administrative_entities.first())
     )
 
 

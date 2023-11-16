@@ -5,7 +5,7 @@
 {% can_refund_transaction as can_refund %}
 
 {% if can_revert_refund or can_refund %}
-  {% if record.status != 'failed' %}
+  {% if record.status != 'failed' and record.can_have_status_changed %}
       <ul class="list-inline text-left">
         <li>
           <div class="form-group">
