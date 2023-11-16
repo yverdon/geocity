@@ -107,7 +107,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 #  Or we need to add an attribute in the Submission to save the site where it has
 #  been initiated.
 SITE_ID = None
-SITE_DOMAIN = None
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", None)
 # Default domain on which all forms could be made visible by any integrator
 DEFAULT_SITE = os.getenv("DEFAULT_SITE")
 
@@ -127,6 +127,8 @@ if ENV == "DEV":
 
 LOCATIONS_SEARCH_API = os.getenv("LOCATIONS_SEARCH_API")
 LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
+
+LOCAL_TIME_ZONE_UTC = int(os.getenv("LOCAL_TIME_ZONE_UTC", +1))
 
 # Application definition
 INSTALLED_APPS = [

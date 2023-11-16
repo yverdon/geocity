@@ -553,7 +553,7 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
                 )
 
-            local_tz = timezone(timedelta(hours=2))
+            local_tz = timezone(timedelta(hours=settings.LOCAL_TIME_ZONE_UTC))
             geotime_aggregated = {}
             geotime_aggregated["start_date"] = (
                 aggregated_geotime_qs["submission_geo_time_start_date"]
@@ -768,22 +768,22 @@ def get_agenda_form_fields(value, detailed, available_filters):
     form_fields = obj.values(
         "field_values__field__name",
         "field_values__field__api_name",
-        "field_values__field_id",
-        "field_values__field__input_type",
+        # "field_values__field_id",
+        # "field_values__field__input_type",
         "field_values__value__val",
-        "form_id",
+        # "form_id",
         "form__amend_fields__amend_field_value__value",
         "form__amend_fields__api_name",
         "form__amend_fields__api_light",
-        "id",
-        "form__name",
-        "form__api_name",
-        "form__category__name",
+        # "id",
+        # "form__name",
+        # "form__api_name",
+        # "form__category__name",
         "field_values__field__public_if_submission_public",
         "field_values__field__api_light",
         "field_values__field__filter_for_api",
-        "submission__administrative_entity",
-        "submission__author",
+        # "submission__administrative_entity",
+        # "submission__author",
     )
 
     result = {
@@ -797,7 +797,10 @@ def get_agenda_form_fields(value, detailed, available_filters):
 
     for field in form_fields:
         # If there is a value, means we are not checking a "None"
-        if field["field_values__value__val"]:
+        if (
+            field["field_values__value__val"]
+            and field["field_values__field__public_if_submission_public"]
+        ):
 
             # Detailed API for agenda
             if detailed:
@@ -885,7 +888,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
         submission_geo_time_end_date=Max("ends_at"),
     )
 
-    local_tz = timezone(timedelta(hours=2))
+    local_tz = timezone(timedelta(hours=settings.LOCAL_TIME_ZONE_UTC))
     result["properties"]["starts_at"] = (
         aggregated_geotime_qs["submission_geo_time_start_date"]
         .replace(tzinfo=timezone.utc)
@@ -902,15 +905,25 @@ def get_agenda_form_fields(value, detailed, available_filters):
     )
 
     # Rewrite poster to match agenda-embed
-    # TODO: Change http://localhost:9095/ to host
     if "poster" in result["properties"]:
-        file_name = result["properties"]["poster"].replace(
-            "permit_requests_uploads/", ""
+        # _, used to remove permit_requests_uploads/ without using a replace. May change in the future, if it's removed from stored path
+        _, submission_id, image_name = result["properties"]["poster"].split("/")
+        from django.urls import reverse
+
+        src = Submission.get_absolute_url(
+            reverse(
+                "image_thumbor_display",
+                kwargs={
+                    # we need the user id to validate the token
+                    "submission_id": submission_id,
+                    "image_name": image_name,
+                },
+            )
         )
         result["properties"]["poster"] = {
-            "src": f"http://localhost:9095/rest/image/thumbor/{file_name}",
-            "width": "1365",
-            "height": "2048",
+            "src": src,
+            "width": 1365,
+            "height": 2048,
         }
 
     return result

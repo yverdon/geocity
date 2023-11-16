@@ -1,5 +1,7 @@
 import datetime
+import mimetypes
 import os
+from io import BytesIO
 
 import requests
 from constance import config
@@ -7,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from django.http import FileResponse, JsonResponse
+from PIL import Image
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -475,57 +478,79 @@ SubmissionLineViewSet = submission_view_set_subset_factory("lines")
 SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
 
 
-def image_display(request, form_id, image_name):
-    height = request.GET.get("height", None)
-    width = request.GET.get("width", None)
+def get_mime_type(content):
+    """
+    Used to retrieve mime type in response.content of request
+    """
+    image = Image.open(BytesIO(content))
+    image_format = image.format
+    mime_type = "image/" + image_format.lower()
+    return mime_type
 
+
+def image_display(request, submission_id, image_name):
     image_dir = settings.PRIVATE_MEDIA_ROOT
 
     image_path = os.path.join(
-        image_dir, f"permit_requests_uploads/{form_id}/{image_name}"
+        image_dir, f"permit_requests_uploads/{submission_id}/{image_name}"
     )
 
     # TODO: Secure access
     if os.path.exists(image_path):
         image_file = open(image_path, "rb")
-        response = FileResponse(image_file, content_type="image/jpeg")
+        mime_type, encoding = mimetypes.guess_type(image_path)
+        response = FileResponse(image_file, content_type=mime_type)
         return response
     else:
         return JsonResponse({"message": "Image non trouvée."}, status=404)
 
 
-def image_thumbor_display(request, form_id, image_name):
-    width = request.GET.get("width", None)
-    height = request.GET.get("height", None)
+def image_thumbor_display(request, submission_id, image_name):
+    width = request.GET.get("width", 397)
+    height = request.GET.get("height", 562)
+    format = request.GET.get("format", "webp")
+    fit = request.GET.get("fit", None)
 
     INTERNAL_WEB_ROOT_URL = "http://web:9000"
-    image_url = f"{INTERNAL_WEB_ROOT_URL}/rest/image/{form_id}/{image_name}"
+    image_url = f"{INTERNAL_WEB_ROOT_URL}/rest/image/{submission_id}/{image_name}"
 
-    thumbor_params = f"unsafe"
+    # TODO: understand (adaptive-)(full-)fit-in between unsafe and size
 
-    if width and height:
-        thumbor_params += f"/{width}x{height}"
-    else:
-        thumbor_params += "/397x562"
+    thumbor_params = "unsafe/"
 
-    response = requests.get(
-        f"{config.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
-    )
-    # TODO: support PNG or other types
-    thumbor_response = FileResponse(response, content_type="image/jpeg")
+    if fit:
+        thumbor_params += f"{fit}/"
+
+    thumbor_params += f"{width}x{height}/filters:format({format})"
+
+    try:
+        response = requests.get(
+            f"{config.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
+        )
+    except requests.exceptions.RequestException as e:
+        response = requests.get(image_url)
+
+    mime_type = get_mime_type(response.content)
+    thumbor_response = FileResponse(response, content_type=mime_type)
 
     return thumbor_response
 
 
 class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    To get detail use /rest/agenda/:id
-    Example : /rest/agenda/7
-    Page can be given
-    Example : /rest/agenda/?page=1
-    It's possible to filter by categories
-    Example : /rest/agenda/?publics=3
-    Every filter can be cumulated
+    This api provides :
+    - Minimal informations, to show all available submissions /rest/agenda/
+    - Detailed informations of a specific submission, filtered by id, example : /rest/agenda/:id
+    Submissions are filtered by date
+    Images are provided through thumbor https://thumbor.readthedocs.io/en/latest/imaging.html
+    Arguments care be provided :
+    - ?width
+    - ?height
+    - ?format (jpg, jpeg, png, webp, etc...)
+    - ?fit to chose the way the image will fit the size. Can be used for all the following arguments https://thumbor.readthedocs.io/en/latest/usage.html
+        - adaptive-in
+        - full-in
+        - fit-in
     """
 
     throttle_scope = "agenda"
@@ -566,6 +591,11 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
 
         # List params given by the request as query_params
         query_params = self.request.query_params
+
+        # Secure the number of query_params to dont be higher than the number of available_filters + 5
+        # + 5 for optional filters, like startsAt and endsAt
+        if len(query_params) > len(available_filters) + 5:
+            return None
 
         # Do the required actions fo every query_param
         for field_name in query_params:

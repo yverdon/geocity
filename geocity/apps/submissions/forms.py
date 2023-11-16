@@ -1420,7 +1420,9 @@ class SubmissionGeoTimeForm(forms.ModelForm):
 
             min_starts_at = self.submission.get_min_starts_at()
             # add two hours of tolerance in the validation
-            if starts_at <= min_starts_at - timedelta(hours=2):
+            if starts_at <= min_starts_at - timedelta(
+                hours=settings.LOCAL_TIME_ZONE_UTC
+            ):
                 raise ValidationError(
                     {
                         "starts_at": _(
@@ -1432,7 +1434,9 @@ class SubmissionGeoTimeForm(forms.ModelForm):
 
             if self.submission.max_validity is not None:
                 max_ends_at = starts_at + timedelta(days=self.submission.max_validity)
-                if ends_at > max_ends_at + timedelta(hours=2):
+                if ends_at > max_ends_at + timedelta(
+                    hours=settings.LOCAL_TIME_ZONE_UTC
+                ):
                     raise ValidationError(
                         {
                             "ends_at": _(

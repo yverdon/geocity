@@ -36,78 +36,91 @@ field_title = {
     "input_type": "text",
     "is_mandatory": True,
     "api_light": True,
+    "public_if_submission_public": True,
 }
 field_location = {
     "name": "Location",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": True,
+    "public_if_submission_public": True,
 }
 field_location_details = {
     "name": "Location details",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_summary = {
     "name": "Summary",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_Pricing = {
     "name": "Pricing",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_website = {
     "name": "Website",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_schedule = {
     "name": "Schedule",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_organizer_name = {
     "name": "Organizer name",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_organizer_address = {
     "name": "Organizer address",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_organizer_phone = {
     "name": "Organizer phone",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_organizer_email = {
     "name": "Organizer email",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_organizer_website = {
     "name": "Organizer website",
     "input_type": "text",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
 }
 field_publics = {
     "name": "Publics",
     "input_type": "list_multiple",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
     "filter_for_api": True,
     "choices": "Tous publics\nFamilles\nJeunes\nSeniors",
 }
@@ -116,6 +129,7 @@ field_regions = {
     "input_type": "list_single",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
     "filter_for_api": True,
     "choices": "Grandson\nOrbe\nRomainmôtier\nSainte-Croix\nVallée de Joux\nVallorbe\nYverdon\nYvonand",
 }
@@ -124,6 +138,7 @@ field_types = {
     "input_type": "list_multiple",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
     "filter_for_api": True,
     "choices": "Concert\nSpectacle\nExposition\nFestival\nAtelier, Animation & Médiation\nPerformance\nInstallation\nCompétition",
 }
@@ -132,6 +147,7 @@ field_domaines = {
     "input_type": "list_multiple",
     "is_mandatory": True,
     "api_light": False,
+    "public_if_submission_public": True,
     "filter_for_api": True,
     "choices": "Art vivant\nArt visuel\nAudiovisuel\nPatrimoine & Architecture\nMusique\nLittérature\nArtisanat & Tradition\nSport",
 }
@@ -140,6 +156,14 @@ field_poster = {
     "input_type": "file",
     "is_mandatory": False,
     "api_light": True,
+    "public_if_submission_public": True,
+}
+field_non_public = {
+    "name": "Champ pas public, ne doit pas s'afficher dans l'api et l'agenda",
+    "input_type": "text",
+    "is_mandatory": False,
+    "api_light": True,
+    "public_if_submission_public": False,
 }
 
 # Define form_categories for each entity
@@ -148,10 +172,10 @@ field_poster = {
 # - NO_GEOM_NOR_TIME
 form_categories = [
     (
-        "AGENDA Agenda",
+        "AGENDA Agenda - Sports",
         [
             (
-                "Agenda",
+                "Agenda - Sports",
                 field_title,
                 field_location,
                 field_location_details,
@@ -169,6 +193,33 @@ form_categories = [
                 field_types,
                 field_domaines,
                 field_poster,
+                field_non_public,
+            ),
+        ],
+    ),
+    (
+        "AGENDA Agenda - Culture",
+        [
+            (
+                "Agenda - Culture",
+                field_title,
+                field_location,
+                field_location_details,
+                field_summary,
+                field_Pricing,
+                field_website,
+                field_schedule,
+                field_organizer_name,
+                field_organizer_address,
+                field_organizer_phone,
+                field_organizer_email,
+                field_organizer_website,
+                field_publics,
+                field_regions,
+                field_types,
+                field_domaines,
+                field_poster,
+                field_non_public,
             ),
         ],
     ),

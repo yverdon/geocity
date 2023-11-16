@@ -98,21 +98,26 @@ def reset_db():
     management.call_command("migrate", "--noinput", stdout=StringIO())
 
 
-def setup_media():
-    image_dir = os.path.join(settings.PRIVATE_MEDIA_ROOT, f"permit_requests_uploads/0/")
+def setup_media(images_folder):
+    if images_folder:
+        image_dir = os.path.join(
+            settings.PRIVATE_MEDIA_ROOT, f"permit_requests_uploads/0/"
+        )
 
-    if os.path.exists(image_dir):
-        shutil.rmtree(image_dir)
+        if os.path.exists(image_dir):
+            shutil.rmtree(image_dir)
 
-    source_dir = "geocity/apps/submissions/management/fixturize_data/images/posters/"
-    shutil.copytree(source_dir, image_dir)
+        source_dir = (
+            "geocity/apps/submissions/management/fixturize_data/images/posters/"
+        )
+        shutil.copytree(source_dir, image_dir)
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Resetting database...")
         reset_db()
-        setup_media()
+        setup_media(images_folder)
         self.stdout.write("")
         self.stdout.write("░██████╗███████╗███████╗██████╗░")
         self.stdout.write("██╔════╝██╔════╝██╔════╝██╔══██╗")

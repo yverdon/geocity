@@ -507,7 +507,11 @@ class Submission(models.Model):
             site_domain = settings.SITE_DOMAIN
         else:
             url_split = relative_url.split("/")
-            submission_id_index = url_split.index("submissions") + 1
+            if "submissions" in url_split:
+                submission_id_index = url_split.index("submissions") + 1
+            elif "thumbor" in url_split:
+                submission_id_index = url_split.index("thumbor") + 1
+
             submission_id = url_split[submission_id_index]
             submission = Submission.objects.get(id=submission_id)
             site_domain = submission.get_site(use_default=False)
