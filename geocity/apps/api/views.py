@@ -495,7 +495,7 @@ def image_display(request, submission_id, image_name):
         image_dir, f"permit_requests_uploads/{submission_id}/{image_name}"
     )
 
-    # TODO: Secure access
+    # TODO: Secure access, watch if the image should be shown or not
     if os.path.exists(image_path):
         image_file = open(image_path, "rb")
         mime_type, encoding = mimetypes.guess_type(image_path)
