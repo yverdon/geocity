@@ -759,7 +759,7 @@ class SearchSerializer(serializers.Serializer):
 # Agenda api
 # ///////////////////////////////////
 
-# TODO: USE field_values__field__public_if_submission_public to secure information + check if submission status = Public
+
 def get_agenda_form_fields(value, detailed, available_filters):
     """
     Return form fields for agenda-embed

@@ -22,6 +22,7 @@ from geocity.apps.django_wfs3.pagination import AgendaResultsSetPagination
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
+    FieldValue,
     Submission,
     SubmissionGeoTime,
     SubmissionInquiry,
@@ -489,6 +490,32 @@ def get_mime_type(content):
     return mime_type
 
 
+def can_image_be_displayed_for_agenda(submission_id, image_name):
+    """
+    Display image for :
+    - Submission with
+        - agenda activated
+        - public
+        - VISIBLE_IN_CALENDAR_STATUSES
+    - and FieldValue with
+        - public_if_submission_public
+    """
+    submission_display_conditions = Submission.objects.filter(
+        Q(pk=submission_id)
+        & Q(selected_forms__form__agenda_visible=True)
+        & Q(is_public=True)
+        & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
+    ).exists()
+
+    image_name_in_db = {"val": f"permit_requests_uploads/{submission_id}/{image_name}"}
+
+    fieldvalue_display_conditions = FieldValue.objects.filter(
+        Q(value=image_name_in_db) & Q(field__public_if_submission_public=True)
+    ).exists()
+
+    return submission_display_conditions and fieldvalue_display_conditions
+
+
 def image_display(request, submission_id, image_name):
     image_dir = settings.PRIVATE_MEDIA_ROOT
 
@@ -496,17 +523,21 @@ def image_display(request, submission_id, image_name):
         image_dir, f"permit_requests_uploads/{submission_id}/{image_name}"
     )
 
-    # TODO: Secure access, watch if the image should be shown or not
-    if os.path.exists(image_path):
+    if os.path.exists(image_path) and can_image_be_displayed_for_agenda(
+        submission_id, image_name
+    ):
         image_file = open(image_path, "rb")
         mime_type, encoding = mimetypes.guess_type(image_path)
         response = FileResponse(image_file, content_type=mime_type)
         return response
     else:
-        return JsonResponse({"message": "Image non trouvée."}, status=404)
+        return JsonResponse({"message": "unauthorized."}, status=404)
 
 
 def image_thumbor_display(request, submission_id, image_name):
+    if not can_image_be_displayed_for_agenda(submission_id, image_name):
+        return JsonResponse({"message": "unauthorized."}, status=404)
+
     width = request.GET.get("width", 397)
     height = request.GET.get("height", 562)
     format = request.GET.get("format", "webp")
@@ -515,7 +546,7 @@ def image_thumbor_display(request, submission_id, image_name):
     INTERNAL_WEB_ROOT_URL = "http://web:9000"
     image_url = f"{INTERNAL_WEB_ROOT_URL}/rest/image/{submission_id}/{image_name}"
 
-    # TODO: understand (adaptive-)(full-)fit-in between unsafe and size
+    # TODO: V2 -> understand (adaptive-)(full-)fit-in between unsafe and size
 
     thumbor_params = "unsafe/"
 
