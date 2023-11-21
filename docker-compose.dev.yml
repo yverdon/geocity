@@ -18,7 +18,7 @@ services:
       # For dev, set the temp folder in the main code directory, for convenience
       - ./_dev_volumes/private_documents:/private_documents
       - ./_dev_volumes/archive:/archive
-      - static_root:/static_map/geocity-wc-map/
+      - static_root:/external_statics/
     depends_on:
       - "postgres"
     ports:
