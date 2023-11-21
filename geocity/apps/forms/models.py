@@ -877,7 +877,7 @@ class Field(models.Model):
         max_length=255,
         blank=True,
         help_text=_(
-            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.Sgeo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
+            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
         ),
     )
     store_geometry_for_address_field = models.BooleanField(

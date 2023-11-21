@@ -3,7 +3,7 @@
 {% load static %}
 <style>
     agenda-embed {
-      --agd-color-primary: #008c6f;
+      --agd-color-primary: #7F00FF;
       --agd-color-accent: #005d95;
       --agd-headings-font-family: Roboto;
       --agd-headings-font-weight: 500;
@@ -12,7 +12,7 @@
   </style>
 
   <!-- Render the component -->
-  <agenda-embed api-base-url="http://localhost:9095/rest"></agenda-embed>
+  <agenda-embed domain="sports" api-base-url="http://localhost:9095/rest"></agenda-embed>
 
   <!-- Initialize the component -->
   <script type="module" src="https://cdn.jsdelivr.net/npm/@geocity/agenda-embed"></script>

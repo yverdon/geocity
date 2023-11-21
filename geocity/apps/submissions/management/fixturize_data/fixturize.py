@@ -8,7 +8,7 @@ iterations = {
     "integrator_iterations": 1,
     "pilot_iterations": 1,
     "validator_iterations": 1,
-    "user_iterations": 40,
+    "user_iterations": 20,
 }
 
 # domain:entity
@@ -19,16 +19,18 @@ iterations = {
 #   - ENTITY-validator-ITERATION
 #   - ENTITY-user-ITERATION
 entities = {
-    "first.ch": "first_entity",
+    "sports.ch": "sports",
+    "culture.ch": "culture",
 }
 
 # Geometries for the entities
 geoms = [
     "SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))",
+    "SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))",
 ]
 
 # Ofs_ids for the entities
-ofs_ids = [5938]
+ofs_ids = [5938, 5938]
 
 # Define the fields
 field_title = {
@@ -172,36 +174,10 @@ field_non_public = {
 # - NO_GEOM_NOR_TIME
 form_categories = [
     (
-        "AGENDA Agenda - Sports",
+        "AGENDA Agenda",
         [
             (
-                "Agenda - Sports",
-                field_title,
-                field_location,
-                field_location_details,
-                field_summary,
-                field_Pricing,
-                field_website,
-                field_schedule,
-                field_organizer_name,
-                field_organizer_address,
-                field_organizer_phone,
-                field_organizer_email,
-                field_organizer_website,
-                field_publics,
-                field_regions,
-                field_types,
-                field_domaines,
-                field_poster,
-                field_non_public,
-            ),
-        ],
-    ),
-    (
-        "AGENDA Agenda - Culture",
-        [
-            (
-                "Agenda - Culture",
+                "Agenda",
                 field_title,
                 field_location,
                 field_location_details,

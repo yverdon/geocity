@@ -929,21 +929,25 @@ def get_agenda_form_fields(value, detailed, available_filters):
     return result
 
 
-def get_available_filters_for_agenda_as_qs(user):
+def get_available_filters_for_agenda_as_qs(entity):
     """
-    Returns a list of filters available for a specific user.
+    Returns a list of filters available for a specific entity.
     The order is important, agenda-embed has no logic, everything is set here
     """
-    # TODO: Improve queryset to secure it. Actually we can just tag something as filter_for_api and it will appear
-    # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
-    # TODO: Try to put this outside of AgendaSerializer, and pass the data trough views.py>AgendaViewSet so we reduce number of actions and execution time
-    available_filters = Field.objects.filter(
+    # TODO: Get all fields available in an entity
+    if entity:
+        available_filters = Field.objects.filter(forms__administrative_entities=entity)
+    else:
+        available_filters = Field.objects.all()
+
+    available_filters.filter(
         Q(filter_for_api=True)
         & (
             Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
             | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
         )
     )
+
     return available_filters
 
 

@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
+from geocity.apps.accounts.models import AdministrativeEntity
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.django_wfs3.pagination import AgendaResultsSetPagination
 from geocity.apps.forms.models import Form
@@ -543,7 +544,8 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     - Detailed informations of a specific submission, filtered by id, example : /rest/agenda/:id
     Submissions are filtered by date
     Images are provided through thumbor https://thumbor.readthedocs.io/en/latest/imaging.html
-    Arguments care be provided :
+    Arguments that can be supplied in the url :
+    - ?domain can be given through the component in html, it corresponds to the entity tags (mots-clés)
     - ?width
     - ?height
     - ?format (jpg, jpeg, png, webp, etc...)
@@ -564,36 +566,38 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         The detailed result is built with AgendaResultsSetPagination,
         this is required to be able to make pagination and return features and filters
         The simple result just return informations for une submission
+        The order is important, agenda-embed has no logic, everything is set here
         """
-        # TODO: Filter domain = entity, sports and culture want their own site, so they should be able to filter, to prevent useless filters to show
-        # TODO: Replace with this queryset to prevent to see data that isn't public
-        # qs = Submission.objects.filter(
-        #     Q(selected_forms__field_values__value__val__isnull=False)
-        #     & Q(is_public=True)
-        #     & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
-        # )
-        # TODO: Delete this queryset, that is used for tests but shows too much information
-
+        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
         submissions = (
             Submission.objects.filter(
                 Q(selected_forms__field_values__value__val__isnull=False)
                 & Q(selected_forms__form__agenda_visible=True)
+                & Q(is_public=True)
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
             )
             .distinct()
             .order_by("id")
             .prefetch_related("selected_forms__field_values")
         )
 
-        # List every available filter
-        # TODO: Improve queryset to secure it. Actually we can just tag something as filter_for_api and it will appear
-        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
-        available_filters = serializers.get_available_filters_for_agenda_as_qs(None)
-
         # List params given by the request as query_params
         query_params = self.request.query_params
 
+        # TODO: if validator has validated the submission, it should show the submission when it's Submission.VISIBLE_IN_CALENDAR_STATUSES
+        # Filter domain (administrative_entity) to permit sites to filter on their own domain (e.g.: sports, culture)
+        if "domain" in query_params:
+            domain = query_params["domain"]
+            entity = AdministrativeEntity.objects.get(tags__name=domain)
+            submissions = submissions.filter(administrative_entity=entity)
+        else:
+            entity = None
+
+        # List every available filter
+        available_filters = serializers.get_available_filters_for_agenda_as_qs(entity)
+
         # Secure the number of query_params to dont be higher than the number of available_filters + 5
-        # + 5 for optional filters, like startsAt and endsAt
+        # + 5 for optional filters, like startsAt and endsAt, domain
         if len(query_params) > len(available_filters) + 5:
             return None
 
