@@ -768,22 +768,13 @@ def get_agenda_form_fields(value, detailed, available_filters):
     form_fields = obj.values(
         "field_values__field__name",
         "field_values__field__api_name",
-        # "field_values__field_id",
-        # "field_values__field__input_type",
         "field_values__value__val",
-        # "form_id",
         "form__amend_fields__amend_field_value__value",
         "form__amend_fields__api_name",
         "form__amend_fields__api_light",
-        # "id",
-        # "form__name",
-        # "form__api_name",
-        # "form__category__name",
         "field_values__field__public_if_submission_public",
         "field_values__field__api_light",
         "field_values__field__filter_for_api",
-        # "submission__administrative_entity",
-        # "submission__author",
     )
 
     result = {
@@ -929,18 +920,19 @@ def get_agenda_form_fields(value, detailed, available_filters):
     return result
 
 
-def get_available_filters_for_agenda_as_qs(entity):
+def get_available_filters_for_agenda_as_qs(domain):
     """
     Returns a list of filters available for a specific entity.
     The order is important, agenda-embed has no logic, everything is set here
     """
     # TODO: Get all fields available in an entity
-    if entity:
+    if domain:
+        entity = AdministrativeEntity.objects.get(tags__name=domain)
         available_filters = Field.objects.filter(forms__administrative_entities=entity)
     else:
         available_filters = Field.objects.all()
 
-    available_filters.filter(
+    available_filters = available_filters.filter(
         Q(filter_for_api=True)
         & (
             Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
@@ -951,11 +943,11 @@ def get_available_filters_for_agenda_as_qs(entity):
     return available_filters
 
 
-def get_available_filters_for_agenda_as_json(user):
+def get_available_filters_for_agenda_as_json(domain):
     """
     Returns the list of filters for api
     """
-    available_filters = get_available_filters_for_agenda_as_qs(user)
+    available_filters = get_available_filters_for_agenda_as_qs(domain)
 
     agenda_filters = []
     for available_filter in available_filters:
@@ -980,8 +972,9 @@ class AgendaSerializer(serializers.Serializer):
         request = self.context.get("request")
         kwargs = request.parser_context["kwargs"]
         detailed = True if kwargs and kwargs["pk"] else False
+        domain = request.GET.get("domain") if request else None
 
-        available_filters = get_available_filters_for_agenda_as_qs(None)
+        available_filters = get_available_filters_for_agenda_as_qs(domain)
 
         fields = get_agenda_form_fields(value, detailed, available_filters)
 

@@ -25,7 +25,8 @@ class AgendaResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
     def get_paginated_response(self, data):
-        agenda_filters = get_available_filters_for_agenda_as_json(None)
+        domain = self.request.GET.get("domain")
+        agenda_filters = get_available_filters_for_agenda_as_json(domain)
         return Response(
             {
                 "type": "FeatureCollection",

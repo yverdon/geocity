@@ -622,10 +622,10 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             entity = AdministrativeEntity.objects.get(tags__name=domain)
             submissions = submissions.filter(administrative_entity=entity)
         else:
-            entity = None
+            domain = None
 
         # List every available filter
-        available_filters = serializers.get_available_filters_for_agenda_as_qs(entity)
+        available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)
 
         # Secure the number of query_params to dont be higher than the number of available_filters + 5
         # + 5 for optional filters, like startsAt and endsAt, domain
