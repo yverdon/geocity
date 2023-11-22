@@ -495,6 +495,19 @@ class Submission(models.Model):
                 )
 
     @staticmethod
+    def get_submission_site_domain(url_split):
+        if "submissions" in url_split:
+            submission_id_index = url_split.index("submissions") + 1
+        elif "thumbor" in url_split:
+            submission_id_index = url_split.index("thumbor") + 1
+        else:
+            return None
+
+        submission_id = url_split[submission_id_index]
+        submission = Submission.objects.get(id=submission_id)
+        return submission.get_site(use_default=False)
+
+    @staticmethod
     def get_absolute_url(relative_url):
         protocol = "https" if settings.SITE_HTTPS else "http"
         port = (
@@ -503,18 +516,12 @@ class Submission(models.Model):
             else ""
         )
 
-        if settings.SITE_DOMAIN:
-            site_domain = settings.SITE_DOMAIN
+        url_split = relative_url.split("/")
+        submission_site = Submission.get_submission_site_domain(url_split)
+        if submission_site:
+            site_domain = submission_site
         else:
-            url_split = relative_url.split("/")
-            if "submissions" in url_split:
-                submission_id_index = url_split.index("submissions") + 1
-            elif "thumbor" in url_split:
-                submission_id_index = url_split.index("thumbor") + 1
-
-            submission_id = url_split[submission_id_index]
-            submission = Submission.objects.get(id=submission_id)
-            site_domain = submission.get_site(use_default=False)
+            site_domain = settings.SITE_DOMAIN
 
         return f"{protocol}://{site_domain}{port}{relative_url}"
 
