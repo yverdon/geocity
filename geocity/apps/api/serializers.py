@@ -925,12 +925,17 @@ def get_available_filters_for_agenda_as_qs(domain):
     Returns a list of filters available for a specific entity.
     The order is important, agenda-embed has no logic, everything is set here
     """
-    # TODO: Get all fields available in an entity
+
+    available_filters = Field.objects.all()
+
     if domain:
-        entity = AdministrativeEntity.objects.get(tags__name=domain)
-        available_filters = Field.objects.filter(forms__administrative_entities=entity)
-    else:
-        available_filters = Field.objects.all()
+        entity = AdministrativeEntity.objects.filter(
+            tags__name=domain
+        ).first()  # get can return an error
+        if entity:
+            available_filters = Field.objects.filter(
+                forms__administrative_entities=entity
+            )
 
     available_filters = available_filters.filter(
         Q(filter_for_api=True)

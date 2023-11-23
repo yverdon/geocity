@@ -496,7 +496,7 @@ def can_image_be_displayed_for_agenda(submission_id, image_name):
     - Submission with
         - agenda activated
         - public
-        - VISIBLE_IN_CALENDAR_STATUSES
+        - VISIBLE_IN_AGENDA_STATUSES
     - and FieldValue with
         - public_if_submission_public
     """
@@ -504,7 +504,7 @@ def can_image_be_displayed_for_agenda(submission_id, image_name):
         Q(pk=submission_id)
         & Q(selected_forms__form__agenda_visible=True)
         & Q(is_public=True)
-        & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
+        & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
     ).exists()
 
     image_name_in_db = {"val": f"permit_requests_uploads/{submission_id}/{image_name}"}
@@ -605,7 +605,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
                 Q(selected_forms__field_values__value__val__isnull=False)
                 & Q(selected_forms__form__agenda_visible=True)
                 & Q(is_public=True)
-                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
+                & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
             )
             .distinct()
             .order_by("id")
@@ -615,14 +615,17 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         # List params given by the request as query_params
         query_params = self.request.query_params
 
-        # TODO: if validator has validated the submission, it should show the submission when it's Submission.VISIBLE_IN_CALENDAR_STATUSES
+        # TODO: if validator has validated the submission, it should show the submission when it's Submission.VISIBLE_IN_AGENDA_STATUSES
         # Filter domain (administrative_entity) to permit sites to filter on their own domain (e.g.: sports, culture)
+        domain = None
+
         if "domain" in query_params:
             domain = query_params["domain"]
-            entity = AdministrativeEntity.objects.get(tags__name=domain)
-            submissions = submissions.filter(administrative_entity=entity)
-        else:
-            domain = None
+            entity = AdministrativeEntity.objects.filter(
+                tags__name=domain
+            ).first()  # get can return an error
+            if entity:
+                submissions = submissions.filter(administrative_entity=entity)
 
         # List every available filter
         available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)
