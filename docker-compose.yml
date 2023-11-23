@@ -16,7 +16,7 @@ services:
     volumes:
       - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
       - ${ARCHIVE_DIR}:/archive
-      - static_root:/static_root/geocity-wc-map/
+      - static_root:/external_statics
       # to allow to spawn new QGIS containers
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -107,9 +107,8 @@ services:
     image: external_statics
     build:
       context: services/external_statics
-    working_dir: /app/geocity-wc-map
     volumes:
-      - static_root:/app/geocity-wc-map/dist/
+      - static_root:/app/
 
 networks:
   # Use this for containers that should only be able to communicate with Django
