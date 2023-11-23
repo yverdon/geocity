@@ -557,10 +557,9 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
-if DEBUG:
-    STATICFILES_DIRS = [
-        "/external_statics/",
-    ]
+STATICFILES_DIRS = [
+    "/external_statics/",
+]
 
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"
