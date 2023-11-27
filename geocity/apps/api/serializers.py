@@ -10,7 +10,11 @@ from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
-from geocity.apps.api.services import convert_string_to_api_key
+from geocity.apps.api.services import (
+    convert_string_to_api_key,
+    get_image_dimensions,
+    get_image_path,
+)
 from geocity.apps.forms.models import Field
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
@@ -911,10 +915,13 @@ def get_agenda_form_fields(value, detailed, available_filters):
                 },
             )
         )
+
+        image_path = get_image_path(submission_id, image_name)
+        width, height = get_image_dimensions(image_path)
         result["properties"]["poster"] = {
             "src": src,
-            "width": 1365,
-            "height": 2048,
+            "width": width,
+            "height": height,
         }
 
     return result
@@ -927,15 +934,14 @@ def get_available_filters_for_agenda_as_qs(domain):
     """
 
     available_filters = Field.objects.all()
+    # TODO: Try to filter by distinct api_name
+    # TODO: Find a way to cumulate filters if they've the same api_name ? Seems complicated to do
 
     if domain:
         entity = AdministrativeEntity.objects.filter(
             tags__name=domain
         ).first()  # get can return an error
-        if entity:
-            available_filters = Field.objects.filter(
-                forms__administrative_entities=entity
-            )
+        available_filters = Field.objects.filter(forms__administrative_entities=entity)
 
     available_filters = available_filters.filter(
         Q(filter_for_api=True)

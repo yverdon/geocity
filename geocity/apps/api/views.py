@@ -1,15 +1,12 @@
 import datetime
 import mimetypes
 import os
-from io import BytesIO
 
 import requests
 from constance import config
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from django.http import FileResponse, JsonResponse
-from PIL import Image
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -17,6 +14,11 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.api.services import (
+    can_image_be_displayed_for_agenda,
+    get_image_path,
+    get_mime_type,
+)
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.django_wfs3.pagination import AgendaResultsSetPagination
 from geocity.apps.forms.models import Form
@@ -480,51 +482,11 @@ SubmissionLineViewSet = submission_view_set_subset_factory("lines")
 SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
 
 
-def get_mime_type(content):
-    """
-    Used to retrieve mime type in response.content of request
-    """
-    image = Image.open(BytesIO(content))
-    image_format = image.format
-    mime_type = "image/" + image_format.lower()
-    return mime_type
-
-
-def can_image_be_displayed_for_agenda(submission_id, image_name):
-    """
-    Display image for :
-    - Submission with
-        - agenda activated
-        - public
-        - VISIBLE_IN_AGENDA_STATUSES
-    - and FieldValue with
-        - public_if_submission_public
-    """
-    submission_display_conditions = Submission.objects.filter(
-        Q(pk=submission_id)
-        & Q(selected_forms__form__agenda_visible=True)
-        & Q(is_public=True)
-        & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
-    ).exists()
-
-    image_name_in_db = {"val": f"permit_requests_uploads/{submission_id}/{image_name}"}
-
-    fieldvalue_display_conditions = FieldValue.objects.filter(
-        Q(value=image_name_in_db) & Q(field__public_if_submission_public=True)
-    ).exists()
-
-    return submission_display_conditions and fieldvalue_display_conditions
-
-
 def image_display(request, submission_id, image_name):
-    image_dir = settings.PRIVATE_MEDIA_ROOT
-
-    image_path = os.path.join(
-        image_dir, f"permit_requests_uploads/{submission_id}/{image_name}"
-    )
+    image_path = get_image_path(submission_id, image_name)
 
     if os.path.exists(image_path) and can_image_be_displayed_for_agenda(
-        submission_id, image_name
+        submission_id, image_name, Submission, FieldValue
     ):
         image_file = open(image_path, "rb")
         mime_type, encoding = mimetypes.guess_type(image_path)
@@ -535,7 +497,9 @@ def image_display(request, submission_id, image_name):
 
 
 def image_thumbor_display(request, submission_id, image_name):
-    if not can_image_be_displayed_for_agenda(submission_id, image_name):
+    if not can_image_be_displayed_for_agenda(
+        submission_id, image_name, Submission, FieldValue
+    ):
         return JsonResponse({"message": "unauthorized."}, status=404)
 
     width = request.GET.get("width", 397)
@@ -624,8 +588,14 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             entity = AdministrativeEntity.objects.filter(
                 tags__name=domain
             ).first()  # get can return an error
-            if entity:
-                submissions = submissions.filter(administrative_entity=entity)
+            submissions = submissions.filter(administrative_entity=entity)
+
+        if "starts_at" in query_params and "ends_at" in query_params:
+            starts_at = query_params["starts_at"]
+            ends_at = query_params["ends_at"]
+            submissions = submissions.filter(
+                geo_time__starts_at__gte=starts_at, geo_time__ends_at__lte=ends_at
+            )
 
         # List every available filter
         available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)

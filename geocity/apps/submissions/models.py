@@ -507,8 +507,6 @@ class Submission(models.Model):
     def get_submission_site_domain(url_split):
         if "submissions" in url_split:
             submission_id_index = url_split.index("submissions") + 1
-        elif "thumbor" in url_split:
-            submission_id_index = url_split.index("thumbor") + 1
         else:
             return None
 
