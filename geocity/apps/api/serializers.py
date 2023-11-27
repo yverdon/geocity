@@ -813,10 +813,11 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     # When there's more than 1 of len, it means it's a list of multiple elements, so we use category_value
                     category_value_list = []
 
-                    # Get id of the category, the id is related to the line in choices
-                    category = available_filters.get(
+                    # Get id of the first category, the id is related to the line in choices
+                    # Must put different api_name on new filters, or they won't appear
+                    category = available_filters.filter(
                         Q(api_name=field["field_values__field__api_name"])
-                    )
+                    ).first()
 
                     # Multiple values in a list (MultipleChoiceField)
                     if isinstance(field["field_values__value__val"], list):
