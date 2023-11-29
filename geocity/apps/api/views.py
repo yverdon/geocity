@@ -568,7 +568,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             Submission.objects.filter(
                 Q(selected_forms__field_values__value__val__isnull=False)
                 & Q(selected_forms__form__agenda_visible=True)
-                & Q(is_public=True)
+                & Q(is_public_agenda=True)
                 & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
             )
             .distinct()
@@ -599,6 +599,9 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
 
         # List every available filter
         available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)
+
+        if not available_filters:
+            return submissions
 
         # Secure the number of query_params to dont be higher than the number of available_filters + 5
         # + 5 for optional filters, like startsAt and endsAt, domain

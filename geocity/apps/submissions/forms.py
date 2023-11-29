@@ -29,6 +29,8 @@ from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2MultipleWidget, Select2Widget
 
 from geocity.apps.accounts.models import (
+    AGENDA_PUBLIC_TYPE_CHOICES,
+    BOOLEAN_CHOICES,
     PUBLIC_TYPE_CHOICES,
     AdministrativeEntity,
     PermitDepartment,
@@ -938,12 +940,20 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         model = models.Submission
         fields = [
             "is_public",
+            "is_public_agenda",
+            "featured_agenda",
             "shortname",
             "status",
         ]
         widgets = {
             "is_public": forms.RadioSelect(
                 choices=PUBLIC_TYPE_CHOICES,
+            ),
+            "is_public_agenda": forms.RadioSelect(
+                choices=AGENDA_PUBLIC_TYPE_CHOICES,
+            ),
+            "featured_agenda": forms.RadioSelect(
+                choices=BOOLEAN_CHOICES,
             ),
         }
 
@@ -1035,10 +1045,15 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             if (
                 not self.instance.forms.filter(
                     permanent_publication_enabled=True
-                ).count()
+                ).exists()
                 == self.instance.forms.count()
             ):
                 self.fields["is_public"].widget = forms.HiddenInput()
+
+            # Hide agenda fields if agenda is not activated
+            if not self.instance.forms.filter(agenda_visible=True).exists():
+                self.fields["is_public_agenda"].widget = forms.HiddenInput()
+                self.fields["featured_agenda"].widget = forms.HiddenInput()
 
             for form, field in self.get_fields():
                 field_name = self.get_field_name(form.id, field.id)

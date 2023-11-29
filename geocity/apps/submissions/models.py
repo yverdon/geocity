@@ -278,6 +278,8 @@ class Submission(models.Model):
         verbose_name=_("Destinataire de la facture"),
     )
     is_public = models.BooleanField(_("Publication calendrier"), default=False)
+    is_public_agenda = models.BooleanField(_("Publication agenda"), default=False)
+    featured_agenda = models.BooleanField(_("Mise en vedette"), default=False)
     prolongation_date = models.DateTimeField(
         _("Nouvelle date de fin"), null=True, blank=True
     )

@@ -42,7 +42,7 @@ def can_image_be_displayed_for_agenda(
     submission_display_conditions = Submission.objects.filter(
         Q(pk=submission_id)
         & Q(selected_forms__form__agenda_visible=True)
-        & Q(is_public=True)
+        & Q(is_public_agenda=True)
         & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
     ).exists()
 

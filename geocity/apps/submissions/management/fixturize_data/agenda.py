@@ -8,7 +8,7 @@ iterations = {
     "integrator_iterations": 1,
     "pilot_iterations": 1,
     "validator_iterations": 1,
-    "user_iterations": 20,
+    "user_iterations": 1,
 }
 
 # domain:entity

@@ -770,6 +770,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
     """
     obj = value.get_selected_forms().all()
     form_fields = obj.values(
+        "submission__featured_agenda",
         "field_values__field__name",
         "field_values__field__api_name",
         "field_values__value__val",
@@ -815,31 +816,32 @@ def get_agenda_form_fields(value, detailed, available_filters):
 
                     # Get id of the first category, the id is related to the line in choices
                     # Must put different api_name on new filters, or they won't appear
-                    category = available_filters.filter(
-                        Q(api_name=field["field_values__field__api_name"])
-                    ).first()
+                    if available_filters:
+                        category = available_filters.filter(
+                            Q(api_name=field["field_values__field__api_name"])
+                        ).first()
 
-                    # Multiple values in a list (MultipleChoiceField)
-                    if isinstance(field["field_values__value__val"], list):
-                        category_value_list = [
-                            {
-                                "id": category.choices.strip()
-                                .splitlines()
-                                .index(label),
-                                "label": label,
-                            }
-                            for label in field["field_values__value__val"]
-                        ]
-                    # Only one value in a list (MultipleChoiceField) or just a string
-                    else:
-                        label = field["field_values__value__val"]
-                        id = category.choices.strip().splitlines().index(label)
-                        category_value_list.append({"id": id, "label": label})
+                        # Multiple values in a list (MultipleChoiceField)
+                        if isinstance(field["field_values__value__val"], list):
+                            category_value_list = [
+                                {
+                                    "id": category.choices.strip()
+                                    .splitlines()
+                                    .index(label),
+                                    "label": label,
+                                }
+                                for label in field["field_values__value__val"]
+                            ]
+                        # Only one value in a list (MultipleChoiceField) or just a string
+                        else:
+                            label = field["field_values__value__val"]
+                            id = category.choices.strip().splitlines().index(label)
+                            category_value_list.append({"id": id, "label": label})
 
-                    # Store the list of categories in the format for agenda api
-                    result["properties"]["categories"][
-                        field["field_values__field__api_name"]
-                    ]["values"] = category_value_list
+                        # Store the list of categories in the format for agenda api
+                        result["properties"]["categories"][
+                            field["field_values__field__api_name"]
+                        ]["values"] = category_value_list
 
                 # Properties for detailed API
                 else:
@@ -847,15 +849,6 @@ def get_agenda_form_fields(value, detailed, available_filters):
                         field["field_values__field__api_name"]
                     ] = field["field_values__value__val"]
 
-                # Custom way to transform a string "True" and "False" to True and False
-                # FIXME: Not a good practice, need to develop a real boolean field instead of string to bool
-                result["properties"][field["form__amend_fields__api_name"]] = (
-                    True
-                    if field["form__amend_fields__amend_field_value__value"] == "True"
-                    else False
-                    if field["form__amend_fields__amend_field_value__value"] == "False"
-                    else field["form__amend_fields__amend_field_value__value"]
-                )
             # Light API for agenda
             else:
                 # Field visible on light API and it's not used as filter
@@ -875,6 +868,8 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     result["properties"][field["form__amend_fields__api_name"]] = field[
                         "form__amend_fields__amend_field_value__value"
                     ]
+
+                result["properties"]["featured"] = field["submission__featured_agenda"]
 
     # Custom way to retrieve starts_at and ends_at for both light and detailed
     geo_time_qs = value.geo_time.all()
@@ -933,16 +928,14 @@ def get_available_filters_for_agenda_as_qs(domain):
     Returns a list of filters available for a specific entity.
     The order is important, agenda-embed has no logic, everything is set here
     """
+    if not domain:
+        return None
 
     available_filters = Field.objects.all()
-    # TODO: Try to filter by distinct api_name
-    # TODO: Find a way to cumulate filters if they've the same api_name ? Seems complicated to do
-
-    if domain:
-        entity = AdministrativeEntity.objects.filter(
-            tags__name=domain
-        ).first()  # get can return an error
-        available_filters = Field.objects.filter(forms__administrative_entities=entity)
+    entity = AdministrativeEntity.objects.filter(
+        tags__name=domain
+    ).first()  # get can return an error
+    available_filters = Field.objects.filter(forms__administrative_entities=entity)
 
     available_filters = available_filters.filter(
         Q(filter_for_api=True)
@@ -960,6 +953,9 @@ def get_available_filters_for_agenda_as_json(domain):
     Returns the list of filters for api
     """
     available_filters = get_available_filters_for_agenda_as_qs(domain)
+
+    if not available_filters:
+        return None
 
     agenda_filters = []
     for available_filter in available_filters:
