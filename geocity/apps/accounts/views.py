@@ -1,4 +1,3 @@
-import mimetypes
 from urllib import parse
 from urllib.parse import urlparse
 
@@ -12,7 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -33,7 +32,7 @@ from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
     permanent_user_required,
 )
-from geocity.fields import PrivateFileSystemStorage
+from geocity.apps.submissions import services
 
 from . import forms, models
 from .users import is_2FA_mandatory
@@ -93,7 +92,6 @@ class SetCurrentSiteMixin:
 
 
 class CustomPasswordResetView(PasswordResetView):
-
     extra_email_context = {"custom_host": ""}
 
     def get_context_data(self, **kwargs):
@@ -214,7 +212,6 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         return update_context_with_filters(context, params_str, url_qs)
 
     def get_success_url(self):
-
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
         filter_qs = (
             qs_dict["next"][0].replace(settings.PREFIX_URL, "").replace("/", "")
@@ -367,10 +364,8 @@ def administrative_entity_file_download(request, path):
     Only allows logged user to download administrative entity files
     """
 
-    mime_type, encoding = mimetypes.guess_type(path)
-    storage = PrivateFileSystemStorage()
-
     try:
-        return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+        return services.download_file(path)
+
     except IOError:
         raise Http404
