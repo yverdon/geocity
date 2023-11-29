@@ -802,7 +802,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
             if detailed:
 
                 # Categories used as filter, that are defined by "field_values__field__filter_for_api"
-                if field["field_values__field__filter_for_api"]:
+                if field["field_values__field__filter_for_api"] and available_filters:
 
                     # Label name for the properties
                     result["properties"]["categories"][
@@ -816,32 +816,31 @@ def get_agenda_form_fields(value, detailed, available_filters):
 
                     # Get id of the first category, the id is related to the line in choices
                     # Must put different api_name on new filters, or they won't appear
-                    if available_filters:
-                        category = available_filters.filter(
-                            Q(api_name=field["field_values__field__api_name"])
-                        ).first()
+                    category = available_filters.filter(
+                        Q(api_name=field["field_values__field__api_name"])
+                    ).first()
 
-                        # Multiple values in a list (MultipleChoiceField)
-                        if isinstance(field["field_values__value__val"], list):
-                            category_value_list = [
-                                {
-                                    "id": category.choices.strip()
-                                    .splitlines()
-                                    .index(label),
-                                    "label": label,
-                                }
-                                for label in field["field_values__value__val"]
-                            ]
-                        # Only one value in a list (MultipleChoiceField) or just a string
-                        else:
-                            label = field["field_values__value__val"]
-                            id = category.choices.strip().splitlines().index(label)
-                            category_value_list.append({"id": id, "label": label})
+                    # Multiple values in a list (MultipleChoiceField)
+                    if isinstance(field["field_values__value__val"], list):
+                        category_value_list = [
+                            {
+                                "id": category.choices.strip()
+                                .splitlines()
+                                .index(label),
+                                "label": label,
+                            }
+                            for label in field["field_values__value__val"]
+                        ]
+                    # Only one value in a list (MultipleChoiceField) or just a string
+                    else:
+                        label = field["field_values__value__val"]
+                        id = category.choices.strip().splitlines().index(label)
+                        category_value_list.append({"id": id, "label": label})
 
-                        # Store the list of categories in the format for agenda api
-                        result["properties"]["categories"][
-                            field["field_values__field__api_name"]
-                        ]["values"] = category_value_list
+                    # Store the list of categories in the format for agenda api
+                    result["properties"]["categories"][
+                        field["field_values__field__api_name"]
+                    ]["values"] = category_value_list
 
                 # Properties for detailed API
                 else:
