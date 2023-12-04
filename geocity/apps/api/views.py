@@ -520,11 +520,14 @@ def image_thumbor_display(request, submission_id, image_name):
 
     thumbor_params += f"{width}x{height}/filters:format({format})"
 
-    try:
-        response = requests.get(
-            f"{config.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
-        )
-    except requests.exceptions.RequestException as e:
+    if settings.USE_THUMBOR:
+        try:
+            response = requests.get(
+                f"{config.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
+            )
+        except requests.exceptions.RequestException as e:
+            response = requests.get(image_url)
+    else:
         response = requests.get(image_url)
 
     mime_type = get_mime_type(response.content)
