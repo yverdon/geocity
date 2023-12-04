@@ -156,7 +156,7 @@ field_domaines = {
 field_poster = {
     "name": "Poster",
     "input_type": "file",
-    "is_mandatory": False,
+    "is_mandatory": True,
     "api_light": True,
     "public_if_submission_public": True,
 }

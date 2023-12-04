@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const filterForApiElement = document.getElementById('id_filter_for_api');
     const filterForApiRowElement = filterForApiElement.closest('.form-group');
-    console.log("filterForApiRowElement : " + filterForApiRowElement);
 
     const regexElement = document.getElementById('id_regex_pattern');
     const regexRowElement = regexElement.closest('.form-group');
