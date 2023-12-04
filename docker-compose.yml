@@ -115,5 +115,5 @@ networks:
   isolated:
     name: ${ISOLATED_NETWORK_NAME}
   geocity_network:
-    name: geocity_network
+    name: ${GEOCITY_NETWORK_NAME}
     driver: bridge
