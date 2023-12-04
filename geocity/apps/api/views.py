@@ -4,6 +4,7 @@ import os
 
 import requests
 from constance import config
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from django.http import FileResponse, JsonResponse
@@ -563,7 +564,6 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         The simple result just return informations for une submission
         The order is important, agenda-embed has no logic, everything is set here
         """
-        # TODO: Filter this by featured, cause the order matters, agenda-embed has no logic to order elements
         submissions = (
             Submission.objects.filter(
                 Q(selected_forms__field_values__value__val__isnull=False)
@@ -572,14 +572,13 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
                 & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
             )
             .distinct()
-            .order_by("id")
+            .order_by("-featured_agenda", "geo_time__starts_at")
             .prefetch_related("selected_forms__field_values")
         )
 
         # List params given by the request as query_params
         query_params = self.request.query_params
 
-        # TODO: if validator has validated the submission, it should show the submission when it's Submission.VISIBLE_IN_AGENDA_STATUSES
         # Filter domain (administrative_entity) to permit sites to filter on their own domain (e.g.: sports, culture)
         domain = None
 
@@ -590,12 +589,25 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             ).first()  # get can return an error
             submissions = submissions.filter(administrative_entity=entity)
 
-        if "starts_at" in query_params and "ends_at" in query_params:
-            starts_at = query_params["starts_at"]
-            ends_at = query_params["ends_at"]
-            submissions = submissions.filter(
-                geo_time__starts_at__gte=starts_at, geo_time__ends_at__lte=ends_at
+        if "starts_at" in query_params:
+            starts_at = datetime.datetime.strptime(
+                query_params["starts_at"], "%Y-%m-%d"
             )
+            starts_at = starts_at.replace(tzinfo=datetime.timezone.utc)
+            submissions = submissions.filter(geo_time__ends_at__gte=starts_at)
+
+        if "ends_at" in query_params:
+            ends_at = datetime.datetime.strptime(query_params["ends_at"], "%Y-%m-%d")
+            ends_at = ends_at.replace(
+                hour=23, minute=59, second=59, tzinfo=datetime.timezone.utc
+            )
+            submissions = submissions.filter(geo_time__starts_at__lte=ends_at)
+
+        if "starts_at" not in query_params and "ends_at" not in query_params:
+            today = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+                hours=settings.LOCAL_TIME_ZONE_UTC
+            )
+            submissions = submissions.filter(geo_time__ends_at__gte=today)
 
         # List every available filter
         available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)

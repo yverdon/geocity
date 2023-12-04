@@ -541,7 +541,8 @@ class Form(models.Model):
         _("Visible dans l'agenda"),
         default=False,
         help_text=_(
-            """Lorsque cette case est cochée, les données de ce formulaire sont accessibles dans l'API <b>/rest/agenda/ si la demande est rendue publique par le pilote</b>"""
+            """Lorsque cette case est cochée, les données de ce formulaire sont accessibles dans l'API <b>/rest/agenda/ si la demande est rendue publique par le pilote</b><br>
+            Le pilote peut alors contrôler la publication dans l'agenda dans l'onglet traitement"""
         ),
     )
 
