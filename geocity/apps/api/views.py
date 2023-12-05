@@ -520,14 +520,12 @@ def image_thumbor_display(request, submission_id, image_name):
     thumbor_params += f"{width}x{height}/filters:format({format})"
 
     if settings.USE_THUMBOR:
-        print(settings.THUMBOR_SERVICE_URL)
         try:
             response = requests.get(
                 f"{settings.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
             )
         except requests.exceptions.RequestException as e:
             response = requests.get(image_url)
-            print(e)
     else:
         response = requests.get(image_url)
 
