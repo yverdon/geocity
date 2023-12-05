@@ -8,6 +8,6 @@ services:
       - thumbor_network
 networks:
   # Use this network to communicate with thumbor image resize service
-  # More information here: https://gitlab.com/geocity/thumbor-service 
+  # More information here: https://gitlab.com/geocity/thumbor-service
   thumbor_network:
     external: true
