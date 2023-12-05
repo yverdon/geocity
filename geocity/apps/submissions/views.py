@@ -1238,7 +1238,7 @@ def submission_select_administrative_entity(request, submission_id=None):
         # this combination must be set on submission object
         if len(candidate_forms) == 1 and all(
             [
-                not candidate_form.has_exceeded_maximum_submissions()
+                not candidate_form.has_exceeded_maximum_submissions(request.user)
                 for candidate_form in candidate_forms
             ]
         ):
@@ -1829,9 +1829,8 @@ def submission_submit(request, submission_id):
         and submission.status == models.Submission.STATUS_DRAFT
     )
 
-    has_any_form_with_exceeded_submissions = (
-        submission.has_any_form_with_exceeded_submissions()
-    )
+    if submission.submission_price and not submission.submission_price.amount:
+        should_go_to_payment = False
 
     return render(
         request,
@@ -1839,7 +1838,9 @@ def submission_submit(request, submission_id):
         {
             "submission": submission,
             "should_go_to_payment": should_go_to_payment,
-            "has_any_form_with_exceeded_submissions": has_any_form_with_exceeded_submissions,
+            "has_any_form_with_exceeded_submissions": submission.has_any_form_with_exceeded_submissions(
+                request.user
+            ),
             "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
@@ -1856,7 +1857,7 @@ def submission_submit(request, submission_id):
 @check_mandatory_2FA
 def submission_submit_confirmed(request, submission_id):
     submission = get_submission_for_edition(request.user, submission_id)
-    if submission.has_any_form_with_exceeded_submissions():
+    if submission.has_any_form_with_exceeded_submissions(request.user):
         messages.add_message(
             request,
             messages.ERROR,
@@ -1873,6 +1874,16 @@ def submission_submit_confirmed(request, submission_id):
         return redirect(
             "submissions:submission_select_forms", submission_id=submission_id
         )
+
+    if (
+        submission.requires_online_payment()
+        and submission.status == models.Submission.STATUS_DRAFT
+    ):
+        if not submission.submission_price.amount:
+            # Submission price is 0
+            processor = get_payment_processor(submission.get_form_for_payment())
+            empty_transaction = processor.create_free_transaction(submission)
+            submission.generate_and_save_pdf("confirmation", empty_transaction)
 
     incomplete_steps = [
         step.url
@@ -2151,8 +2162,11 @@ class ChangeTransactionStatus(View):
 
             transaction = get_transaction_from_transaction_id(transaction_id)
             submission = transaction.submission_price.submission
-            if not permissions.user_has_permission_to_change_transaction_status(
-                request.user, transaction, new_status
+            if (
+                not permissions.user_has_permission_to_change_transaction_status(
+                    request.user, transaction, new_status
+                )
+                or not transaction.can_have_status_changed
             ):
                 raise PermissionDenied
 
@@ -2271,7 +2285,7 @@ class SubmissionPaymentRedirect(View):
     def get(self, request, pk, *args, **kwargs):
         submission = models.Submission.objects.get(pk=pk)
 
-        if submission.has_any_form_with_exceeded_submissions():
+        if submission.has_any_form_with_exceeded_submissions(request.user):
             messages.add_message(
                 request,
                 messages.ERROR,
