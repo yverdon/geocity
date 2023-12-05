@@ -118,8 +118,7 @@ AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true
 ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
 
 # IBAN for UserProfile model
-USE_THUMBOR = os.getenv("USE_THUMBOR", "false").lower() == "true"
-
+USE_THUMBOR = os.getenv("USE_THUMBOR", "true").lower() == "true"
 SITE_HTTPS = ENV == "PROD"
 
 # Allow CORS in DEV, needed for development of geocity_front, where the frontend domain is different
