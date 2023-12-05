@@ -1,0 +1,13 @@
+# Simple override in order to setup network for using thumbor image service
+volumes:
+  static_root:
+
+services:
+  web: # Name of this container should not be changed
+    networks:
+      - thumbor_network
+networks:
+  # Use this network to communicate with thumbor image resize service
+  # More information here: https://gitlab.com/geocity/thumbor-service 
+  thumbor_network:
+    external: true

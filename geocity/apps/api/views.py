@@ -3,7 +3,6 @@ import mimetypes
 import os
 
 import requests
-from constance import config
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
@@ -521,12 +520,14 @@ def image_thumbor_display(request, submission_id, image_name):
     thumbor_params += f"{width}x{height}/filters:format({format})"
 
     if settings.USE_THUMBOR:
+        print(settings.THUMBOR_SERVICE_URL)
         try:
             response = requests.get(
-                f"{config.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
+                f"{settings.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
             )
         except requests.exceptions.RequestException as e:
             response = requests.get(image_url)
+            print(e)
     else:
         response = requests.get(image_url)
 

@@ -74,12 +74,12 @@ services:
       LOCAL_TIME_ZONE_UTC:
       SITE_DOMAIN:
       USE_THUMBOR:
+      THUMBOR_SERVICE_URL:
     ports:
       - "${DJANGO_DOCKER_PORT}:9000"
     networks:
       - isolated
       - default
-      - thumbor_network
 
   # Builder for the geocity_qgis image.
   qgis:
@@ -115,5 +115,3 @@ networks:
   # Use this for containers that should only be able to communicate with Django
   isolated:
     name: ${ISOLATED_NETWORK_NAME}
-  thumbor_network:
-    external: true
