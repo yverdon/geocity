@@ -117,8 +117,9 @@ AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true
 # Allow REMOTE_USER Authentication
 ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
 
-# IBAN for UserProfile model
-USE_THUMBOR = os.getenv("USE_THUMBOR", "false").lower() == "true"
+# Thumbor image service
+USE_THUMBOR = os.getenv("USE_THUMBOR", "true").lower() == "true"
+THUMBOR_SERVICE_URL = os.getenv("THUMBOR_SERVICE_URL", "None")
 
 SITE_HTTPS = ENV == "PROD"
 
@@ -271,7 +272,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "IP_WHITELIST",
         "NETWORK_WHITELIST",
         "LOGOUT_REDIRECT_HOSTNAME_WHITELIST",
-        "THUMBOR_SERVICE_URL",
     ),
 }
 
@@ -416,11 +416,6 @@ CONSTANCE_CONFIG = {
     "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
         "localhost,geocity.ch",
         "Domaines autorisés à la redirection après logout",
-    ),
-    "THUMBOR_SERVICE_URL": (
-        "http://nginx-proxy",
-        "URL du service thumbor (https://github.com/thumbor/thumbor), recommandé pour l'optimisation des images du module Agenda",
-        str,
     ),
 }
 
