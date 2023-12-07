@@ -1,5 +1,8 @@
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
+from django.contrib.auth.models import Group, User
+from djmoney.models.fields import MoneyField
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
@@ -59,10 +62,6 @@ class Transaction(models.Model):
         abstract = True
         ordering = ("-creation_date",)
 
-    @property
-    def can_have_status_changed(self):
-        return self.amount > 0
-
     def set_refunded(self):
         self.status = self.STATUS_REFUNDED
         self.save()
@@ -116,3 +115,77 @@ class Transaction(models.Model):
         if read:
             output = output.read()
         return f"refund_{self.transaction_id}.pdf", output
+
+class PrestationsList(models.Model):
+    name = models.CharField(
+        _("Prestation"),
+        max_length=255,
+        null=False,
+    )
+    is_visible_by_validator = models.BooleanField(
+        _("visible by validator"),
+        help_text=_(
+            "Est visible par le validateur"
+        ),
+    )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+
+class Prestations(models.Model):
+    user = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Saisi par"),
+        related_name="prestations",
+    )
+    name =  models.ForeignKey(
+        "PrestationsList",
+        on_delete=models.CASCADE,
+        verbose_name=_("Prestation"),
+        related_name=_("prestationslist"),
+        help_text=_(
+            "Choix de la prestation effectuée dans une liste prédéfinie"
+        ),
+    )
+    created_at = models.DateTimeField(
+        _("Date de création"),
+        default=timezone.now,
+    )
+    updated_at= models.DateTimeField(
+        _("Date de dernière modification"),
+        auto_now=True,
+    )
+    created_by = models.CharField(
+        _("Créé par"),
+        max_length=255,
+    )
+    updated_by = models.CharField(
+        _("Mis à jour par"),
+        max_length=255,
+    )
+    time_spent_on_task = models.DurationField(
+        _("Temps passé pour réaliser la prestation [h]"),
+        default = 0,
+        help_text=_(
+            "Temps passé pour effectuer la prestation (en minutes)"
+        ),
+    )
+    pricing = MoneyField(
+        default=140,
+        decimal_places=2,
+        max_digits=12,
+        default_currency='CHF',
+    )
+    monetary_amount = MoneyField(
+        decimal_places=2,
+        max_digits=12,
+        default_currency='CHF',
+    )
+
+    

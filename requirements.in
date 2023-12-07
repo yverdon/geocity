@@ -52,3 +52,4 @@ tzdata
 pandas
 Unidecode
 django-select2
+django-money

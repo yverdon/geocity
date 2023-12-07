@@ -73,6 +73,7 @@
             </a>
           </li>
       {% endif %}
+
       {% if transactions_table and online_payment_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'payments' %} active{% endif %}" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments">
@@ -80,6 +81,15 @@
             </a>
           </li>
       {% endif %}
+
+
+        <li class="nav-item">
+          <a class="btn btn-primary btn-action nav-link" id="prestations-tab" data-toggle="tab" href="#prestations" role="tab" aria-controls="prestations">
+              {% translate "Prestation" %}
+          </a>
+        </li>
+
+
       </ul>
     </div>
   </div>
@@ -348,7 +358,27 @@
             <div>
               {% render_table transactions_table %}
             </div>
+            <!--fixme: close div?-->
         {% endif %}
+
+
+        <div class='tab-pane' id="prestations" role="tabpanel" aria-labelledby="prestations-tab">
+          <h4>{% translate "Prestations" %}</h4>
+          <div>
+            <hr>            
+            <form method="post">
+              {% csrf_token %}
+              {% bootstrap_form forms.add_prestation layout='horizontal' %}
+              <div class="text-right">
+                  <input name="action" type="hidden" value="add_prestation">
+                  <button class="btn btn-primary" name="save">{% translate "Enregistrer" %}</button>
+                  <button class="btn btn-primary" name="save_continue">{% translate "Enregistrer et continuer les modifications" %}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+
       </div>
     </div>
   </div>

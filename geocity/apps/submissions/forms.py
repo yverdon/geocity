@@ -38,7 +38,7 @@ from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import SubmissionPrice
+from .payments.models import SubmissionPrice, Prestations
 from .permissions import has_permission_to_amend_submission
 
 input_type_mapping = {
@@ -1217,6 +1217,45 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 "request_submission_edit_text": request_submission_edit_text,
             },
         )
+
+
+class PrestationForm(forms.ModelForm):
+    required_css_class = "required"
+
+    class Meta:
+        model = Prestations
+        fields = [
+            "name",
+            "created_by",
+            "created_at",
+            "time_spent_on_task",
+            "monetary_amount",
+        ]
+        widgets = {
+            "time_spent_on_task": forms.NumberInput(),
+        }
+
+
+    def clean_time_spent_on_task(self):
+        print("###############\nInside of clean_time_spent_on_task !!\n###############")
+        time_spent_on_task = self.data["time_spent_on_task"]
+
+        return timedelta(minutes=int(time_spent_on_task))
+
+    def clean(self):
+        print("###############\nInside of clean !!\n###############")
+        cleaned_data = super().clean()
+
+        return cleaned_data
+
+    """ def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.submission = self.submission
+
+        if commit:
+            instance.save()
+
+        return instance """
 
 
 # extend django gis osm openlayers widget

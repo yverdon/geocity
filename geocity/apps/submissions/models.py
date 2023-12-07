@@ -47,7 +47,9 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
-ACTION_TRANSACTION = "transactins"
+ACTION_TRANSACTION = "transactins" #FIXME: TYPO
+ACTION_PRESTATION = "add_prestation"
+
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -58,6 +60,7 @@ ACTIONS = [
     ACTION_PROLONG,
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
+    ACTION_PRESTATION,
 ]
 
 logger = logging.getLogger(__name__)
@@ -1074,6 +1077,7 @@ class Submission(models.Model):
                 Submission.STATUS_AWAITING_VALIDATION,
                 Submission.STATUS_PROCESSING,
             ],
+            "add_prestation": list(Submission.AMENDABLE_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (

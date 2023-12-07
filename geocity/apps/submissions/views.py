@@ -330,6 +330,7 @@ class SubmissionDetailView(View):
 
         if form.is_valid():
             return self.handle_form_submission(form, action)
+            
 
         # Replace unbound form by bound form in the context
         context = self.get_context_data(active_form=action)
@@ -345,6 +346,7 @@ class SubmissionDetailView(View):
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
             models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
+            models.ACTION_PRESTATION: self.get_prestation_form,
         }
 
         return (
@@ -410,6 +412,24 @@ class SubmissionDetailView(View):
                 forms.disable_form(
                     form, self.submission.get_amend_field_list_always_amendable()
                 )
+
+            return form
+
+        return None
+
+    def get_prestation_form(self, data=None, **kwargs):
+        #TODO: create has permission to create prestation
+        if permissions.has_permission_to_amend_submission(
+            self.request.user, self.submission
+        ):
+            form = forms.PrestationForm(
+                # instance=self.submission,
+                # initial=initial,
+                data=data,
+                #user=self.request.user,
+            )
+            print(f"form data2: {form.data}")
+            #print(f"form cleande_data: {form.cleaned_data}")
 
             return form
 
@@ -544,6 +564,26 @@ class SubmissionDetailView(View):
             return self.handle_complementary_documents_form_submission(form)
         elif action == models.ACTION_REQUEST_INQUIRY:
             return self.handle_request_inquiry_form_submission(form)
+        elif action == models.ACTION_PRESTATION:
+            return self.handle_prestation_form_submission(form)
+
+
+    def handle_prestation_form_submission(self, form):
+        print("in handle prestation form submission function")
+        form.save()
+        success_message = (
+            _("La prestation a bien été renseignée.")
+        )
+        messages.success(self.request, success_message)
+
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=self.submission.pk,
+            )
+        else:
+            return redirect("submissions:submissions_list")
+
 
     def handle_amend_form_submission(self, form):
         initial_status = (

@@ -28,6 +28,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "section",
         "headerfooter",
     ],
+    #FIXME: get nested submissions.payments
 }
 
 # define permissions required by integrator role

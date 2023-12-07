@@ -10,6 +10,10 @@ asgiref==3.7.2
     #   django
 asttokens==2.2.1
     # via stack-data
+babel==2.13.1
+    # via
+    #   -r requirements.txt
+    #   py-moneyed
 backcall==0.2.0
     # via ipython
 beautifulsoup4==4.12.2
@@ -78,6 +82,7 @@ django==4.2.7
     #   django-jazzmin
     #   django-js-asset
     #   django-jsonform
+    #   django-money
     #   django-oauth-toolkit
     #   django-otp
     #   django-phonenumber-field
@@ -139,6 +144,8 @@ django-js-asset==2.1.0
 django-jsoneditor==0.2.4
     # via -r requirements.txt
 django-jsonform==2.19.0
+    # via -r requirements.txt
+django-money==3.4.1
     # via -r requirements.txt
 django-oauth-toolkit==2.3.0
     # via -r requirements.txt
@@ -299,6 +306,10 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
+py-moneyed==3.0
+    # via
+    #   -r requirements.txt
+    #   django-money
 pycparser==2.21
     # via
     #   -r requirements.txt
@@ -387,6 +398,7 @@ typing-extensions==4.7.1
     # via
     #   -r requirements.txt
     #   asgiref
+    #   py-moneyed
     #   qrcode
 tzdata==2023.3
     # via
