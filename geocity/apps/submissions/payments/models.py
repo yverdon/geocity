@@ -116,7 +116,7 @@ class Transaction(models.Model):
             output = output.read()
         return f"refund_{self.transaction_id}.pdf", output
 
-class PrestationsList(models.Model):
+class PrestationsType(models.Model):
     name = models.CharField(
         _("Prestation"),
         max_length=255,
@@ -137,43 +137,76 @@ class PrestationsList(models.Model):
     )
 
 class Prestations(models.Model):
-    user = models.ForeignKey(
+    """Docstring
+    """
+    # Hidden mandatory fields
+    # created and updated fields to keep tracks of the user that has effectively
+    # created or updated the current prestation. Those fields SHOULD NOT be
+    # exposed in the form. Use the other ones.
+    created_at = models.DateTimeField(
+        verbose_name=_("Date de création."),
+        auto_now_add=True,
+    )
+    updated_at= models.DateTimeField(
+        verbose_name=_("Date de dernière modification."),
+        auto_now=True,
+    )
+    created_by = models.ForeignKey(
         User,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name=_("Saisi par"),
-        related_name="prestations",
-    )
-    name =  models.ForeignKey(
-        "PrestationsList",
-        on_delete=models.CASCADE,
-        verbose_name=_("Prestation"),
-        related_name=_("prestationslist"),
+        max_length=255,
+        verbose_name=_("Créé par"),
+        related_name=_("prestations_created_by"),
         help_text=_(
-            "Choix de la prestation effectuée dans une liste prédéfinie"
+            "La prestation a été créée par cet utilisateur."
         ),
     )
-    created_at = models.DateTimeField(
-        _("Date de création"),
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        max_length=255,
+        verbose_name=_("Mis à jour par"),
+        related_name=_("prestations_updated_by"),
+        help_text=_(
+            "La prestation a été mise à jour par cet utilisateur."
+        ),
+    )
+    # Exposed fields to select the name of the user the prestation has been done by
+    provided_by = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        max_length=255,
+        verbose_name=_("Saisie par"),
+        related_name="prestations_provided_by",
+        help_text=_(
+            "La prestation a été effectuée au nom de cet utilisateur."
+        ),
+    )
+    provided_at = models.DateTimeField(
         default=timezone.now,
+        verbose_name=_("Date de saisie"),
+        help_text=_(
+            "La prestation a été saisie à cette date."
+        ),
     )
-    updated_at= models.DateTimeField(
-        _("Date de dernière modification"),
-        auto_now=True,
-    )
-    created_by = models.CharField(
-        _("Créé par"),
-        max_length=255,
-    )
-    updated_by = models.CharField(
-        _("Mis à jour par"),
-        max_length=255,
+    #GROS TOUT DOUX: créée une FK vers submission
+    prestation_type =  models.ForeignKey(
+        "PrestationsType",
+        on_delete=models.CASCADE,
+        verbose_name=_("Prestation"),
+        related_name=_("prestations"),
+        help_text=_(
+            "Choix de la prestation ; à effectuer dans une liste prédéfinie."
+        ),
     )
     time_spent_on_task = models.DurationField(
-        _("Temps passé pour réaliser la prestation [h]"),
         default = 0,
+        verbose_name=_("Durée [m]"),
         help_text=_(
-            "Temps passé pour effectuer la prestation (en minutes)"
+            "Temps passé pour effectuer la prestation (en minutes)."
         ),
     )
     pricing = MoneyField(
@@ -181,11 +214,18 @@ class Prestations(models.Model):
         decimal_places=2,
         max_digits=12,
         default_currency='CHF',
+        verbose_name=_("Tarif horaire [CHF]"),
     )
     monetary_amount = MoneyField(
         decimal_places=2,
         max_digits=12,
         default_currency='CHF',
+        default=0.0,
+        verbose_name=_("Montant [CHF]"),
     )
-
-    
+    # Methods
+    def save(self, *args, **kwargs):
+        if not self.monetary_amount:
+            self.monetary_amount = self.pricing * self.time_spent_on_task.total_seconds()/3600
+        
+        super(Prestations, self).save(*args, **kwargs)

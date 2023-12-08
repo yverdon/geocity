@@ -1220,18 +1220,37 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
 
 class PrestationForm(forms.ModelForm):
+    """ Docstring
+    """
+    def __init__(self, *args, **kwargs):
+        self.submission = kwargs.pop("submission", None)
+        disable_fields = kwargs.pop("disable_fields", False)
+        initial = {}
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
+        super().__init__(*args, **kwargs)
+
     required_css_class = "required"
 
     class Meta:
         model = Prestations
         fields = [
-            "name",
-            "created_by",
-            "created_at",
+            "prestation_type",
+            "provided_by",
+            "provided_at",
             "time_spent_on_task",
-            "monetary_amount",
+            #"monetary_amount",
         ]
         widgets = {
+            "provided_at": forms.DateInput(
+                format=settings.DATE_INPUT_FORMAT,
+                attrs={
+                    'type': 'date',
+                    'format': 'date-local',
+                    'placeholder': 'yyyy-mm-dd',
+                    'class': 'form-control',
+                }
+            ),
             "time_spent_on_task": forms.NumberInput(),
         }
 

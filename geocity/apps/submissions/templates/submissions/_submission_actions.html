@@ -363,6 +363,7 @@
 
 
         <div class='tab-pane' id="prestations" role="tabpanel" aria-labelledby="prestations-tab">
+          
           <h4>{% translate "Prestations" %}</h4>
           <div>
             <hr>            
@@ -376,6 +377,11 @@
               </div>
             </form>
           </div>
+          <div>
+            {% render_table prestations_table %}
+          </div>
+
+
         </div>
 
 

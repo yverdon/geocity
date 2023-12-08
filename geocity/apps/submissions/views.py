@@ -75,6 +75,7 @@ from .steps import (
 from .tables import (
     CustomFieldValueAccessibleSubmission,
     TransactionsTable,
+    PrestationsTable,
     get_custom_dynamic_table,
 )
 
@@ -261,6 +262,11 @@ class SubmissionDetailView(View):
             transactions_table = TransactionsTable(
                 data=self.submission.get_transactions()
             )
+        
+        prestations_table = None
+        prestations_table = PrestationsTable(
+            data=self.submission.get_prestations()
+        )
 
         return {
             **kwargs,
@@ -298,6 +304,7 @@ class SubmissionDetailView(View):
                 "inquiry_in_progress": self.submission.status
                 == models.Submission.STATUS_INQUIRY_IN_PROGRESS,
                 "current_user": self.request.user,
+                "prestations_table": prestations_table,
             },
         }
 
@@ -428,7 +435,7 @@ class SubmissionDetailView(View):
                 data=data,
                 #user=self.request.user,
             )
-            print(f"form data2: {form.data}")
+            print(f"form data: {form.data}")
             #print(f"form cleande_data: {form.cleaned_data}")
 
             return form

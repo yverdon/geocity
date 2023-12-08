@@ -37,7 +37,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-from .payments.models import SubmissionPrice
+from .payments.models import SubmissionPrice, Prestations
 
 # Actions
 ACTION_AMEND = "amend"
@@ -1182,6 +1182,10 @@ class Submission(models.Model):
             return None
         return self.submission_price.get_transactions()
 
+    # Prestations       
+    def get_prestations(self):
+        return Prestations.objects.all()
+    
     def get_history(self):
         # Transactions history
         if self.submission_price is None:
