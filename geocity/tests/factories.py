@@ -384,8 +384,9 @@ class FormFactory(factory.django.DjangoModelFactory):
     def administrative_entities(self, create, extracted, **kwargs):
         if not create or not extracted:
             return
-
+        print(*extracted)
         self.administrative_entities.add(*extracted)
+        print(self.administrative_entities)
 
 
 class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
