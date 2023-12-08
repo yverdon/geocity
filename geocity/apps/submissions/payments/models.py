@@ -118,12 +118,12 @@ class Transaction(models.Model):
 
 class PrestationsType(models.Model):
     name = models.CharField(
-        _("Prestation"),
+        verbose_name=_("Prestation"),
         max_length=255,
         null=False,
     )
     is_visible_by_validator = models.BooleanField(
-        _("visible by validator"),
+        verbose_name=_("visible by validator"),
         help_text=_(
             "Est visible par le validateur"
         ),
@@ -135,6 +135,9 @@ class PrestationsType(models.Model):
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
+    # Methods
+    def __str__(self):
+        return f"{self.name}"
 
 class Prestations(models.Model):
     """Docstring
@@ -192,12 +195,13 @@ class Prestations(models.Model):
             "La prestation a été saisie à cette date."
         ),
     )
-    #GROS TOUT DOUX: créée une FK vers submission
+    #TODO: GROS TOUT DOUX: créer une FK vers submission
+    #ERROR: IMPOSSIBLE TO CREATE A FK: CIRCULAR IMPORT!
     prestation_type =  models.ForeignKey(
         "PrestationsType",
         on_delete=models.CASCADE,
         verbose_name=_("Prestation"),
-        related_name=_("prestations"),
+        related_name=_("prestations_type"),
         help_text=_(
             "Choix de la prestation ; à effectuer dans une liste prédéfinie."
         ),

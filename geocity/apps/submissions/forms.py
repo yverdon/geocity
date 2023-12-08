@@ -1232,6 +1232,12 @@ class PrestationForm(forms.ModelForm):
 
     required_css_class = "required"
 
+    #provided_at = forms.DateField(
+    #    label=_("Date de saisie"),
+    #    input_formats=[settings.DATE_INPUT_FORMAT],
+    #)
+    #time_spent_on_task = forms.NumberInput()
+
     class Meta:
         model = Prestations
         fields = [
@@ -1242,18 +1248,15 @@ class PrestationForm(forms.ModelForm):
             #"monetary_amount",
         ]
         widgets = {
-            "provided_at": forms.DateInput(
-                format=settings.DATE_INPUT_FORMAT,
-                attrs={
-                    'type': 'date',
-                    'format': 'date-local',
-                    'placeholder': 'yyyy-mm-dd',
-                    'class': 'form-control',
+            "provided_at": DatePickerInput(
+                options={
+                    "format": "DD.MM.YYYY",
+                    "locale": "fr-CH",
+                    "useCurrent": True,
                 }
             ),
             "time_spent_on_task": forms.NumberInput(),
         }
-
 
     def clean_time_spent_on_task(self):
         print("###############\nInside of clean_time_spent_on_task !!\n###############")
