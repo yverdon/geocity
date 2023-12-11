@@ -620,7 +620,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         # Secure the number of query_params to dont be higher than the number of available_filters + 5
         # + 5 for optional filters, like startsAt and endsAt, domain
         if len(query_params) > len(available_filters) + 5:
-            return None
+            return submissions
 
         # Do the required actions fo every query_param
         for field_name in query_params:

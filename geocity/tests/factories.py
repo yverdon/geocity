@@ -76,6 +76,9 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
             self.groups.add(group)
 
 
+# FIXME: Integrator is mandatory in AdministrativeEntity.
+# In AgendaAPITestCase nothing was working cause FormFactory couldn't link to administrative entity.
+# The error was : accounts.AdministrativeEntity.None
 class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker("company")
@@ -384,9 +387,8 @@ class FormFactory(factory.django.DjangoModelFactory):
     def administrative_entities(self, create, extracted, **kwargs):
         if not create or not extracted:
             return
-        print(*extracted)
+
         self.administrative_entities.add(*extracted)
-        print(self.administrative_entities)
 
 
 class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
