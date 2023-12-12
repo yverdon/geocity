@@ -635,8 +635,9 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
                 # Prepare queryset to filter by categories
                 conditions = Q()
 
-                # Get the Field object related to the query_param
-                field = available_filters.get(Q(api_name=field_name))
+                # Get the Field object related to the query_param.
+                # Filter + first, in case there's twice the same api_name in field for same entity
+                field = available_filters.filter(Q(api_name=field_name)).first()
 
                 # Get every value for each id given in query_param
                 for value in query_params.getlist(field_name):
