@@ -144,7 +144,6 @@ INSTALLED_APPS = [
     "geocity.apps.reports",
     "geocity.apps.forms",
     "geocity.apps.submissions",
-    "geocity.apps.agenda",
     # dependencies
     "polymorphic",
     "adminsortable2",

@@ -29,7 +29,6 @@ urlpatterns = (
         path("submissions/", include("geocity.apps.submissions.urls")),
         path("forms/", include("geocity.apps.forms.urls")),
         path("reports/", include("geocity.apps.reports.urls")),
-        path("agenda/", include("geocity.apps.agenda.urls")),
         # Backward compatibility for Geocity < 2.1, will be deprecated in 3.0
         re_path(r"permit-requests/.*", legacy_urls_redirect),
     ]

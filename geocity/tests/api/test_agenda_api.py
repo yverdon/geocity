@@ -79,15 +79,15 @@ class AgendaAPITestCase(TestCase):
             administrative_entities=[self.sit_administrative_entity],
         )
 
-        # Create not valid agenda first iteration Forms
-        self.sit_not_valid_agenda_form_1 = factories.FormFactory(
+        # Create valid agenda second iteration Forms
+        self.sit_valid_agenda_form_2 = factories.FormFactory(
             is_public=False,
             agenda_visible=True,
             administrative_entities=[self.sit_administrative_entity],
         )
 
-        # Create not valid agenda second iteration Forms
-        self.sit_not_valid_agenda_form_2 = factories.FormFactory(
+        # Create not valid agenda first iteration Forms
+        self.sit_not_valid_agenda_form_1 = factories.FormFactory(
             is_public=True,
             agenda_visible=False,
             administrative_entities=[self.sit_administrative_entity],
@@ -159,12 +159,27 @@ class AgendaAPITestCase(TestCase):
         )
 
         factories.FormFieldFactory(
-            form=self.sit_not_valid_agenda_form_1,
+            form=self.sit_valid_agenda_form_2,
             field=self.sit_title_field,
         )
 
         factories.FormFieldFactory(
-            form=self.sit_not_valid_agenda_form_2,
+            form=self.sit_valid_agenda_form_2,
+            field=self.sit_location_field,
+        )
+
+        factories.FormFieldFactory(
+            form=self.sit_valid_agenda_form_2,
+            field=self.sit_category_field,
+        )
+
+        factories.FormFieldFactory(
+            form=self.sit_valid_agenda_form_2,
+            field=self.sit_private_field,
+        )
+
+        factories.FormFieldFactory(
+            form=self.sit_not_valid_agenda_form_1,
             field=self.sit_title_field,
         )
 
@@ -259,7 +274,7 @@ class AgendaAPITestCase(TestCase):
         )
         selected_form = factories.SelectedFormFactory(
             submission=self.sit_third_submission,
-            form=self.sit_valid_agenda_form,
+            form=self.sit_valid_agenda_form_2,
         )
         factories.FieldValueFactory(
             field=self.sit_title_field, selected_form=selected_form
@@ -295,7 +310,7 @@ class AgendaAPITestCase(TestCase):
         )
         selected_form = factories.SelectedFormFactory(
             submission=self.sit_fourth_submission,
-            form=self.sit_valid_agenda_form,
+            form=self.sit_valid_agenda_form_2,
         )
         factories.FieldValueFactory(
             field=self.sit_title_field, selected_form=selected_form
@@ -331,7 +346,7 @@ class AgendaAPITestCase(TestCase):
         )
         selected_form = factories.SelectedFormFactory(
             submission=self.sit_fifth_submission,
-            form=self.sit_valid_agenda_form,
+            form=self.sit_valid_agenda_form_2,
         )
         factories.FieldValueFactory(
             field=self.sit_title_field, selected_form=selected_form
@@ -367,7 +382,7 @@ class AgendaAPITestCase(TestCase):
         )
         selected_form = factories.SelectedFormFactory(
             submission=self.sit_sixth_submission,
-            form=self.sit_valid_agenda_form,
+            form=self.sit_valid_agenda_form_2,
         )
         factories.FieldValueFactory(
             field=self.sit_title_field, selected_form=selected_form
@@ -404,31 +419,6 @@ class AgendaAPITestCase(TestCase):
         selected_form = factories.SelectedFormFactory(
             submission=self.sit_seventh_submission,
             form=self.sit_not_valid_agenda_form_1,
-        )
-        factories.FieldValueFactory(
-            field=self.sit_title_field, selected_form=selected_form
-        )
-
-        # ////////////////////////////////////#
-        # Valid submission for agenda, with featured, valid date but invalid form 2
-        # ////////////////////////////////////#
-
-        self.sit_eighth_submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_PROCESSING,
-            administrative_entity=self.sit_administrative_entity,
-            author=self.sit_normal_user,
-            is_public_agenda=True,
-            featured_agenda=True,
-        )
-
-        factories.SubmissionGeoTimeFactory(
-            submission=self.sit_eighth_submission,
-            starts_at=start_at_valid_1,
-            ends_at=ends_at_valid_1,
-        )
-        selected_form = factories.SelectedFormFactory(
-            submission=self.sit_eighth_submission,
-            form=self.sit_not_valid_agenda_form_2,
         )
         factories.FieldValueFactory(
             field=self.sit_title_field, selected_form=selected_form
@@ -655,6 +645,7 @@ class AgendaAPITestCase(TestCase):
         # Check if filters is not None
         self.assertNotEqual(response_json["filters"], None)
 
+    # TODO: Count number of elements
     def test_elements_are_ordered_by_featured_and_dates(self):
         """
         Order of elements logic is in the backend.
@@ -662,8 +653,8 @@ class AgendaAPITestCase(TestCase):
         By default only return events that are in progress or still to come.
         """
 
-        # Request to agenda-list (light API)
-        response = self.client.get(reverse("agenda-list"), {})
+        # Request to agenda-list (light API) on ?domain=sit
+        response = self.client.get(reverse("agenda-list"), {"domain": "sit"})
         response_json = response.json()
 
         # Check if request is ok
