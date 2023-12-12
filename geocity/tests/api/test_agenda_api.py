@@ -645,7 +645,6 @@ class AgendaAPITestCase(TestCase):
         # Check if filters is not None
         self.assertNotEqual(response_json["filters"], None)
 
-    # TODO: Count number of elements
     def test_elements_are_ordered_by_featured_and_dates(self):
         """
         Order of elements logic is in the backend.
@@ -659,6 +658,9 @@ class AgendaAPITestCase(TestCase):
 
         # Check if request is ok
         self.assertEqual(response.status_code, 200)
+
+        # Check if there's 4 events
+        self.assertEqual(response_json["count"], 4)
 
         # Check first element is first_submission
         self.assertEqual(

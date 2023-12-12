@@ -579,7 +579,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "geocity.auth.InternalTokenAuthentication",
     ),
-    "DEFAULT_PAGINATION_CLASS": "geocity.apps.django_wfs3.pagination.CustomPagination",
+    "DEFAULT_PAGINATION_CLASS": "geocity.apps.api.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
     ],

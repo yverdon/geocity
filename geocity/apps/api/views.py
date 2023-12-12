@@ -14,13 +14,13 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.api.pagination import AgendaResultsSetPagination
 from geocity.apps.api.services import (
     can_image_be_displayed_for_agenda,
     get_image_path,
     get_mime_type,
 )
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
-from geocity.apps.django_wfs3.pagination import AgendaResultsSetPagination
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
