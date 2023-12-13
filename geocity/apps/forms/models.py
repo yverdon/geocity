@@ -537,6 +537,14 @@ class Form(models.Model):
             Pour une demande anonyme https://geocity.ch/submissions/anonymous/?form=URL_COURTE"""
         ),
     )
+    agenda_visible = models.BooleanField(
+        _("Visible dans l'agenda"),
+        default=False,
+        help_text=_(
+            """Lorsque cette case est cochée, les données de ce formulaire sont accessibles dans l'API <b>/rest/agenda/ si la demande est rendue publique par le pilote</b><br>
+            Le pilote peut alors contrôler la publication dans l'agenda dans l'onglet traitement"""
+        ),
+    )
 
     # All objects
     objects = FormQuerySet().as_manager()
@@ -880,11 +888,12 @@ class Field(models.Model):
             "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
         ),
     )
-    is_public_when_permitrequest_is_public = models.BooleanField(
-        _("Afficher ce champs au grand public si la demande est publique"),
+    public_if_submission_public = models.BooleanField(
+        _("Information publique"),
         default=False,
         help_text=_(
-            "Ce champs sera visible sur l'application géocalendrier si la demande est publique"
+            """Lorsque cette case est cochée, ce champ est affiché <b>si la demande est rendue publique par le pilote</b>.<br>
+            Actuellement utilisé pour l'application geocalendrier et agenda"""
         ),
     )
     allowed_file_types = models.CharField(
@@ -892,6 +901,23 @@ class Field(models.Model):
         max_length=255,
         blank=True,
         help_text=_('Ex: "pdf, jpg, png"'),
+    )
+    api_light = models.BooleanField(
+        _("Visible dans l'API light"),
+        default=False,
+        help_text=_(
+            """Lorsque cette case est cochée, ce champ est affiché dans la version light de l'api (/rest/RESSOURCE) <b>si la demande est rendue publique par le pilote</b>.<br>
+            Afin de ne pas afficher trop d'informations, le champ est masqué pour améliorer la rapidité de l'API.<br>
+            Pour afficher la version normale de l'api, il faut se rendre sur une seule ressource (/rest/RESSOURCE/:ID)."""
+        ),
+    )
+    filter_for_api = models.BooleanField(
+        _("Filtre pour API"),
+        default=False,
+        help_text=_(
+            """Lorsque cette case est cochée, ce champ peut être utilisé pour filtrer <b>si la demande est rendue publique par le pilote</b>.<br>
+            Actuellement ne fonctionne que pour les champs à choix simple ou multiples dans agenda."""
+        ),
     )
 
     class Meta(object):

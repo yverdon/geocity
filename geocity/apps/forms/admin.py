@@ -232,6 +232,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "permanent_publication_enabled",
         "max_submissions_nb_submissions",
         "get_max_submissions_message",
+        "agenda_visible",
     ]
     list_filter = ["administrative_entities"]
     search_fields = [
@@ -320,6 +321,10 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
+        (
+            _("Agenda"),
+            {"fields": ("agenda_visible",)},
+        ),
     )
     jazzmin_section_order = (
         None,
@@ -330,6 +335,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         _("Champs"),
         _("Paiements"),
         _("Tarifs"),
+        _("Agenda"),
     )
 
     def sortable_str(self, obj):
@@ -440,7 +446,6 @@ class FieldAdminForm(forms.ModelForm):
         model = models.Field
         fields = [
             "name",
-            "api_name",
             "placeholder",
             "help_text",
             "input_type",
@@ -451,12 +456,15 @@ class FieldAdminForm(forms.ModelForm):
             "regex_pattern",
             "file_download",
             "is_mandatory",
-            "is_public_when_permitrequest_is_public",
+            "public_if_submission_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
             "allowed_file_types",
             "integrator",
             "form_list",
+            "api_name",
+            "api_light",
+            "filter_for_api",
         ]
 
     def get_form_list(self):
@@ -612,7 +620,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "sortable_str",
         "custom_api_name",
         "is_mandatory",
-        "is_public_when_permitrequest_is_public",
+        "public_if_submission_public",
         "input_type",
         "placeholder",
         "help_text",
@@ -624,6 +632,42 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "placeholder",
+                    "help_text",
+                    "input_type",
+                    "services_to_notify",
+                    "message_for_notified_services",
+                    "choices",
+                    "line_number_for_textarea",
+                    "regex_pattern",
+                    "file_download",
+                    "is_mandatory",
+                    "additional_searchtext_for_address_field",
+                    "store_geometry_for_address_field",
+                    "allowed_file_types",
+                    "integrator",
+                    "form_list",
+                )
+            },
+        ),
+        (
+            _("API"),
+            {
+                "fields": (
+                    "api_name",
+                    "api_light",
+                    "filter_for_api",
+                    "public_if_submission_public",
+                ),
+            },
+        ),
+    )
 
     def sortable_str(self, obj):
         sortable_str = (

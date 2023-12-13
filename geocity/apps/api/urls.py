@@ -14,7 +14,18 @@ router.register(r"search", views.SearchViewSet, "search")
 router.register(
     r"submissions_details", views.SubmissionDetailsViewSet, "submissions_details"
 )
+router.register(r"agenda", views.AgendaViewSet, "agenda")
 
 urlpatterns = router.urls + [
     path("current_user/", views.CurrentUserAPIView.as_view(), name="current_user"),
+    path(
+        "image/<int:submission_id>/<str:image_name>",
+        views.image_display,
+        name="image_display",
+    ),
+    path(
+        "image/thumbor/<int:submission_id>/<str:image_name>",
+        views.image_thumbor_display,
+        name="image_thumbor_display",
+    ),
 ]
