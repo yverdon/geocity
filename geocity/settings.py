@@ -692,6 +692,10 @@ PAYMENT_PROCESSING_TEST_ENVIRONMENT = (
 )
 PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
 
-# djmoney currencies: https://django-money.readthedocs.io/en/latest/#adding-a-new-currency
+# Prestations
+## Default prestation rate [CHF]
+DEFAULT_PRESTATION_PRICE = 140.00
+
+## djmoney currencies: https://django-money.readthedocs.io/en/latest/#adding-a-new-currency
 CURRENCIES = ('USD', 'EUR', 'CHF')
 CURRENCY_CHOICES = [('USD', 'USD $'), ('EUR', 'EUR €'), ('CHF', 'CHF .-')]
