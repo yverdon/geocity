@@ -1,5 +1,6 @@
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from djmoney.models.fields import MoneyField
 from django.utils import timezone
@@ -188,7 +189,7 @@ class Prestations(models.Model):
             "La prestation a été effectuée au nom de cet utilisateur."
         ),
     )
-    provided_at = models.DateTimeField(
+    provided_at = models.DateField(
         default=timezone.now,
         verbose_name=_("Date de saisie"),
         help_text=_(
@@ -207,14 +208,14 @@ class Prestations(models.Model):
         ),
     )
     time_spent_on_task = models.DurationField(
-        default = 0,
+        default=0,
         verbose_name=_("Durée [m]"),
         help_text=_(
             "Temps passé pour effectuer la prestation (en minutes)."
         ),
     )
     pricing = MoneyField(
-        default=140,
+        default=settings.DEFAULT_PRESTATION_PRICE,
         decimal_places=2,
         max_digits=12,
         default_currency='CHF',
