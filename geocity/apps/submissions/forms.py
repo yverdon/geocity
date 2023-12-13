@@ -12,7 +12,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
@@ -40,7 +40,7 @@ from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import SubmissionPrice, Prestations
+from .payments.models import Prestations, PrestationsType, SubmissionPrice
 from .permissions import has_permission_to_amend_submission
 
 input_type_mapping = {
@@ -352,7 +352,6 @@ class FormsSingleSelectForm(FormsSelectForm):
 
 
 class FormsPriceSelectForm(forms.Form):
-
     selected_price = forms.ChoiceField(
         label=False, widget=SingleFormRadioSelectWidget(), required=True
     )
@@ -574,7 +573,6 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_regex_field_kwargs(self, field, default_kwargs):
-
         return {
             **default_kwargs,
             "widget": forms.Textarea(
@@ -1235,8 +1233,8 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
 
 class PrestationForm(forms.ModelForm):
-    """ Docstring
-    """
+    """Docstring"""
+
     """ provided_at = forms.DateField(
         label=_("Date de saisie"),
         initial=timezone.now(),
@@ -1256,10 +1254,36 @@ class PrestationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
         disable_fields = kwargs.pop("disable_fields", False)
-        initial = {}
-        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+        current_user = kwargs.pop("user", None)
+
+        kwargs["initial"] = {
+            **kwargs.get("initial", {}),
+            "provided_by": current_user,
+        }
 
         super().__init__(*args, **kwargs)
+
+        self.fields["prestation_type"].queryset = PrestationsType.objects.filter(
+            administrative_entity=self.submission.administrative_entity
+        )
+
+        # users_to_display = User.objects.filter(
+        #    groups__permit_department__administrative_entity=self.submission.administrative_entity
+        # )
+
+        current_user_groups_pk = current_user.groups.all().values_list("pk")
+
+        groups_of_the_current_user = Group.objects.filter(
+            permit_department__is_backoffice=True,
+            permit_department__administrative_entity=self.submission.administrative_entity,
+            pk__in=current_user_groups_pk,
+        )
+
+        restricted_users_to_display = User.objects.filter(
+            groups__in=groups_of_the_current_user
+        )
+
+        self.fields["provided_by"].queryset = restricted_users_to_display
 
     required_css_class = "required"
 
@@ -1270,37 +1294,32 @@ class PrestationForm(forms.ModelForm):
             "provided_by",
             "provided_at",
             "time_spent_on_task",
-            #"monetary_amount",
+            # "monetary_amount",
         ]
-        #print(f"time_spent_on_task: {(model.time_spent_on_task)}")
-        #print(f"provided_at: {(model.provided_at)}")
 
         widgets = {
             "provided_at": DatePickerInput(
                 options={
-                    #"format": "DD-MM-YYYY",
+                    # "format": "DD-MM-YYYY",
                     "locale": "fr-CH",
                     "useCurrent": False,
                 }
             ),
             "time_spent_on_task": forms.NumberInput(),
         }
-    
+
     def clean_time_spent_on_task(self):
-        print(32*"X")
         time_spent_on_task = int(float(self.data["time_spent_on_task"]))
-        if (
-            time_spent_on_task < 0
-            or not isinstance(time_spent_on_task, int)
-        ):
+        if time_spent_on_task < 0 or not isinstance(time_spent_on_task, int):
             raise ValidationError(
-                _("Le temps passé pour réaliser la prestation doit être un nombre entier supérieur ou égal à zéro.")
+                _(
+                    "Le temps passé pour réaliser la prestation doit être un nombre entier supérieur ou égal à zéro."
+                )
             )
 
         return timedelta(minutes=time_spent_on_task)
 
     def clean_provided_at(self):
-        print(32*"Y")
         provided_at = self.cleaned_data["provided_at"]
         if not isinstance(provided_at, date):
             raise ValidationError({"Date field": _("This date is wrongly formatted.")})
@@ -1311,6 +1330,7 @@ class PrestationForm(forms.ModelForm):
         cleaned_data = super().clean()
 
         return cleaned_data
+
 
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
@@ -1367,7 +1387,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     )
 
     class Meta:
-
         model = models.SubmissionGeoTime
         fields = [
             "geom",
