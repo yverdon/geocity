@@ -338,16 +338,19 @@ class SubmissionInquiryAdmin(admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("2.3 Enquêtes publiques")
-  
+
+
 @admin.register(PrestationsType)
 class PrestationsTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "name",
+        "administrative_entity",
         "is_visible_by_validator",
         "integrator",
     ]
     search_fields = [
         "name",
+        "administrative_entity",
     ]
 
     def sortable_str(self, obj):
