@@ -1,17 +1,31 @@
 import datetime
+import mimetypes
+import os
 
+import requests
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
+from django.http import FileResponse, JsonResponse
+from django.utils.text import get_valid_filename
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
+from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.api.pagination import AgendaResultsSetPagination
+from geocity.apps.api.services import (
+    can_image_be_displayed_for_agenda,
+    get_image_path,
+    get_mime_type,
+)
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
+    FieldValue,
     Submission,
     SubmissionGeoTime,
     SubmissionInquiry,
@@ -247,6 +261,7 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             )
             .prefetch_related(forms_prefetch)
             .prefetch_related(geotime_prefetch)
+            .prefetch_related(current_inquiry_prefetch)
             .prefetch_related("selected_forms", "contacts")
             .select_related(
                 "administrative_entity",
@@ -466,3 +481,192 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 SubmissionPointViewSet = submission_view_set_subset_factory("points")
 SubmissionLineViewSet = submission_view_set_subset_factory("lines")
 SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
+
+
+def image_display(request, submission_id, image_name):
+    safe_submission_id = get_valid_filename(submission_id)
+    safe_image_name = get_valid_filename(image_name)
+
+    image_path = get_image_path(safe_submission_id, safe_image_name)
+
+    if os.path.exists(image_path) and can_image_be_displayed_for_agenda(
+        safe_submission_id, safe_image_name, Submission, FieldValue
+    ):
+        image_file = open(image_path, "rb")
+        mime_type, encoding = mimetypes.guess_type(image_path)
+        response = FileResponse(image_file, content_type=mime_type)
+        return response
+    else:
+        return JsonResponse({"message": "unauthorized."}, status=404)
+
+
+def image_thumbor_display(request, submission_id, image_name):
+    safe_submission_id = get_valid_filename(submission_id)
+    safe_image_name = get_valid_filename(image_name)
+
+    if not can_image_be_displayed_for_agenda(
+        safe_submission_id, safe_image_name, Submission, FieldValue
+    ):
+        return JsonResponse({"message": "unauthorized."}, status=404)
+
+    width = request.GET.get("width", 397)
+    height = request.GET.get("height", 562)
+    format = request.GET.get("format", "webp")
+    fit = request.GET.get("fit", None)
+
+    INTERNAL_WEB_ROOT_URL = "http://web:9000"
+    image_url = (
+        f"{INTERNAL_WEB_ROOT_URL}/rest/image/{safe_submission_id}/{safe_image_name}"
+    )
+
+    # TODO: V2 -> understand (adaptive-)(full-)fit-in between unsafe and size
+
+    thumbor_params = "unsafe/"
+
+    if fit:
+        thumbor_params += f"{fit}/"
+
+    thumbor_params += f"{width}x{height}/filters:format({format})"
+
+    if settings.USE_THUMBOR:
+        try:
+            response = requests.get(
+                f"{settings.THUMBOR_SERVICE_URL}/{thumbor_params}/{image_url}"
+            )
+        except requests.exceptions.RequestException as e:
+            response = requests.get(image_url)
+    else:
+        response = requests.get(image_url)
+
+    mime_type = get_mime_type(response.content)
+    thumbor_response = FileResponse(response, content_type=mime_type)
+
+    return thumbor_response
+
+
+class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This api provides :
+    - Minimal informations, to show all available submissions /rest/agenda/
+    - Detailed informations of a specific submission, filtered by id, example : /rest/agenda/:id
+    Submissions are filtered by date
+    Images are provided through thumbor https://thumbor.readthedocs.io/en/latest/imaging.html
+    Arguments that can be supplied in the url :
+    - ?domain can be given through the component in html, it corresponds to the entity tags (mots-clés)
+    - ?width
+    - ?height
+    - ?format (jpg, jpeg, png, webp, etc...)
+    - ?fit to chose the way the image will fit the size. Can be used for all the following arguments https://thumbor.readthedocs.io/en/latest/usage.html
+        - adaptive-in
+        - full-in
+        - fit-in
+    """
+
+    throttle_scope = "agenda"
+    serializer_class = serializers.AgendaSerializer
+    pagination_class = AgendaResultsSetPagination
+    permission_classes = [permissions.AllowAllRequesters]
+
+    def get_queryset(self):
+        """
+        This view has a detailed result and a simple result
+        The detailed result is built with AgendaResultsSetPagination,
+        this is required to be able to make pagination and return features and filters
+        The simple result just return informations for une submission
+        The order is important, agenda-embed has no logic, everything is set here
+        """
+        submissions = (
+            Submission.objects.filter(
+                Q(selected_forms__field_values__value__val__isnull=False)
+                & Q(selected_forms__form__agenda_visible=True)
+                & Q(is_public_agenda=True)
+                & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
+            )
+            .distinct()
+            .order_by("-featured_agenda", "geo_time__starts_at")
+            .prefetch_related("selected_forms__field_values")
+        )
+
+        # List params given by the request as query_params
+        query_params = self.request.query_params
+
+        # Filter domain (administrative_entity) to permit sites to filter on their own domain (e.g.: sports, culture)
+        domain = None
+
+        if "domain" in query_params:
+            domain = query_params["domain"]
+            entity = AdministrativeEntity.objects.filter(
+                tags__name=domain
+            ).first()  # get can return an error
+            submissions = submissions.filter(administrative_entity=entity)
+
+        if "starts_at" in query_params:
+            starts_at = datetime.datetime.strptime(
+                query_params["starts_at"], "%Y-%m-%d"
+            )
+            starts_at = starts_at.replace(tzinfo=datetime.timezone.utc)
+            submissions = submissions.filter(geo_time__ends_at__gte=starts_at)
+
+        if "ends_at" in query_params:
+            ends_at = datetime.datetime.strptime(query_params["ends_at"], "%Y-%m-%d")
+            ends_at = ends_at.replace(
+                hour=23, minute=59, second=59, tzinfo=datetime.timezone.utc
+            )
+            submissions = submissions.filter(geo_time__starts_at__lte=ends_at)
+
+        if "starts_at" not in query_params and "ends_at" not in query_params:
+            today = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+                hours=settings.LOCAL_TIME_ZONE_UTC
+            )
+            submissions = submissions.filter(geo_time__ends_at__gte=today)
+
+        # List every available filter
+        available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)
+
+        if not available_filters:
+            return submissions
+
+        # Secure the number of query_params to dont be higher than the number of available_filters + 5
+        # + 5 for optional filters, like startsAt and endsAt, domain
+        if len(query_params) > len(available_filters) + 5:
+            return submissions
+
+        # Do the required actions fo every query_param
+        for field_name in query_params:
+
+            # Check if the given query_param is used to filter (is it a category ?)
+            field_name_is_api_filter = any(
+                field_name in api_filter
+                for api_filter in available_filters.values_list("api_name")
+            )
+            if field_name_is_api_filter:
+
+                # Prepare queryset to filter by categories
+                conditions = Q()
+
+                # Get the Field object related to the query_param.
+                # Filter + first, in case there's twice the same api_name in field for same entity
+                field = available_filters.filter(Q(api_name=field_name)).first()
+
+                # Get every value for each id given in query_param
+                for value in query_params.getlist(field_name):
+                    value = int(value)
+
+                    # Get the choice corresponding to the id given in query_param
+                    # The id = line of choice
+                    category_choice = field.choices.strip().splitlines()[value]
+
+                    # Filter submission according to the category choices
+                    conditions |= Q(
+                        selected_forms__field_values__value__val=category_choice
+                    )
+                    conditions |= Q(
+                        selected_forms__field_values__value__val__contains=[
+                            category_choice
+                        ]
+                    )
+
+                # Filter with every category
+                submissions = submissions.filter(conditions)
+
+        return submissions

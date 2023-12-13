@@ -107,7 +107,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 #  Or we need to add an attribute in the Submission to save the site where it has
 #  been initiated.
 SITE_ID = None
-SITE_DOMAIN = None
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", None)
 # Default domain on which all forms could be made visible by any integrator
 DEFAULT_SITE = os.getenv("DEFAULT_SITE")
 
@@ -116,6 +116,10 @@ AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true
 
 # Allow REMOTE_USER Authentication
 ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
+
+# Thumbor image service
+USE_THUMBOR = os.getenv("USE_THUMBOR", "true").lower() == "true"
+THUMBOR_SERVICE_URL = os.getenv("THUMBOR_SERVICE_URL", "None")
 
 SITE_HTTPS = ENV == "PROD"
 
@@ -127,6 +131,8 @@ if ENV == "DEV":
 
 LOCATIONS_SEARCH_API = os.getenv("LOCATIONS_SEARCH_API")
 LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
+
+LOCAL_TIME_ZONE_UTC = int(os.getenv("LOCAL_TIME_ZONE_UTC", +1))
 
 # Application definition
 INSTALLED_APPS = [
@@ -549,10 +555,9 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
-if DEBUG:
-    STATICFILES_DIRS = [
-        "/static_map/",
-    ]
+STATICFILES_DIRS = [
+    "/external_statics/",
+]
 
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"
@@ -575,7 +580,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "geocity.auth.InternalTokenAuthentication",
     ),
-    "DEFAULT_PAGINATION_CLASS": "geocity.apps.django_wfs3.pagination.CustomPagination",
+    "DEFAULT_PAGINATION_CLASS": "geocity.apps.api.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
     ],
@@ -588,6 +593,8 @@ REST_FRAMEWORK = {
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
         # Full API for search
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
+        # Full API for agenda app
+        "agenda": os.getenv("DRF_THROTTLE_RATE_AGENDA_API"),
     },
 }
 
