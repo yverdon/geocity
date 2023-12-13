@@ -4,6 +4,7 @@ from io import BytesIO
 
 from django.conf import settings
 from django.db.models import Q
+from django.utils.text import get_valid_filename
 from PIL import Image
 from unidecode import unidecode
 
@@ -39,14 +40,19 @@ def can_image_be_displayed_for_agenda(
     - and FieldValue with
         - public_if_submission_public
     """
+    safe_submission_id = get_valid_filename(submission_id)
+    safe_image_name = get_valid_filename(image_name)
+
     submission_display_conditions = Submission.objects.filter(
-        Q(pk=submission_id)
+        Q(pk=safe_submission_id)
         & Q(selected_forms__form__agenda_visible=True)
         & Q(is_public_agenda=True)
         & Q(status__in=Submission.VISIBLE_IN_AGENDA_STATUSES)
     ).exists()
 
-    image_name_in_db = {"val": f"permit_requests_uploads/{submission_id}/{image_name}"}
+    image_name_in_db = {
+        "val": f"permit_requests_uploads/{safe_submission_id}/{safe_image_name}"
+    }
 
     fieldvalue_display_conditions = FieldValue.objects.filter(
         Q(value=image_name_in_db) & Q(field__public_if_submission_public=True)
@@ -64,8 +70,11 @@ def get_image_dimensions(image_path):
 def get_image_path(submission_id, image_name):
     image_dir = settings.PRIVATE_MEDIA_ROOT
 
+    safe_submission_id = get_valid_filename(submission_id)
+    safe_image_name = get_valid_filename(image_name)
+
     image_path = os.path.join(
-        image_dir, f"permit_requests_uploads/{submission_id}/{image_name}"
+        image_dir, f"permit_requests_uploads/{safe_submission_id}/{safe_image_name}"
     )
 
     return image_path
