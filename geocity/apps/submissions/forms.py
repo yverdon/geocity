@@ -2,7 +2,7 @@ import io
 import mimetypes
 import string
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from itertools import groupby
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
@@ -1222,6 +1222,22 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 class PrestationForm(forms.ModelForm):
     """ Docstring
     """
+    """ provided_at = forms.DateField(
+        label=_("Date de saisie"),
+        initial=timezone.now(),
+        input_formats=[settings.DATE_INPUT_FORMAT],
+        widget=DatePickerInput(
+            options={
+                "format": "DD-MM-YYYY",
+                "locale": "fr-CH",
+                "useCurrent": False,
+            }
+        ),
+        help_text=_(
+            "La prestation a été saisie à cette date."
+        ),
+    ) """
+
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
         disable_fields = kwargs.pop("disable_fields", False)
@@ -1232,12 +1248,6 @@ class PrestationForm(forms.ModelForm):
 
     required_css_class = "required"
 
-    #provided_at = forms.DateField(
-    #    label=_("Date de saisie"),
-    #    input_formats=[settings.DATE_INPUT_FORMAT],
-    #)
-    #time_spent_on_task = forms.NumberInput()
-
     class Meta:
         model = Prestations
         fields = [
@@ -1247,38 +1257,45 @@ class PrestationForm(forms.ModelForm):
             "time_spent_on_task",
             #"monetary_amount",
         ]
+        #print(f"time_spent_on_task: {(model.time_spent_on_task)}")
+        #print(f"provided_at: {(model.provided_at)}")
+
         widgets = {
             "provided_at": DatePickerInput(
                 options={
-                    "format": "DD.MM.YYYY",
+                    #"format": "DD-MM-YYYY",
                     "locale": "fr-CH",
-                    "useCurrent": True,
+                    "useCurrent": False,
                 }
             ),
             "time_spent_on_task": forms.NumberInput(),
         }
-
+    
     def clean_time_spent_on_task(self):
-        print("###############\nInside of clean_time_spent_on_task !!\n###############")
-        time_spent_on_task = self.data["time_spent_on_task"]
+        print(32*"X")
+        time_spent_on_task = int(float(self.data["time_spent_on_task"]))
+        if (
+            time_spent_on_task < 0
+            or not isinstance(time_spent_on_task, int)
+        ):
+            raise ValidationError(
+                _("Le temps passé pour réaliser la prestation doit être un nombre entier supérieur ou égal à zéro.")
+            )
 
-        return timedelta(minutes=int(time_spent_on_task))
+        return timedelta(minutes=time_spent_on_task)
+
+    def clean_provided_at(self):
+        print(32*"Y")
+        provided_at = self.cleaned_data["provided_at"]
+        if not isinstance(provided_at, date):
+            raise ValidationError({"Date field": _("This date is wrongly formatted.")})
+
+        return provided_at
 
     def clean(self):
-        print("###############\nInside of clean !!\n###############")
         cleaned_data = super().clean()
 
         return cleaned_data
-
-    """ def save(self, commit=True):
-        instance = super().save(commit=False)
-        instance.submission = self.submission
-
-        if commit:
-            instance.save()
-
-        return instance """
-
 
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
