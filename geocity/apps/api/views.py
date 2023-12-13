@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from django.http import FileResponse, JsonResponse
+from django.utils.text import get_valid_filename
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -483,10 +484,13 @@ SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
 
 
 def image_display(request, submission_id, image_name):
-    image_path = get_image_path(submission_id, image_name)
+    safe_submission_id = get_valid_filename(submission_id)
+    safe_image_name = get_valid_filename(image_name)
+
+    image_path = get_image_path(safe_submission_id, safe_image_name)
 
     if os.path.exists(image_path) and can_image_be_displayed_for_agenda(
-        submission_id, image_name, Submission, FieldValue
+        safe_submission_id, safe_image_name, Submission, FieldValue
     ):
         image_file = open(image_path, "rb")
         mime_type, encoding = mimetypes.guess_type(image_path)
@@ -497,8 +501,11 @@ def image_display(request, submission_id, image_name):
 
 
 def image_thumbor_display(request, submission_id, image_name):
+    safe_submission_id = get_valid_filename(submission_id)
+    safe_image_name = get_valid_filename(image_name)
+
     if not can_image_be_displayed_for_agenda(
-        submission_id, image_name, Submission, FieldValue
+        safe_submission_id, safe_image_name, Submission, FieldValue
     ):
         return JsonResponse({"message": "unauthorized."}, status=404)
 
@@ -508,7 +515,9 @@ def image_thumbor_display(request, submission_id, image_name):
     fit = request.GET.get("fit", None)
 
     INTERNAL_WEB_ROOT_URL = "http://web:9000"
-    image_url = f"{INTERNAL_WEB_ROOT_URL}/rest/image/{submission_id}/{image_name}"
+    image_url = (
+        f"{INTERNAL_WEB_ROOT_URL}/rest/image/{safe_submission_id}/{safe_image_name}"
+    )
 
     # TODO: V2 -> understand (adaptive-)(full-)fit-in between unsafe and size
 
