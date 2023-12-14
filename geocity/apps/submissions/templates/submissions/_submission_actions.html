@@ -82,13 +82,16 @@
           </li>
       {% endif %}
 
-
         <li class="nav-item">
-          <a class="btn btn-primary btn-action nav-link" id="prestations-tab" data-toggle="tab" href="#prestations" role="tab" aria-controls="prestations">
-              {% translate "Prestation" %}
+          <a class="btn btn-primary btn-action nav-link"
+             id="prestations-tab"
+             data-toggle="tab"
+             href="#prestations"
+             role="tab"
+             aria-controls="presadd_prestationtations">
+              {% translate "Prestations" %}
           </a>
         </li>
-
 
       </ul>
     </div>
@@ -359,31 +362,24 @@
               {% render_table transactions_table %}
             </div>
             <!--fixme: close div?-->
+          </div>
         {% endif %}
 
-
         <div class='tab-pane' id="prestations" role="tabpanel" aria-labelledby="prestations-tab">
-          
-          <h4>{% translate "Prestations" %}</h4>
-          <div>
-            <hr>            
-            <form method="post">
-              {% csrf_token %}
-              {% bootstrap_form forms.add_prestation layout='horizontal' %}
-              <div class="text-right">
-                  <input name="action" type="hidden" value="add_prestation">
-                  <button class="btn btn-primary" name="save">{% translate "Enregistrer" %}</button>
-                  <button class="btn btn-primary" name="save_continue">{% translate "Enregistrer et continuer les modifications" %}</button>
-              </div>
-            </form>
-          </div>
+          <h4>{% translate "Liste des prestations saisies" %}</h4>
           <div>
             {% render_table prestations_table %}
           </div>
-
-
+          <div class="text-right">
+            <input name="action" type="hidden" value="add_prestation">
+            <a class="btn btn-primary"
+               name="save"
+               href="{% url 'submissions:submission_prestation' submission_id=submission.pk %}"
+              >
+                {% translate "Ajouter une nouvelle prestation" %}
+            </a>
+          </div>
         </div>
-
 
       </div>
     </div>
