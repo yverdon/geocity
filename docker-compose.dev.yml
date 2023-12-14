@@ -24,8 +24,14 @@ services:
       - "${DJANGO_DOCKER_PORT}:9000"
 
   postgres:
-    image: postgis/postgis:13-3.2
+    image: postgis/postgis:16-3.4
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-U", "${PGUSER}" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     environment:
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD}
