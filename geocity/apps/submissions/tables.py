@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
 from . import models
-from .payments.models import Transaction, Prestations
+from .payments.models import Prestations, Transaction
 
 ATTRIBUTES = {
     "th": {
@@ -362,7 +362,9 @@ class TransactionsTable(tables.Table):
         )
         template_name = "django_tables2/bootstrap.html"
 
+
 class PrestationsTable(tables.Table):
+    # TODO: do a second summary table (based on the classify)
     prestation_type = tables.Column(
         verbose_name=_("Prestation"),
         orderable=True,
@@ -387,6 +389,11 @@ class PrestationsTable(tables.Table):
         verbose_name=_("Montant [CHF]"),
         orderable=True,
     )
+    actions = tables.TemplateColumn(
+        template_name="tables/_submission_prestations_table_actions.html",
+        verbose_name=_("Actions"),
+        orderable=False,
+    )
 
     class Meta:
         model = Prestations
@@ -397,5 +404,6 @@ class PrestationsTable(tables.Table):
             "time_spent_on_task",
             "pricing",
             "monetary_amount",
+            "actions",
         )
         template_name = "django_tables2/bootstrap.html"
