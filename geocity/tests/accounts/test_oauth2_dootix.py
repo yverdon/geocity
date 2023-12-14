@@ -50,3 +50,6 @@ class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
         )
         signup_response = self.client.get(sociallogin_redirect.url)
         self.assertContains(signup_response, "example@test.org")
+
+    def test_authentication_error(self):
+        pass
