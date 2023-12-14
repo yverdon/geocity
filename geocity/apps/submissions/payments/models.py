@@ -1,12 +1,13 @@
-from django.core.exceptions import SuspiciousOperation
-from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from djmoney.models.fields import MoneyField
+from django.core.exceptions import SuspiciousOperation
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from djmoney.models.fields import MoneyField
 from simple_history.models import HistoricalRecords
 
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.forms.models import Price
 from geocity.apps.reports.services import generate_report_pdf
 
@@ -117,7 +118,16 @@ class Transaction(models.Model):
             output = output.read()
         return f"refund_{self.transaction_id}.pdf", output
 
+
 class PrestationsType(models.Model):
+    administrative_entity = models.ForeignKey(
+        AdministrativeEntity,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Entité administrative"),
+        related_name=_("administrative_entity"),
+        help_text=_("Entité administrative."),
+    )
     name = models.CharField(
         verbose_name=_("Prestation"),
         max_length=255,
@@ -125,9 +135,7 @@ class PrestationsType(models.Model):
     )
     is_visible_by_validator = models.BooleanField(
         verbose_name=_("visible by validator"),
-        help_text=_(
-            "Est visible par le validateur"
-        ),
+        help_text=_("Est visible par le validateur"),
     )
     integrator = models.ForeignKey(
         Group,
@@ -136,13 +144,15 @@ class PrestationsType(models.Model):
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
+
     # Methods
     def __str__(self):
         return f"{self.name}"
 
+
 class Prestations(models.Model):
-    """Docstring
-    """
+    """Docstring"""
+
     # Hidden mandatory fields
     # created and updated fields to keep tracks of the user that has effectively
     # created or updated the current prestation. Those fields SHOULD NOT be
@@ -151,7 +161,7 @@ class Prestations(models.Model):
         verbose_name=_("Date de création."),
         auto_now_add=True,
     )
-    updated_at= models.DateTimeField(
+    updated_at = models.DateTimeField(
         verbose_name=_("Date de dernière modification."),
         auto_now=True,
     )
@@ -162,9 +172,7 @@ class Prestations(models.Model):
         max_length=255,
         verbose_name=_("Créé par"),
         related_name=_("prestations_created_by"),
-        help_text=_(
-            "La prestation a été créée par cet utilisateur."
-        ),
+        help_text=_("La prestation a été créée par cet utilisateur."),
     )
     updated_by = models.ForeignKey(
         User,
@@ -173,9 +181,15 @@ class Prestations(models.Model):
         max_length=255,
         verbose_name=_("Mis à jour par"),
         related_name=_("prestations_updated_by"),
-        help_text=_(
-            "La prestation a été mise à jour par cet utilisateur."
-        ),
+        help_text=_("La prestation a été mise à jour par cet utilisateur."),
+    )
+    permit_department = models.ForeignKey(
+        PermitDepartment,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Département"),
+        related_name=_("permit_department"),
+        help_text=_("Département."),
     )
     # Exposed fields to select the name of the user the prestation has been done by
     provided_by = models.ForeignKey(
@@ -185,52 +199,47 @@ class Prestations(models.Model):
         max_length=255,
         verbose_name=_("Saisie par"),
         related_name="prestations_provided_by",
-        help_text=_(
-            "La prestation a été effectuée au nom de cet utilisateur."
-        ),
+        help_text=_("La prestation a été effectuée au nom de cet utilisateur."),
     )
     provided_at = models.DateField(
         default=timezone.now,
         verbose_name=_("Date de saisie"),
-        help_text=_(
-            "La prestation a été saisie à cette date."
-        ),
+        help_text=_("La prestation a été saisie à cette date."),
     )
-    #TODO: GROS TOUT DOUX: créer une FK vers submission
-    #ERROR: IMPOSSIBLE TO CREATE A FK: CIRCULAR IMPORT!
-    prestation_type =  models.ForeignKey(
+    # TODO: GROS TOUT DOUX: créer une FK vers submission
+    # ERROR: IMPOSSIBLE TO CREATE A FK: CIRCULAR IMPORT!
+    prestation_type = models.ForeignKey(
         "PrestationsType",
         on_delete=models.CASCADE,
         verbose_name=_("Prestation"),
         related_name=_("prestations_type"),
-        help_text=_(
-            "Choix de la prestation ; à effectuer dans une liste prédéfinie."
-        ),
+        help_text=_("Choix de la prestation ; à effectuer dans une liste prédéfinie."),
     )
     time_spent_on_task = models.DurationField(
         default=0,
         verbose_name=_("Durée [m]"),
-        help_text=_(
-            "Temps passé pour effectuer la prestation (en minutes)."
-        ),
+        help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
     )
     pricing = MoneyField(
         default=settings.DEFAULT_PRESTATION_PRICE,
         decimal_places=2,
         max_digits=12,
-        default_currency='CHF',
+        default_currency="CHF",
         verbose_name=_("Tarif horaire [CHF]"),
     )
     monetary_amount = MoneyField(
         decimal_places=2,
         max_digits=12,
-        default_currency='CHF',
+        default_currency="CHF",
         default=0.0,
         verbose_name=_("Montant [CHF]"),
     )
+
     # Methods
     def save(self, *args, **kwargs):
         if not self.monetary_amount:
-            self.monetary_amount = self.pricing * self.time_spent_on_task.total_seconds()/3600
-        
+            self.monetary_amount = (
+                self.pricing * self.time_spent_on_task.total_seconds() / 3600
+            )
+
         super(Prestations, self).save(*args, **kwargs)
