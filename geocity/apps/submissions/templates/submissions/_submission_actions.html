@@ -49,8 +49,15 @@
           {% if forms.poke or can_classify %}
 
               <li class="nav-item">
-                  <a class="btn btn-primary btn-action nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
-                  {% translate "Classement" %}
+                  <a class="btn btn-primary btn-action nav-link{% if active_form == 'poke' %}active{% endif %}"
+                    id="classify-tab"
+                    data-toggle="tab"
+                    href="#classify"
+                    role="tab"
+                    aria-controls="classify"
+                    aria-selected="{% if active_form == 'poke' %}true{% else %}false{% endif %}"
+                    >
+                      {% translate "Classement" %}
                   </a>
               </li>
 
@@ -234,7 +241,7 @@
 
         {% if not submission.is_classified %}
             {% if forms.poke or can_classify %}
-                <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
+                <div class="tab-pane{% if active_form == 'poke' or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
                     <h4>{% translate "Classement de la demande" %}</h4>
                     <form method="post">
                         {% csrf_token %}
@@ -356,29 +363,47 @@
         {% endif %}
 
         {% if transactions_table and online_payment_enabled %}
-          <div class='tab-pane{% if active_form == "payments" %} show active{% endif %}' id="payments" role="tabpanel" aria-labelledby="payments-tab">
+          <div class='tab-pane{% if active_form == "payments" %}show active{% endif %}' id="payments" role="tabpanel" aria-labelledby="payments-tab">
             <h4>{% translate "Transactions" %}</h4>
             <div>
               {% render_table transactions_table %}
             </div>
             <!--fixme: close div?-->
-          </div>
+
         {% endif %}
 
-        <div class='tab-pane' id="prestations" role="tabpanel" aria-labelledby="prestations-tab">
+        <div class='tab-pane' id="prestations"
+           role="tabpanel"
+           aria-labelledby="prestations-tab"
+          >
           <h4>{% translate "Liste des prestations saisies" %}</h4>
-          <div>
-            {% render_table prestations_table %}
+
+          <div class="form-text text-muted mb-3">
+            {% translate "Table listing already recorded prestations." %}
           </div>
+
+          <!-- if number of prestation > 0 -->
+          {% if prestations_table %}
+            <div>
+              {% render_table prestations_table %}
+            </div>
+          {% else %}
+            <div>
+              <p>{% translate "The prestation table is currently empty." %}</p>
+            </div>
+          {% endif %}
+          <!-- endif -->
+
           <div class="text-right">
             <input name="action" type="hidden" value="add_prestation">
             <a class="btn btn-primary"
-               name="save"
-               href="{% url 'submissions:submission_prestation' submission_id=submission.pk %}"
+               name="action"
+               href="{% url 'submissions:create_new_submission_prestation' submission_id=submission.pk %}"
               >
-                {% translate "Ajouter une nouvelle prestation" %}
+              {% translate "Add a new prestation" %}
             </a>
           </div>
+
         </div>
 
       </div>
