@@ -74,8 +74,8 @@ from .steps import (
 )
 from .tables import (
     CustomFieldValueAccessibleSubmission,
-    TransactionsTable,
     PrestationsTable,
+    TransactionsTable,
     get_custom_dynamic_table,
 )
 
@@ -135,6 +135,20 @@ def get_submission_for_prolongation(user, submission_id):
 
     if not submission.forms.filter(permit_duration__gte=0).exists():
         raise NonProlongableSubmission(submission)
+    return submission
+
+
+def get_submission_prestation(user, submission_id):
+    allowed_statuses = models.Submission.PRESTATIONABLE_STATUSES
+    print(f"allowed_statuses: {allowed_statuses}")
+    submission = get_submission_for_user_or_404(
+        user,
+        submission_id,
+        statuses=allowed_statuses,
+    )
+
+    print(f"Coucou submission: {submission}")
+
     return submission
 
 
@@ -262,9 +276,11 @@ class SubmissionDetailView(View):
             transactions_table = TransactionsTable(
                 data=self.submission.get_transactions()
             )
-        
+
         prestations_table = None
         prestations_table = PrestationsTable(
+            # TODO: check that it is only the current submission
+            # that can see the prestation table
             data=self.submission.get_prestations()
         )
 
@@ -337,7 +353,6 @@ class SubmissionDetailView(View):
 
         if form.is_valid():
             return self.handle_form_submission(form, action)
-            
 
         # Replace unbound form by bound form in the context
         context = self.get_context_data(active_form=action)
@@ -425,18 +440,18 @@ class SubmissionDetailView(View):
         return None
 
     def get_prestation_form(self, data=None, **kwargs):
-        #TODO: create has permission to create prestation
-        if permissions.has_permission_to_amend_submission(
+        # TODO: create has permission to add a prestation
+        if permissions.has_permission_to_add_prestations(
             self.request.user, self.submission
         ):
             form = forms.PrestationForm(
-                # instance=self.submission,
+                submission=self.submission,
                 # initial=initial,
                 data=data,
-                #user=self.request.user,
+                user=self.request.user,
             )
             print(f"form data: {form.data}")
-            #print(f"form cleande_data: {form.cleaned_data}")
+            # print(f"form cleande_data: {form.cleaned_data}")
 
             return form
 
@@ -574,13 +589,10 @@ class SubmissionDetailView(View):
         elif action == models.ACTION_PRESTATION:
             return self.handle_prestation_form_submission(form)
 
-
     def handle_prestation_form_submission(self, form):
         print("in handle prestation form submission function")
         form.save()
-        success_message = (
-            _("La prestation a bien été renseignée.")
-        )
+        success_message = _("La prestation a bien été renseignée.")
         messages.success(self.request, success_message)
 
         if "save_continue" in self.request.POST:
@@ -590,7 +602,6 @@ class SubmissionDetailView(View):
             )
         else:
             return redirect("submissions:submissions_list")
-
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -2192,6 +2203,112 @@ def administrative_entities_geojson(request, administrative_entity_id):
     )
 
     return JsonResponse(geojson, safe=False)
+
+
+@redirect_bad_status_to_detail
+@login_required
+@permanent_user_required
+@check_mandatory_2FA
+def create_new_submission_prestation(request, submission_id, data=None):
+    """Docstring"""
+    print(80 * "XxX")
+    print(f"submission_id ____: {submission_id}")
+    print(f"user _____________: {request.user}")
+    submission = get_submission_prestation(
+        request.user,
+        submission_id,
+    )
+
+    print(80 * "yYy")
+    form0 = forms.PrestationForm(
+        submission=submission,
+        user=request.user,
+    )
+    print(f"form0.is_bound ____: {form0.is_bound}")
+
+    form = forms.PrestationForm(
+        submission=submission,
+        # initial=initial,
+        data=data,
+        user=request.user,
+    )
+    print(f"form.is_bound ____: {form.is_bound}")
+
+    print(f"submission_id ____: {submission_id}")
+    print(f"request __________: {request}")
+    print(f"submission _______: {submission}")
+    print(f"form _____________: {dir(form)}")
+    print(f"form fields ______: {form.fields}")
+    print(f"form data ________: {form.data}")
+    print(f"form.is_valid() ? : {form.is_valid()}")
+    print(f"form.errors ______: {form.errors}")
+    print(f"form.is_bound ____: {form.is_bound}")
+
+    if request.method == "GET":
+        return render(
+            request,
+            "submissions/submission_prestations.html",
+            {"form": form},
+        )
+    elif request.method == "POST" and form.is_valid():
+        print(80 * "#")
+        print(f"Form is valid; saving now!")
+        print(80 * "#")
+        form.save()
+        success_message = _("La prestation a bien été renseignée.")
+        messages.success(request, success_message)
+
+        if "save_continue" in request.POST:
+            return redirect(
+                "submissions:submission_prestations",
+                submission_id=submission.pk,
+            )
+        elif "save" in request.POST:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=submission_id,
+            )
+        else:
+            raise Http404
+
+
+@redirect_bad_status_to_detail
+@login_required
+@permanent_user_required
+@check_mandatory_2FA
+def submit_new_submission_prestation(request, submission_id, data=None):
+    """Docstring"""
+    submission = get_submission_prestation(
+        request.user,
+        submission_id,
+    )
+
+    form = forms.PrestationForm(
+        submission=submission,
+        # initial=initial,
+        data=data,
+        user=request.user,
+    )
+    print(f"fomr data _________Z : {form.data}")
+
+    if request.method == "POST" and form.is_valid():
+        print(f"Form is valid; saving now!")
+        form.save()
+        success_message = _("La prestation a bien été renseignée.")
+        messages.success(request, success_message)
+
+        if "save_continue" in request.POST:
+            return redirect(
+                "submissions:submission_prestations",
+                submission_id=submission.pk,
+            )
+        else:
+            return redirect(
+                "submissions:submission_detail",
+                submission_id=submission_id,
+            )
+    else:
+        raise BaseException("Bad request method. It must be a POST request.")
 
 
 @method_decorator(login_required, name="dispatch")
