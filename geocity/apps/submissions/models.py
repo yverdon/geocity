@@ -37,7 +37,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-from .payments.models import SubmissionPrice, Prestations
+from .payments.models import Prestations, SubmissionPrice
 
 # Actions
 ACTION_AMEND = "amend"
@@ -47,7 +47,7 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
-ACTION_TRANSACTION = "transactins" #FIXME: TYPO
+ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
 ACTION_PRESTATION = "add_prestation"
 
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
@@ -191,6 +191,17 @@ class Submission(models.Model):
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
+    }
+    # Statuses that can be used for the pilot service to add/edit the prestations
+    PRESTATIONABLE_STATUSES = {
+        STATUS_SUBMITTED_FOR_VALIDATION,
+        STATUS_APPROVED,
+        STATUS_PROCESSING,
+        STATUS_AWAITING_SUPPLEMENT,
+        STATUS_AWAITING_VALIDATION,
+        STATUS_REJECTED,
+        STATUS_RECEIVED,
+        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     # Statuses that can be edited by pilot service if granted permission "edit_submission"
@@ -703,7 +714,6 @@ class Submission(models.Model):
                 private_storage.save(path, value)
                 # Postprocess images: remove all exif metadata from for better security and user privacy
                 if upper_ext != "PDF":
-
                     upper_ext = ext[1:].upper()
                     formats_map = {"JPG": "JPEG"}
                     with Image.open(value) as image_full:
@@ -998,7 +1008,6 @@ class Submission(models.Model):
         )
 
     def get_submission_directives(self):
-
         entity = self.administrative_entity
         entity_directives = []
         if (
@@ -1202,10 +1211,10 @@ class Submission(models.Model):
             return None
         return self.submission_price.get_transactions()
 
-    # Prestations       
+    # Prestations
     def get_prestations(self):
         return Prestations.objects.all()
-    
+
     def get_history(self):
         # Transactions history
         if self.submission_price is None:
@@ -1385,7 +1394,6 @@ class SelectedForm(models.Model):
 
 
 class ContactForm(models.Model):
-
     type = models.ForeignKey(
         ContactType,
         null=True,
