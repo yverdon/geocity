@@ -50,7 +50,11 @@ existing_submission_urlpatterns = [
         views.submission_prolongation,
         name="submission_prolongation",
     ),
-    path("prestations/", views.submission_prestation, name="submission_prestation"),
+    path(
+        "prestations/",
+        views.create_new_submission_prestation,
+        name="create_new_submission_prestation",
+    ),
 ]
 
 urlpatterns = [
