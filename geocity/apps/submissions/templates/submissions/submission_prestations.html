@@ -1,54 +1,22 @@
+{% extends "base_generic.html" %}
+
 {% load i18n %}
 {% load bootstrap4 %}
 
-<div class="container">
-
-  <h2>{% translate "" %}</h2>
-  <div class="row">
-    <div class="col">
-      <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
-
-        <li class="nav-item">
-          <a class="btn btn-primary btn-action nav-link"
-            id="prestations-tab"
-            data-toggle="tab"
-            href="#prestations"
-            role="tab"
-            aria-controls="prestations">
-            {% translate "Prestation" %}
-          </a>
-        </li>
-
-      </ul>
+{% block content %}
+<h3>Ajout d'une prestation</h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form form layout='horizontal' %}
+    <div class="text-right">
+        <input name="action" type="hidden" value="add_prestation">
+        <button class="btn btn-primary" name="save">
+          {% translate "Enregistrer" %}
+        </button>
+        <button class="btn btn-primary" name="save_continue">
+          {% translate "Enregistrer et continuer les modifications" %}
+        </button>
     </div>
-  </div>
-
-  <div class="row sub-row">
-    <div class="col">
-      <div class="pt-3 tab-content box box--default box--tabbed">
-
-        <div class='tab-pane' id="prestations" role="tabpanel" aria-labelledby="prestations-tab">
-          <h4>{% translate "Prestations" %}</h4>
-          <div>
-            <hr>
-            <form method="post">
-              {% csrf_token %}
-              {% bootstrap_form forms.add_prestation layout='horizontal' %}
-              <div class="text-right">
-                  <input name="action" type="hidden" value="add_prestation">
-                  <button class="btn btn-primary" name="save">
-                    {% translate "Enregistrer" %}
-                  </button>
-                  <button class="btn btn-primary" name="save_continue">
-                    {% translate "Enregistrer et continuer les modifications" %}
-                  </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-</div>
+  </form>
+{% endblock %}
