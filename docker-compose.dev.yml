@@ -5,6 +5,9 @@ volumes:
 
 services:
   web:
+    # Uncomment those two lines for debug
+    #tty: true
+    #stdin_open: true
     build:
       args:
         ENV: DEV
