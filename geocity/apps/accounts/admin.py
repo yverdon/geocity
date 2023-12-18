@@ -61,7 +61,7 @@ LEGAL_TEXT_EXAMPLE = """
                             <li>
                                 <b>Possibilité de refuser de fournir les données et les conséquences :</b><br>
                                 <i>
-                                    ex: En cas de refus de fournir les données financières, aucun remoursement ne pourra être effectué.
+                                    ex: En cas de refus de fournir les données financières, aucun remboursement ne pourra être effectué.
                                 </i>
                             </li>
                         </ul>

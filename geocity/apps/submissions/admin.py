@@ -21,7 +21,6 @@ class SubmissionAmendFieldForm(forms.ModelForm):
         model = models.SubmissionAmendField
         fields = [
             "name",
-            "api_name",
             "is_mandatory",
             "is_visible_by_author",
             "is_visible_by_validators",
@@ -31,6 +30,8 @@ class SubmissionAmendFieldForm(forms.ModelForm):
             "regex_pattern",
             "forms",
             "integrator",
+            "api_name",
+            "api_light",
         ]
 
 
@@ -47,6 +48,34 @@ class SubmissionAmendFieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "name",
     ]
     form = SubmissionAmendFieldForm
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "is_mandatory",
+                    "is_visible_by_author",
+                    "is_visible_by_validators",
+                    "can_always_update",
+                    "placeholder",
+                    "help_text",
+                    "regex_pattern",
+                    "forms",
+                    "integrator",
+                )
+            },
+        ),
+        (
+            _("API"),
+            {
+                "fields": (
+                    "api_name",
+                    "api_light",
+                ),
+            },
+        ),
+    )
 
     def sortable_str(self, obj):
         return str(obj)
