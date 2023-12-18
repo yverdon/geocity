@@ -14,7 +14,7 @@ User = get_user_model()
 profile_response_mock = {
     "id": 5,
     "name": "Geocity Sports",
-    "email": "geocity@dootix.com",
+    "email": "example@test.org",
     "email_verified_at": None,
     "use_2fa": 0,
     "created_at": "2021-08-31T12:26:15.000000Z",
@@ -37,7 +37,11 @@ class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
                 "email": email,
             }
         )
-        return MockedResponse(200, json.dumps(profile_response_mock))
+        print("******** get_mocked_response ********")
+        print(json.dumps(profile_response_mock))
+        return MockedResponse(
+            200, json.dumps(profile_response_mock), {"content-type": "application/json"}
+        )
 
     def test_login_redirects_to_social_signup(self):
         email = "foo@bar.ch"
@@ -45,8 +49,21 @@ class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
         self.assertRedirects(response, expected_url=reverse("socialaccount_signup"))
 
     def test_social_signup_form_display_socialaccount_data(self):
+        # print(f"""\n************************\n
+        #     {self.get_mocked_response('example@test.org')}\n
+        #     {dir(self.get_mocked_response('example@test.org'))}\n
+        #     {self.get_mocked_response('example@test.org').text}\n
+        #     {self.get_mocked_response('example@test.org').headers}\n
+        #     {self.get_mocked_response('example@test.org').json}\n
+        #     {self.get_mocked_response('example@test.org').status_code}\n
+        # """)
         sociallogin_redirect = self.login(
-            self.get_mocked_response("example@test.org"),
+            self.get_mocked_response("example@test.org"), [], with_refresh_token=False
+        )
+        print(
+            f"""\n************************\n
+            {sociallogin_redirect}\n
+        """
         )
         signup_response = self.client.get(sociallogin_redirect.url)
         self.assertContains(signup_response, "example@test.org")

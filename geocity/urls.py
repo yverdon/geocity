@@ -46,7 +46,9 @@ urlpatterns += [
     path("account/", include("django.contrib.auth.urls")),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("admin/", admin.site.urls),
-    path("accounts/social/", include("allauth.socialaccount.urls")),
+    # TODO: Take one of the 2
+    # path("accounts/social/", include("allauth.socialaccount.urls")),
+    path("accounts/", include("allauth.urls")),
 ]
 
 if settings.ENABLE_2FA:
