@@ -38,7 +38,7 @@ urlpatterns = (
 
 
 urlpatterns += [
-    path("", include("geocity.apps.accounts.urls")),
+    path("", include("geocity.apps.accounts.urls", namespace="accounts")),
     path("rest/", include(geocity.apps.api.urls)),  # Django-rest urls
     path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
     path("captcha/", include("captcha.urls")),
@@ -47,8 +47,7 @@ urlpatterns += [
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("admin/", admin.site.urls),
     # TODO: Take one of the 2
-    # path("accounts/social/", include("allauth.socialaccount.urls")),
-    path("accounts/", include("allauth.urls")),
+    path("accounts/social/", include("allauth.socialaccount.urls")),
 ]
 
 if settings.ENABLE_2FA:
