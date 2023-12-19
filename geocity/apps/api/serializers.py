@@ -3,14 +3,19 @@ from collections import OrderedDict
 from datetime import timedelta, timezone
 
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Max, Min
+from django.db.models import Max, Min, Q
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
-from geocity.apps.api.services import convert_string_to_api_key
+from geocity.apps.api.services import (
+    convert_string_to_api_key,
+    get_image_dimensions,
+    get_image_path,
+)
+from geocity.apps.forms.models import Field
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
     FieldValue,
@@ -54,7 +59,7 @@ def get_form_fields(
         "form__name",
         "form__api_name",
         "form__category__name",
-        "field_values__field__is_public_when_permitrequest_is_public",
+        "field_values__field__public_if_submission_public",
         "submission__administrative_entity",
         "submission__author",
     )
@@ -113,9 +118,7 @@ def get_form_fields(
                         in administrative_entities_associated_to_user_list
                     )
                     or (current_user and field["submission__author"] == current_user.id)
-                    or field[
-                        "field_values__field__is_public_when_permitrequest_is_public"
-                    ]
+                    or field["field_values__field__public_if_submission_public"]
                 ):
                     # get_property_value return None if file does not exist
                     file = get_field_value_based_on_field(field)
@@ -136,9 +139,7 @@ def get_form_fields(
                         in administrative_entities_associated_to_user_list
                     )
                     or (current_user and field["submission__author"] == current_user.id)
-                    or field[
-                        "field_values__field__is_public_when_permitrequest_is_public"
-                    ]
+                    or field["field_values__field__public_if_submission_public"]
                 ):
                     # Properties of form
                     property.append(
@@ -556,7 +557,7 @@ class SubmissionGeoTimeGeoJSONSerializer(serializers.Serializer):
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
                 )
 
-            local_tz = timezone(timedelta(hours=2))
+            local_tz = timezone(timedelta(hours=settings.LOCAL_TIME_ZONE_UTC))
             geotime_aggregated = {}
             geotime_aggregated["start_date"] = (
                 aggregated_geotime_qs["submission_geo_time_start_date"]
@@ -756,3 +757,233 @@ class SubmissionFiltersSerializer(serializers.Serializer):
 class SearchSerializer(serializers.Serializer):
     def to_representation(self, value):
         return search.search_result_to_json(value)
+
+
+# ///////////////////////////////////
+# Agenda api
+# ///////////////////////////////////
+
+
+def get_agenda_form_fields(value, detailed, available_filters):
+    """
+    Return form fields for agenda-embed
+    """
+    obj = value.get_selected_forms().all()
+    form_fields = obj.values(
+        "submission__featured_agenda",
+        "field_values__field__name",
+        "field_values__field__api_name",
+        "field_values__value__val",
+        "form__amend_fields__amend_field_value__value",
+        "form__amend_fields__api_name",
+        "form__amend_fields__api_light",
+        "field_values__field__public_if_submission_public",
+        "field_values__field__api_light",
+        "field_values__field__filter_for_api",
+    )
+
+    result = {
+        "type": "Feature",
+        "properties": {
+            "id": value.id,
+        },
+    }
+    if detailed:
+        result["properties"]["categories"] = {}
+
+    for field in form_fields:
+        # If there is a value, means we are not checking a "None"
+        if (
+            field["field_values__value__val"]
+            and field["field_values__field__public_if_submission_public"]
+        ):
+
+            # Detailed API for agenda
+            if detailed:
+
+                # Categories used as filter, that are defined by "field_values__field__filter_for_api"
+                if field["field_values__field__filter_for_api"] and available_filters:
+
+                    # Label name for the properties
+                    result["properties"]["categories"][
+                        field["field_values__field__api_name"]
+                    ] = {"label": field["field_values__field__name"]}
+
+                    # Retrieving the list of categories
+                    # When there's only 1 of len, it means the for loop, looped on 1 element, so we use field_values__value__val
+                    # When there's more than 1 of len, it means it's a list of multiple elements, so we use category_value
+                    category_value_list = []
+
+                    # Get id of the first category, the id is related to the line in choices
+                    # Must put different api_name on new filters, or they won't appear
+                    category = available_filters.filter(
+                        Q(api_name=field["field_values__field__api_name"])
+                    ).first()
+
+                    # Multiple values in a list (MultipleChoiceField)
+                    if isinstance(field["field_values__value__val"], list):
+                        category_value_list = [
+                            {
+                                "id": category.choices.strip()
+                                .splitlines()
+                                .index(label),
+                                "label": label,
+                            }
+                            for label in field["field_values__value__val"]
+                        ]
+                    # Only one value in a list (MultipleChoiceField) or just a string
+                    else:
+                        label = field["field_values__value__val"]
+                        id = category.choices.strip().splitlines().index(label)
+                        category_value_list.append({"id": id, "label": label})
+
+                    # Store the list of categories in the format for agenda api
+                    result["properties"]["categories"][
+                        field["field_values__field__api_name"]
+                    ]["values"] = category_value_list
+
+                # Properties for detailed API
+                else:
+                    result["properties"][
+                        field["field_values__field__api_name"]
+                    ] = field["field_values__value__val"]
+
+            # Light API for agenda
+            else:
+                # Field visible on light API and it's not used as filter
+                if (
+                    field["field_values__field__api_light"]
+                    and not field["field_values__field__filter_for_api"]
+                ):
+                    # Properties for light API
+                    result["properties"][
+                        field["field_values__field__api_name"]
+                    ] = field["field_values__value__val"]
+
+                # Amend field for light API
+                if field["form__amend_fields__api_light"]:
+
+                    # Store amend properties for light API
+                    result["properties"][field["form__amend_fields__api_name"]] = field[
+                        "form__amend_fields__amend_field_value__value"
+                    ]
+
+                result["properties"]["featured"] = field["submission__featured_agenda"]
+
+    # Custom way to retrieve starts_at and ends_at for both light and detailed
+    geo_time_qs = value.geo_time.all()
+
+    aggregated_geotime_qs = geo_time_qs.values("submission_id").aggregate(
+        submission_geo_time_start_date=Min("starts_at"),
+        submission_geo_time_end_date=Max("ends_at"),
+    )
+
+    local_tz = timezone(timedelta(hours=settings.LOCAL_TIME_ZONE_UTC))
+    result["properties"]["starts_at"] = (
+        aggregated_geotime_qs["submission_geo_time_start_date"]
+        .replace(tzinfo=timezone.utc)
+        .astimezone(local_tz)
+        if aggregated_geotime_qs["submission_geo_time_start_date"]
+        else ""
+    )
+    result["properties"]["ends_at"] = (
+        aggregated_geotime_qs["submission_geo_time_end_date"]
+        .replace(tzinfo=timezone.utc)
+        .astimezone(local_tz)
+        if aggregated_geotime_qs["submission_geo_time_end_date"]
+        else ""
+    )
+
+    # Rewrite poster to match agenda-embed
+    if "poster" in result["properties"]:
+        # _, used to remove permit_requests_uploads/ without using a replace. May change in the future, if it's removed from stored path
+        _, submission_id, image_name = result["properties"]["poster"].split("/")
+        from django.urls import reverse
+
+        src = Submission.get_absolute_url(
+            reverse(
+                "image_thumbor_display",
+                kwargs={
+                    # we need the user id to validate the token
+                    "submission_id": submission_id,
+                    "image_name": image_name,
+                },
+            )
+        )
+
+        image_path = get_image_path(submission_id, image_name)
+        width, height = get_image_dimensions(image_path)
+        result["properties"]["poster"] = {
+            "src": src,
+            "width": width,
+            "height": height,
+        }
+
+    return result
+
+
+def get_available_filters_for_agenda_as_qs(domain):
+    """
+    Returns a list of filters available for a specific entity.
+    The order is important, agenda-embed has no logic, everything is set here
+    """
+
+    if not domain:
+        return None
+
+    entity = AdministrativeEntity.objects.filter(
+        tags__name=domain
+    ).first()  # get can return an error
+
+    available_filters = Field.objects.filter(forms__administrative_entities=entity)
+
+    available_filters = available_filters.filter(
+        Q(filter_for_api=True)
+        & (
+            Q(input_type=Field.INPUT_TYPE_LIST_SINGLE)
+            | Q(input_type=Field.INPUT_TYPE_LIST_MULTIPLE)
+        )
+    )
+
+    return available_filters
+
+
+def get_available_filters_for_agenda_as_json(domain):
+    """
+    Returns the list of filters for api
+    """
+    available_filters = get_available_filters_for_agenda_as_qs(domain)
+
+    if not available_filters:
+        return None
+
+    agenda_filters = []
+    for available_filter in available_filters:
+        actual_filter = {
+            "label": available_filter.name,
+            "slug": available_filter.api_name,
+        }
+        actual_filter["options"] = [
+            {
+                "id": key,
+                "label": choice.strip(),
+            }
+            for key, choice in enumerate(available_filter.choices.strip().splitlines())
+        ]
+        agenda_filters.append(actual_filter)
+    return agenda_filters
+
+
+class AgendaSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        # Check if there's a pk of submission given
+        request = self.context.get("request")
+        kwargs = request.parser_context["kwargs"]
+        detailed = True if kwargs and kwargs["pk"] else False
+        domain = request.GET.get("domain") if request else None
+
+        available_filters = get_available_filters_for_agenda_as_qs(domain)
+
+        fields = get_agenda_form_fields(value, detailed, available_filters)
+
+        return fields

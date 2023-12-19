@@ -16,7 +16,7 @@ let update_form_value = function(item, userprofile) {
 
 // Create a label to replace .form-control without .extra-form in classes inside of forms-container
 window.addEventListener('load', function () {
-  var forms_control = document.querySelectorAll("[id=forms-container] select[class=form-control]");
+  var forms_control = document.querySelectorAll("[id=forms-container] select[class*=form-control]");
   for (form_control of forms_control) {
     let elem = document.createElement('label');
     let text = form_control.querySelector("option[selected]").text
@@ -36,11 +36,13 @@ window.addEventListener('load', function () {
 
   // addEventListener for button .show-extra-form
   var button = document.querySelector("button.show-extra-form");
-  button.addEventListener("click", (event) => {
-    var hidden_extra_forms = document.querySelector(".contact-form[hidden]")
-    if (hidden_extra_forms == null){
-      document.getElementById('contact-alert').style.display = "block"
-    }
-    hidden_extra_forms.removeAttribute("hidden")
-  });
+  if (button != null) {
+    button.addEventListener("click", (event) => {
+      var hidden_extra_forms = document.querySelector(".contact-form[hidden]")
+      if (hidden_extra_forms == null){
+        document.getElementById('contact-alert').style.display = "block"
+      }
+      hidden_extra_forms.removeAttribute("hidden")
+    });
+  };
 });

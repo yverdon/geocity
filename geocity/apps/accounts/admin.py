@@ -61,7 +61,7 @@ LEGAL_TEXT_EXAMPLE = """
                             <li>
                                 <b>Possibilité de refuser de fournir les données et les conséquences :</b><br>
                                 <i>
-                                    ex: En cas de refus de fournir les données financières, aucun remoursement ne pourra être effectué.
+                                    ex: En cas de refus de fournir les données financières, aucun remboursement ne pourra être effectué.
                                 </i>
                             </li>
                         </ul>
@@ -201,15 +201,21 @@ class UserAdmin(BaseUserAdmin):
     change_form_template = "accounts/admin/user_change.html"
 
     def get_readonly_fields(self, request, obj=None):
+        # Get the user being updated
+        user_being_updated = User.objects.get(
+            id=(int(request.resolver_match.kwargs["object_id"]))
+        )
+        userprofile_being_updated = UserProfile.objects.get(user=user_being_updated)
+
         # limit editable fields to protect user data, superuser creation must be done using django shell
         if request.user.is_superuser:
-            return [
+            readonly_fields = [
                 "is_superuser",
                 "is_sociallogin",
                 "user_permissions",
             ]
         else:
-            return [
+            readonly_fields = [
                 "email",
                 "username",
                 "user_permissions",
@@ -219,6 +225,17 @@ class UserAdmin(BaseUserAdmin):
                 "last_login",
                 "date_joined",
             ]
+
+        if userprofile_being_updated.is_anonymous:
+            readonly_fields += [
+                "is_active",
+                "is_staff",
+                "is_superuser",
+                "groups",
+            ]
+
+        # Set only has unique values, then cast to list
+        return list(set(readonly_fields))
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         user_being_updated = User.objects.get(
@@ -490,7 +507,9 @@ class UserInline(admin.TabularInline):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "user":
-            kwargs["queryset"] = get_users_list_for_integrator_admin(request.user)
+            kwargs["queryset"] = get_users_list_for_integrator_admin(
+                request.user, remove_anonymous=True
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 

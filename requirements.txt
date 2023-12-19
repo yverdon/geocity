@@ -27,11 +27,12 @@ defusedxml==0.7.1
     # via python3-openid
 deprecated==1.2.14
     # via jwcrypto
-django==4.2.4
+django==4.2.7
     # via
     #   -r requirements.in
     #   django-admin-sortable2
     #   django-allauth
+    #   django-appconf
     #   django-axes
     #   django-bootstrap-datepicker-plus
     #   django-bootstrap4
@@ -50,6 +51,7 @@ django==4.2.4
     #   django-polymorphic
     #   django-ranged-response
     #   django-rest-knox
+    #   django-select2
     #   django-simple-captcha
     #   django-tables2
     #   django-tables2-column-shifter
@@ -60,6 +62,8 @@ django-admin-sortable2==2.1.9
     # via -r requirements.in
 django-allauth==0.55.0
     # via -r requirements.in
+django-appconf==1.0.5
+    # via django-select2
 django-axes==5.41.1
     # via -r requirements.in
 django-bootstrap-datepicker-plus==4.0.0
@@ -68,7 +72,7 @@ django-bootstrap4==21.2
     # via -r requirements.in
 django-ckeditor==6.7.0
     # via -r requirements.in
-django-constance[database]==3.1.0
+django-constance==3.1.0
     # via -r requirements.in
 django-cors-headers==4.2.0
     # via -r requirements.in
@@ -104,6 +108,8 @@ django-ranged-response==0.2.0
     # via django-simple-captcha
 django-rest-knox==4.2.0
     # via -r requirements.in
+django-select2==8.1.2
+    # via -r requirements.in
 django-simple-captcha==0.5.18
     # via -r requirements.in
 django-simple-history==3.3.0
@@ -117,7 +123,9 @@ django-tables2-column-shifter==2.2.0
 django-taggit==4.0.0
     # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.14.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   django-two-factor-auth
 djangorestframework==3.14.0
     # via
     #   -r requirements.in
@@ -166,7 +174,7 @@ pdf2image==1.16.3
     # via -r requirements.in
 phonenumbers==8.13.19
     # via django-two-factor-auth
-pillow==10.0.0
+pillow==10.1.0
     # via
     #   -r requirements.in
     #   django-simple-captcha
@@ -178,7 +186,9 @@ psycopg2-binary==2.9.7
 pycparser==2.21
     # via cffi
 pyjwt[crypto]==2.8.0
-    # via django-allauth
+    # via
+    #   django-allauth
+    #   pyjwt
 pypng==0.20220715.0
     # via qrcode
 python-dateutil==2.8.2
