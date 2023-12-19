@@ -34,9 +34,7 @@ class DootixOAuth2Tests(CostumOAuth2TestsMixin, TestCase):
                 "email": email,
             }
         )
-        return MockedResponse(
-            200, json.dumps(profile_response_mock), {"content-type": "application/json"}
-        )
+        return MockedResponse(200, json.dumps(profile_response_mock))
 
     def test_login_redirects_to_social_signup(self):
         email = "foo@bar.ch"
@@ -45,9 +43,8 @@ class DootixOAuth2Tests(CostumOAuth2TestsMixin, TestCase):
 
     def test_social_signup_form_display_socialaccount_data(self):
         sociallogin_redirect = self.login(
-            self.get_mocked_response("example@test.org"), with_refresh_token=False
+            self.get_mocked_response("example@test.org"),
         )
-
         signup_response = self.client.get(sociallogin_redirect.url)
         self.assertContains(signup_response, "example@test.org")
 
