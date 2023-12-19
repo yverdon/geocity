@@ -383,7 +383,6 @@
           </div>
           <hr>
 
-          <!-- if number of prestation > 0 -->
           {% if prestations_table.data  %}
             <div>
               {% render_table prestations_table %}
@@ -393,7 +392,6 @@
               <p>{% translate "The prestation table is currently empty." %}</p>
             </div>
           {% endif %}
-          <!-- endif -->
 
           <div class="text-right">
             <input name="action" type="hidden" value="add_prestation">
