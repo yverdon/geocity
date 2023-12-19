@@ -4,7 +4,7 @@
 {% load bootstrap4 %}
 
 {% block content %}
-<h3>Ajout d'une prestation</h3>
+<h3>{% translate "Add a new prestation" %}</h3>
   <hr>
   <form method="post">
     {% csrf_token %}
@@ -12,10 +12,10 @@
     <div class="text-right">
         <input name="action" type="hidden" value="add_prestation">
         <button class="btn btn-primary" name="save">
-          {% translate "Enregistrer" %}
+          {% translate "Save" %}
         </button>
         <button class="btn btn-primary" name="save_continue">
-          {% translate "Enregistrer et continuer les modifications" %}
+          {% translate "Save and add a new prestation" %}
         </button>
     </div>
   </form>
