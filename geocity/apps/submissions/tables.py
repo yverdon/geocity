@@ -390,7 +390,8 @@ class PrestationsTable(tables.Table):
         orderable=True,
     )
     actions = tables.TemplateColumn(
-        template_name="tables/_submission_prestations_table_actions.html",
+        # template_name="tables/_submission_actions.html",
+        template_name="tables/_submission_forms.html",
         verbose_name=_("Actions"),
         orderable=False,
     )
@@ -404,6 +405,7 @@ class PrestationsTable(tables.Table):
             "time_spent_on_task",
             "pricing",
             "monetary_amount",
-            "actions",
+            # "actions",
         )
+        empty_text = _("The prestation table is currently empty.")
         template_name = "django_tables2/bootstrap.html"
