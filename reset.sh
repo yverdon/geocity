@@ -7,12 +7,26 @@
 # and display the docker logs.
 # Use with caution.
 
-docker compose down -v --remove-orphans
-docker system prune -y
-docker compose build --progress plain
-docker compose up -d
-docker compose exec web python3 manage.py makemigrations
-docker compose exec web python3 manage.py migrate
-docker compose exec web python3 manage.py fixturize
+printf "Shutting down docker containers...\n"
+docker compose down --volumes --remove-orphans
 
-docker compose logs --tail 200 -tf
+printf "Pruning down docker objects...\n"
+docker system prune --force
+
+printf "Building project...\n"
+docker compose build --progress plain
+
+printf "Spinning up project...\n"
+docker compose up --detach
+
+printf "Making migrations...\n"
+docker compose exec web python3 manage.py makemigrations
+
+printf "Applying migrations...\n"
+docker compose exec web python3 manage.py migrate
+
+printf "Applying fixtures...\n"
+#docker compose exec web python3 manage.py fixturize
+
+printf "Logging...\n"
+docker compose logs --follow
