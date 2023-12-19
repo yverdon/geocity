@@ -141,4 +141,9 @@ urlpatterns = [
         views.submission_validations_edit,
         name="submission_validations_edit",
     ),
+    path(
+        "prestations/<int:prestation_id>/edit",
+        views.EditPrestation.as_view(),
+        name="edit_prestation",
+    ),
 ]
