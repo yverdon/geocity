@@ -100,7 +100,7 @@ django-appconf==1.0.5
     # via
     #   -r requirements.txt
     #   django-select2
-django-axes==5.41.1
+django-axes==6.2.0
     # via -r requirements.txt
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.txt
@@ -126,10 +126,6 @@ django-formtools==2.4.1
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
-django-ipware==5.0.0
-    # via
-    #   -r requirements.txt
-    #   django-axes
 django-jazzmin==2.6.0
     # via -r requirements.txt
 django-js-asset==2.1.0
