@@ -51,9 +51,9 @@ existing_submission_urlpatterns = [
         name="submission_prolongation",
     ),
     path(
-        "prestations/",
-        views.create_new_submission_prestation,
-        name="create_new_submission_prestation",
+        "service_fees/",
+        views.create_new_submission_service_fees,
+        name="create_new_submission_service_fees",
     ),
 ]
 
@@ -142,8 +142,8 @@ urlpatterns = [
         name="submission_validations_edit",
     ),
     path(
-        "prestations/<int:prestation_id>/edit",
-        views.EditPrestation.as_view(),
-        name="edit_prestation",
+        "service_fees/<int:service_fee_id>/edit",
+        views.EditServiceFee.as_view(),
+        name="edit_service_fee",
     ),
 ]

@@ -74,7 +74,7 @@ from .steps import (
 )
 from .tables import (
     CustomFieldValueAccessibleSubmission,
-    PrestationsTable,
+    ServicesFeesTable,
     TransactionsTable,
     get_custom_dynamic_table,
 )
@@ -138,8 +138,8 @@ def get_submission_for_prolongation(user, submission_id):
     return submission
 
 
-def get_submission_prestation(user, submission_id):
-    allowed_statuses = models.Submission.PRESTATIONABLE_STATUSES
+def get_submission_service_fee(user, submission_id):
+    allowed_statuses = models.Submission.SERVICE_FEES_STATUSES
     print(f"allowed_statuses: {allowed_statuses}")
     submission = get_submission_for_user_or_404(
         user,
@@ -277,11 +277,11 @@ class SubmissionDetailView(View):
                 data=self.submission.get_transactions()
             )
 
-        prestations_table = None
-        prestations_table = PrestationsTable(
+        service_fees_table = None
+        service_fees_table = ServicesFeesTable(
             # TODO: check that it is only the current submission
             # that can see the prestation table
-            data=self.submission.get_prestations()
+            data=self.submission.get_service_fees()
         )
 
         return {
@@ -320,7 +320,7 @@ class SubmissionDetailView(View):
                 "inquiry_in_progress": self.submission.status
                 == models.Submission.STATUS_INQUIRY_IN_PROGRESS,
                 "current_user": self.request.user,
-                "prestations_table": prestations_table,
+                "service_fees_table": service_fees_table,
             },
         }
 
@@ -368,7 +368,7 @@ class SubmissionDetailView(View):
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
             models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
-            models.ACTION_PRESTATION: self.get_prestation_form,
+            models.ACTION_ADD_SERVICE_FEE: self.get_service_fee_form,
         }
 
         return (
@@ -439,12 +439,12 @@ class SubmissionDetailView(View):
 
         return None
 
-    def get_prestation_form(self, data=None, **kwargs):
-        # TODO: create has permission to add a prestation
-        if permissions.has_permission_to_add_prestations(
+    def get_service_fee_form(self, data=None, **kwargs):
+        # TODO: create has permission to add a service fee
+        if permissions.has_permission_to_add_service_fees(
             self.request.user, self.submission
         ):
-            form = forms.PrestationForm(
+            form = forms.ServicesFeesForm(
                 submission=self.submission,
                 # initial=initial,
                 data=data,
@@ -586,11 +586,11 @@ class SubmissionDetailView(View):
             return self.handle_complementary_documents_form_submission(form)
         elif action == models.ACTION_REQUEST_INQUIRY:
             return self.handle_request_inquiry_form_submission(form)
-        elif action == models.ACTION_PRESTATION:
-            return self.handle_prestation_form_submission(form)
+        elif action == models.ACTION_ADD_SERVICE_FEE:
+            return self.handle_service_fee_form_submission(form)
 
-    def handle_prestation_form_submission(self, form):
-        print("in handle prestation form submission function")
+    def handle_service_fee_form_submission(self, form):
+        print("in handle service fee form submission function")
         form.save()
         success_message = _("La prestation a bien été renseignée.")
         messages.success(self.request, success_message)
@@ -2209,106 +2209,100 @@ def administrative_entities_geojson(request, administrative_entity_id):
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def create_new_submission_prestation(request, submission_id, data=None):
+def create_new_submission_service_fees(request, submission_id, data=None):
     """Docstring"""
     print(80 * "XxX")
     print(f"submission_id ____: {submission_id}")
     print(f"user _____________: {request.user}")
-    submission = get_submission_prestation(
+    submission = get_submission_service_fee(
         request.user,
         submission_id,
     )
-
     print(80 * "yYy")
-    form0 = forms.PrestationForm(
-        submission=submission,
-        user=request.user,
-    )
-    print(f"form0.is_bound ____: {form0.is_bound}")
-
-    form = forms.PrestationForm(
-        submission=submission,
-        # initial=initial,
-        data=data,
-        user=request.user,
-    )
-    print(f"form.is_bound ____: {form.is_bound}")
-
-    print(f"submission_id ____: {submission_id}")
-    print(f"request __________: {request}")
-    print(f"submission _______: {submission}")
-    print(f"form _____________: {dir(form)}")
-    print(f"form fields ______: {form.fields}")
-    print(f"form data ________: {form.data}")
-    print(f"form.is_valid() ? : {form.is_valid()}")
-    print(f"form.errors ______: {form.errors}")
-    print(f"form.is_bound ____: {form.is_bound}")
 
     if request.method == "GET":
+        print(80 * "T")
+        form = forms.ServicesFeesForm(
+            submission=submission,
+            user=request.user,
+        )
+        print(f"form0.is_bound ____: {form.is_bound}")
         return render(
             request,
-            "submissions/submission_prestations.html",
+            "submissions/submission_service_fees.html",
             {"form": form},
         )
-    elif request.method == "POST" and form.is_valid():
-        print(80 * "#")
-        print(f"Form is valid; saving now!")
-        print(80 * "#")
-        form.save()
-        success_message = _("La prestation a bien été renseignée.")
-        messages.success(request, success_message)
+    elif request.method == "POST":
+        data = request.POST
+        print(f"submission_id ____: {submission_id}")
+        print(f"submission _______: {submission}")
+        print(f"request __________: {request}")
+        print(f"request.POST: {(data)}")
+        print(f"type of request.POST: {type(data)}")
+        print(f"dir request.POST: {dir(data)}")
+        form = forms.ServicesFeesForm(
+            submission=submission,
+            # initial=initial,
+            data=data,
+            user=request.user,
+        )
+        print(f"form _____________: {dir(form)}")
+        print(f"form fields ______: {form.fields}")
+        print(f"form data ________: {form.data}")
+        print(f"form.is_valid() ? : {form.is_valid()}")
+        print(f"form.errors ______: {form.errors}")
+        print(f"form.is_bound ____: {form.is_bound}")
+        if form.is_valid():
+            logger.success(_("form is valid. Processing data."))
+            obj = form.save(commit=False)
+            obj.submission = submission
+            obj.save()
+            success_message = _("La prestation a bien été renseignée.")
+            messages.success(request, success_message)
 
-        if "save_continue" in request.POST:
-            return redirect(
-                "submissions:submission_prestations",
-                submission_id=submission.pk,
-            )
-        elif "save" in request.POST:
-            return redirect(
-                "submissions:submission_detail",
-                submission_id=submission_id,
-            )
+            if "save_continue" in request.POST:
+                return redirect(
+                    "submissions:create_new_submission_service_fees",
+                    submission_id=submission.pk,
+                )
+            elif "save" in request.POST:
+                return redirect(
+                    "submissions:submission_detail", submission_id=submission_id
+                )
+            else:
+                raise HttpResponse(status=404)
         else:
-            raise Http404
-
-
-@redirect_bad_status_to_detail
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
-def submit_new_submission_prestation(request, submission_id, data=None):
-    """Docstring"""
-    submission = get_submission_prestation(
-        request.user,
-        submission_id,
-    )
-
-    form = forms.PrestationForm(
-        submission=submission,
-        # initial=initial,
-        data=data,
-        user=request.user,
-    )
-    print(f"fomr data _________Z : {form.data}")
-
-    if request.method == "POST" and form.is_valid():
-        print(f"Form is valid; saving now!")
-        form.save()
-        success_message = _("La prestation a bien été renseignée.")
-        messages.success(request, success_message)
-
-        if "save_continue" in request.POST:
-            return redirect(
-                "submissions:submission_prestations",
-                submission_id=submission.pk,
-            )
-        else:
-            return redirect(
-                "submissions:submission_detail",
-                submission_id=submission_id,
+            return render(
+                request,
+                "submissions/submission_service_fees.html",
+                {"form": form},
             )
     else:
-        raise BaseException("Bad request method. It must be a POST request.")
+        logger.error(_("form is not valid. Cannot process data."))
+        raise HttpResponse(status=400)
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class EditServiceFee(View):
+    """Docstring"""
+
+    permission_error_message = _(
+        "Vous n'avez pas les permissions nécessaires pour modifier cette prestation."
+    )
+    not_exist_error_message = _("La prestation demandée n'existe pas.")
+
+    def get(self, request, *args, **kwargs):
+        try:
+            service_fee_id = kwargs.get("service_fee_id")
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+
+        messages.error(request, error_message)
+
+        return redirect(reverse_lazy("submissions:submissions_list"))
 
 
 @method_decorator(login_required, name="dispatch")
@@ -2494,6 +2488,7 @@ def submission_validations_edit(request, submission_id):
         edit_only=True,
         extra=0,
     )
+    # TODO: simlify this double same if-loop.
     if request.method == "POST":
         if request.method == "POST":
             formset = submissionValidationFormset(request.POST)

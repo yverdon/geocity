@@ -37,7 +37,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-from .payments.models import Prestations, SubmissionPrice
+from .payments.models import ServicesFees, SubmissionPrice
 
 # Actions
 ACTION_AMEND = "amend"
@@ -48,7 +48,7 @@ ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
 ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
-ACTION_PRESTATION = "add_prestation"
+ACTION_ADD_SERVICE_FEE = "add_service_fee"
 
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
@@ -60,7 +60,7 @@ ACTIONS = [
     ACTION_PROLONG,
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
-    ACTION_PRESTATION,
+    ACTION_ADD_SERVICE_FEE,
 ]
 
 logger = logging.getLogger(__name__)
@@ -192,8 +192,8 @@ class Submission(models.Model):
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
     }
-    # Statuses that can be used for the pilot service to add/edit the prestations
-    PRESTATIONABLE_STATUSES = {
+    # Statuses that can be used for the pilot service to add/edit the service fees
+    SERVICE_FEES_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_APPROVED,
         STATUS_PROCESSING,
@@ -1106,7 +1106,7 @@ class Submission(models.Model):
                 Submission.STATUS_AWAITING_VALIDATION,
                 Submission.STATUS_PROCESSING,
             ],
-            "add_prestation": list(Submission.AMENDABLE_STATUSES),
+            "add_service_fee": list(Submission.AMENDABLE_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (
@@ -1211,9 +1211,11 @@ class Submission(models.Model):
             return None
         return self.submission_price.get_transactions()
 
-    # Prestations
-    def get_prestations(self):
-        return Prestations.objects.all()
+    # ServicesFees
+    def get_service_fees(self):
+        return ServicesFees.objects.filter(
+            submission=self.pk,
+        )
 
     def get_history(self):
         # Transactions history

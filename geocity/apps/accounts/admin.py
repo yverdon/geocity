@@ -697,7 +697,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "signature_sheet",
             "signature_sheet_description",
             "additional_searchtext_for_address_field",
-            "prestation_price",
+            "services_fees_price",
             "geom",
             "integrator",
         ]
@@ -819,7 +819,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         (
             _("Tarification des prestations"),
             {
-                "fields": ("prestation_price",),
+                "fields": ("services_fees_price",),
                 "description": _(
                     """La tarification des prestations permet de saisir le tarif horaire de facturation des prestations.\n
                     """
@@ -858,7 +858,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "get_tags",
         "get_is_single_form",
         "get_sites",
-        "prestation_price",
+        "services_fees_price",
     ]
 
     def sortable_str(self, obj):

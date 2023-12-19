@@ -8,14 +8,15 @@
   <hr>
   <form method="post">
     {% csrf_token %}
+    {{ form.media }}
     {% bootstrap_form form layout='horizontal' %}
     <div class="text-right">
-        <input name="action" type="hidden" value="add_prestation">
+        <input name="action" type="hidden" value="add_service_fee">
         <button class="btn btn-primary" name="save">
           {% translate "Save" %}
         </button>
         <button class="btn btn-primary" name="save_continue">
-          {% translate "Save and add a new prestation" %}
+          {% translate "Save and add a new service fee" %}
         </button>
     </div>
   </form>

@@ -12,10 +12,10 @@ from django.core.validators import (
 from django.db import models
 from django.db.models import BooleanField, Count, ExpressionWrapper, Q, UniqueConstraint
 from django.db.models.signals import post_save
-from djmoney.models.fields import MoneyField
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
+from djmoney.models.fields import MoneyField
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -345,10 +345,10 @@ class AdministrativeEntity(models.Model):
     signature_sheet_description = models.TextField(
         _("Texte explicatif relatif au volet de transmission"), blank=True
     )
-    prestation_price = MoneyField(
+    services_fees_price = MoneyField(
         decimal_places=2,
         max_digits=12,
-        default_currency='CHF',
+        default_currency="CHF",
         default=0.0,
         verbose_name=_("Tarif horaire des prestations"),
     )
@@ -607,7 +607,6 @@ class UserProfile(models.Model):
         verbose_name_plural = _("3.2 Consultation des auteurs")
 
     def __str__(self):
-
         return (
             str(self.user.first_name) + " " + str(self.user.last_name)
             if self.user

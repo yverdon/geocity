@@ -40,7 +40,7 @@ from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import Prestations, PrestationsType, SubmissionPrice
+from .payments.models import ServicesFees, ServicesFeesType, SubmissionPrice
 from .permissions import has_permission_to_amend_submission
 
 input_type_mapping = {
@@ -1232,24 +1232,24 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
 
-class PrestationForm(forms.ModelForm):
+class ServicesFeesForm(forms.ModelForm):
     """Docstring"""
 
-    """ provided_at = forms.DateField(
-        label=_("Date de saisie"),
-        initial=timezone.now(),
-        input_formats=[settings.DATE_INPUT_FORMAT],
-        widget=DatePickerInput(
-            options={
-                "format": "DD-MM-YYYY",
-                "locale": "fr-CH",
-                "useCurrent": False,
-            }
-        ),
-        help_text=_(
-            "La prestation a été saisie à cette date."
-        ),
-    ) """
+    # provided_at = forms.DateField(
+    #     label=_("Date de saisie"),
+    #     initial=timezone.now(),
+    #     input_formats=[settings.DATE_INPUT_FORMAT],
+    #     widget=DatePickerInput(
+    #         options={
+    #             "format": "DD-MM-YYYY",
+    #             "locale": "fr-CH",
+    #             "useCurrent": False,
+    #         }
+    #     ),
+    #     help_text=_(
+    #         "La prestation a été saisie à cette date."
+    #     ),
+    # )
 
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
@@ -1263,21 +1263,66 @@ class PrestationForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self.fields["prestation_type"].queryset = PrestationsType.objects.filter(
+        self.fields["services_fees_type"].queryset = ServicesFeesType.objects.filter(
             administrative_entity=self.submission.administrative_entity
         )
+
+        print(f"dir current user: {dir(current_user)}")
+        print(
+            f"X current user get_all_permissions: {(current_user.get_all_permissions())}"
+        )
+        print(
+            f"X current user get_group_permissions: {(current_user.get_group_permissions())}"
+        )
+        print(
+            f"X current user get_user_permissions: {(current_user.get_user_permissions())}"
+        )
+
+        submission_departments = PermitDepartment.objects.filter(
+            administrative_entity=self.submission.administrative_entity,
+        )
+        print(f"submission_departments: {submission_departments}")
 
         # users_to_display = User.objects.filter(
         #    groups__permit_department__administrative_entity=self.submission.administrative_entity
         # )
 
-        current_user_groups_pk = current_user.groups.all().values_list("pk")
+        # Set user link
+        # TODO: Set the following code retrieving the user group at the level of
+        # the UserProfile model?
+        current_user_groups_pk = current_user.groups.all().values_list("pk", flat=True)
 
-        groups_of_the_current_user = Group.objects.filter(
+        # TODO: get administrative entities for user:
+        user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
+            current_user
+        ).values_list("pk", flat=True)
+        print(f"user_administrative_entities: {user_administrative_entities}")
+
+        current_administrative_entity = self.submission.administrative_entity
+
+        backoffice_groups_of_the_current_user = Group.objects.filter(
             permit_department__is_backoffice=True,
-            permit_department__administrative_entity=self.submission.administrative_entity,
+            permit_department__administrative_entity=current_administrative_entity,
             pk__in=current_user_groups_pk,
         )
+
+        # Group of the current user is not a backoffice (pilot) group
+        if not backoffice_groups_of_the_current_user:
+            groups_of_the_current_user = Group.objects.filter(
+                permit_department__is_validator=True,
+                permit_department__administrative_entity=current_administrative_entity,
+                pk__in=current_user_groups_pk,
+            )
+            if groups_of_the_current_user:
+                self.fields[
+                    "services_fees_type"
+                ].queryset = ServicesFeesType.objects.filter(
+                    is_visible_by_validator=True,
+                )
+        # Group of the current user is a backoffice (pilot) group
+        else:
+            groups_of_the_current_user = backoffice_groups_of_the_current_user
+            self.fields["services_fees_type"].queryset = ServicesFeesType.objects.all()
 
         restricted_users_to_display = User.objects.filter(
             groups__in=groups_of_the_current_user
@@ -1288,9 +1333,9 @@ class PrestationForm(forms.ModelForm):
     required_css_class = "required"
 
     class Meta:
-        model = Prestations
+        model = ServicesFees
         fields = [
-            "prestation_type",
+            "services_fees_type",
             "provided_by",
             "provided_at",
             "time_spent_on_task",
@@ -1298,9 +1343,11 @@ class PrestationForm(forms.ModelForm):
         ]
 
         widgets = {
+            "services_fees_type": Select2Widget(),
+            "provided_by": Select2Widget(),
             "provided_at": DatePickerInput(
                 options={
-                    # "format": "DD-MM-YYYY",
+                    "format": "DD.MM.YYYY",
                     "locale": "fr-CH",
                     "useCurrent": False,
                 }
@@ -1320,16 +1367,18 @@ class PrestationForm(forms.ModelForm):
         return timedelta(minutes=time_spent_on_task)
 
     def clean_provided_at(self):
+        print("INSIDE INSIDE clean_provided_at")
         provided_at = self.cleaned_data["provided_at"]
+        print(f"cleaned_data.provided_at__XXX__: {provided_at}")
         if not isinstance(provided_at, date):
-            raise ValidationError({"Date field": _("This date is wrongly formatted.")})
+            raise ValidationError({"provided_at": _("This date is wrongly formatted.")})
 
         return provided_at
 
-    def clean(self):
-        cleaned_data = super().clean()
+    # def clean(self):
+    #     cleaned_data = super().clean()
 
-        return cleaned_data
+    #     return cleaned_data
 
 
 # extend django gis osm openlayers widget

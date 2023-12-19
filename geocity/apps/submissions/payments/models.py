@@ -119,7 +119,7 @@ class Transaction(models.Model):
         return f"refund_{self.transaction_id}.pdf", output
 
 
-class PrestationsType(models.Model):
+class ServicesFeesType(models.Model):
     administrative_entity = models.ForeignKey(
         AdministrativeEntity,
         null=True,
@@ -150,7 +150,7 @@ class PrestationsType(models.Model):
         return f"{self.name}"
 
 
-class Prestations(models.Model):
+class ServicesFees(models.Model):
     """Docstring"""
 
     # Hidden mandatory fields
@@ -171,7 +171,7 @@ class Prestations(models.Model):
         on_delete=models.SET_NULL,
         max_length=255,
         verbose_name=_("Créé par"),
-        related_name=_("prestations_created_by"),
+        related_name=_("service_fee_created_by"),
         help_text=_("La prestation a été créée par cet utilisateur."),
     )
     updated_by = models.ForeignKey(
@@ -180,7 +180,7 @@ class Prestations(models.Model):
         on_delete=models.SET_NULL,
         max_length=255,
         verbose_name=_("Mis à jour par"),
-        related_name=_("prestations_updated_by"),
+        related_name=_("service_fee_updated_by"),
         help_text=_("La prestation a été mise à jour par cet utilisateur."),
     )
     permit_department = models.ForeignKey(
@@ -198,7 +198,7 @@ class Prestations(models.Model):
         on_delete=models.SET_NULL,
         max_length=255,
         verbose_name=_("Saisie par"),
-        related_name="prestations_provided_by",
+        related_name="service_fee_provided_by",
         help_text=_("La prestation a été effectuée au nom de cet utilisateur."),
     )
     provided_at = models.DateField(
@@ -208,11 +208,18 @@ class Prestations(models.Model):
     )
     # TODO: GROS TOUT DOUX: créer une FK vers submission
     # ERROR: IMPOSSIBLE TO CREATE A FK: CIRCULAR IMPORT!
-    prestation_type = models.ForeignKey(
-        "PrestationsType",
+    submission = models.ForeignKey(
+        "Submission",
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande"),
+        related_name="submission",
+        help_text=_("Demande"),
+    )
+    services_fees_type = models.ForeignKey(
+        "ServicesFeesType",
         on_delete=models.CASCADE,
         verbose_name=_("Prestation"),
-        related_name=_("prestations_type"),
+        related_name=_("services_fees_type"),
         help_text=_("Choix de la prestation ; à effectuer dans une liste prédéfinie."),
     )
     time_spent_on_task = models.DurationField(
@@ -221,7 +228,7 @@ class Prestations(models.Model):
         help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
     )
     pricing = MoneyField(
-        default=settings.DEFAULT_PRESTATION_PRICE,
+        default=settings.DEFAULT_SERVICES_FEES_RATE,
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
@@ -242,4 +249,4 @@ class Prestations(models.Model):
                 self.pricing * self.time_spent_on_task.total_seconds() / 3600
             )
 
-        super(Prestations, self).save(*args, **kwargs)
+        super(ServicesFees, self).save(*args, **kwargs)

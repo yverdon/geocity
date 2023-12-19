@@ -182,7 +182,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django.contrib.sites",
     "django.contrib.postgres",
-    'djmoney',
+    "djmoney",
 ]
 
 if ENABLE_2FA:
@@ -699,10 +699,10 @@ PAYMENT_PROCESSING_TEST_ENVIRONMENT = (
 )
 PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
 
-# Prestations
-## Default prestation rate [CHF]
-DEFAULT_PRESTATION_PRICE = 140.00
+# Services fees
+## Default rate [CHF] for services fees
+DEFAULT_SERVICES_FEES_RATE = 140.00
 
 ## djmoney currencies: https://django-money.readthedocs.io/en/latest/#adding-a-new-currency
-CURRENCIES = ('USD', 'EUR', 'CHF')
-CURRENCY_CHOICES = [('USD', 'USD $'), ('EUR', 'EUR €'), ('CHF', 'CHF .-')]
+CURRENCIES = ("USD", "EUR", "CHF")
+CURRENCY_CHOICES = [("USD", "USD $"), ("EUR", "EUR €"), ("CHF", "CHF .-")]

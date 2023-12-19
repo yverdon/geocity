@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.forms.admin import get_forms_field
 from geocity.apps.forms.models import Form
-from geocity.apps.submissions.payments.models import PrestationsType
+from geocity.apps.submissions.payments.models import ServicesFeesType
 
 from . import models
 
@@ -340,8 +340,8 @@ class SubmissionInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("2.3 Enquêtes publiques")
 
 
-@admin.register(PrestationsType)
-class PrestationsTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+@admin.register(ServicesFeesType)
+class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "name",
         "administrative_entity",

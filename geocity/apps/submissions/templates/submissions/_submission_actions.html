@@ -76,7 +76,7 @@
       {% if formsets.complementary_documents and document_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                {% translate "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
+                {% translate "Documents et impressions" %}
             </a>
           </li>
       {% endif %}
@@ -91,12 +91,12 @@
 
         <li class="nav-item">
           <a class="btn btn-primary btn-action nav-link"
-             id="prestations-tab"
+             id="services-fees-tab"
              data-toggle="tab"
-             href="#prestations"
+             href="#services-fees"
              role="tab"
-             aria-controls="presadd_prestationtations">
-              {% translate "Prestations" %} <span class="badge badge-beta badge-success">Beta</span>
+             aria-controls="add_service_fee">
+              {% translate "Services fees" %} <span class="badge badge-beta badge-success">Beta</span>
           </a>
         </li>
 
@@ -372,34 +372,36 @@
 
         {% endif %}
 
-        <div class='tab-pane' id="prestations"
+        <div class='tab-pane' id="services-fees"
            role="tabpanel"
-           aria-labelledby="prestations-tab"
+           aria-labelledby="services-fees-tab"
           >
-          <h4>{% translate "List of recorded prestations." %}</h4>
+          <h4>{% translate "List of recorded service fees." %}</h4>
 
           <div class="form-text text-muted mb-3">
-            {% translate "Table listing already recorded prestations." %}
+            {% translate "Table listing already recorded service fees." %}
           </div>
           <hr>
 
-          {% if prestations_table.data  %}
+
+          {% if service_fees_table.data %}
             <div>
-              {% render_table prestations_table %}
+              {% render_table service_fees_table %}
             </div>
           {% else %}
             <div>
-              <p>{% translate "The prestation table is currently empty." %}</p>
+              <p>{% translate "The service fees table is currently empty." %}</p>
             </div>
           {% endif %}
 
+
           <div class="text-right">
-            <input name="action" type="hidden" value="add_prestation">
+            <input name="action" type="hidden" value="add_service_fee">
             <a class="btn btn-primary"
                name="action"
-               href="{% url 'submissions:create_new_submission_prestation' submission_id=submission.pk %}"
+               href="{% url 'submissions:create_new_submission_service_fees' submission_id=submission.pk %}"
               >
-              {% translate "Add a new prestation" %}
+              {% translate "Add a new service fee" %}
             </a>
           </div>
 

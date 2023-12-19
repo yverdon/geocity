@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
 from . import models
-from .payments.models import Prestations, Transaction
+from .payments.models import ServicesFees, Transaction
 
 ATTRIBUTES = {
     "th": {
@@ -363,9 +363,23 @@ class TransactionsTable(tables.Table):
         template_name = "django_tables2/bootstrap.html"
 
 
-class PrestationsTable(tables.Table):
+class ServicesFeesTable(tables.Table):
+    """Docstring"""
+
+    # def __init__(self, *args, **kwargs):
+    #     self.submission = kwargs.pop("submission", None)
+    #     disable_fields = kwargs.pop("disable_fields", False)
+    #     current_user = kwargs.pop("user", None)
+
+    #     kwargs["initial"] = {
+    #         **kwargs.get("initial", {}),
+    #         "provided_by": current_user,
+    #     }
+
+    #     super().__init__(*args, **kwargs)
+
     # TODO: do a second summary table (based on the classify)
-    prestation_type = tables.Column(
+    services_fees_type = tables.Column(
         verbose_name=_("Prestation"),
         orderable=True,
     )
@@ -397,9 +411,9 @@ class PrestationsTable(tables.Table):
     )
 
     class Meta:
-        model = Prestations
+        model = ServicesFees
         fields = (
-            "prestation_type",
+            "services_fees_type",
             "provided_by",
             "provided_at",
             "time_spent_on_task",
@@ -407,5 +421,5 @@ class PrestationsTable(tables.Table):
             "monetary_amount",
             # "actions",
         )
-        empty_text = _("The prestation table is currently empty.")
+        empty_text = _("The service fees table is currently empty.")
         template_name = "django_tables2/bootstrap.html"
