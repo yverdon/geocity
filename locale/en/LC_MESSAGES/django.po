@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-15 15:56+0000\n"
+"POT-Creation-Date: 2023-12-19 10:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -83,9 +83,9 @@ msgstr ""
 #: geocity/apps/forms/models.py:275 geocity/apps/forms/models.py:341
 #: geocity/apps/forms/models.py:362 geocity/apps/forms/models.py:817
 #: geocity/apps/reports/models.py:79 geocity/apps/reports/models.py:118
-#: geocity/apps/submissions/models.py:1421
-#: geocity/apps/submissions/models.py:1763
-#: geocity/apps/submissions/models.py:1847
+#: geocity/apps/submissions/models.py:1428
+#: geocity/apps/submissions/models.py:1770
+#: geocity/apps/submissions/models.py:1854
 #: geocity/apps/submissions/payments/models.py:144
 msgid "Groupe des administrateurs"
 msgstr ""
@@ -202,14 +202,14 @@ msgstr ""
 
 #: geocity/apps/accounts/forms.py:33 geocity/apps/accounts/forms.py:111
 #: geocity/apps/accounts/forms.py:220 geocity/apps/submissions/forms.py:784
-#: geocity/apps/submissions/models.py:1343
+#: geocity/apps/submissions/models.py:1350
 msgid "Prénom"
 msgstr ""
 
 #: geocity/apps/accounts/forms.py:37 geocity/apps/accounts/forms.py:118
 #: geocity/apps/accounts/forms.py:227 geocity/apps/reports/models.py:31
 #: geocity/apps/reports/models.py:101 geocity/apps/submissions/forms.py:793
-#: geocity/apps/submissions/models.py:1347
+#: geocity/apps/submissions/models.py:1354
 #: geocity/apps/submissions/search.py:182
 #: geocity/apps/submissions/templates/submissions/_submission_summary.html:110
 msgid "Nom"
@@ -217,7 +217,7 @@ msgstr ""
 
 #: geocity/apps/accounts/forms.py:41 geocity/apps/accounts/forms.py:125
 #: geocity/apps/submissions/forms.py:820
-#: geocity/apps/submissions/models.py:1368
+#: geocity/apps/submissions/models.py:1375
 msgid "Email"
 msgstr ""
 
@@ -238,19 +238,19 @@ msgstr ""
 
 #: geocity/apps/accounts/forms.py:167 geocity/apps/accounts/forms.py:236
 #: geocity/apps/forms/models.py:800 geocity/apps/submissions/forms.py:829
-#: geocity/apps/submissions/models.py:1353
+#: geocity/apps/submissions/models.py:1360
 msgid "Adresse"
 msgstr ""
 
 #: geocity/apps/accounts/forms.py:171 geocity/apps/accounts/forms.py:240
 #: geocity/apps/accounts/models.py:516 geocity/apps/submissions/forms.py:839
-#: geocity/apps/submissions/models.py:1357
+#: geocity/apps/submissions/models.py:1364
 msgid "NPA"
 msgstr ""
 
 #: geocity/apps/accounts/forms.py:177 geocity/apps/accounts/forms.py:247
 #: geocity/apps/accounts/models.py:520 geocity/apps/submissions/forms.py:845
-#: geocity/apps/submissions/models.py:1360
+#: geocity/apps/submissions/models.py:1367
 msgid "Ville"
 msgstr ""
 
@@ -270,7 +270,7 @@ msgstr ""
 
 #: geocity/apps/accounts/forms.py:281 geocity/apps/accounts/models.py:497
 #: geocity/apps/submissions/forms.py:860
-#: geocity/apps/submissions/models.py:1351
+#: geocity/apps/submissions/models.py:1358
 msgid "Numéro TVA"
 msgstr ""
 
@@ -499,7 +499,7 @@ msgid "Si vide, le nom de l'entité sera utilisé"
 msgstr ""
 
 #: geocity/apps/accounts/models.py:276 geocity/apps/submissions/forms.py:803
-#: geocity/apps/submissions/models.py:1364
+#: geocity/apps/submissions/models.py:1371
 msgid "Téléphone"
 msgstr ""
 
@@ -643,7 +643,7 @@ msgstr ""
 #: geocity/apps/accounts/templates/account/lockout.html:31
 #: geocity/apps/core/templates/base_generic.html:214
 #: geocity/apps/submissions/admin.py:136
-#: geocity/apps/submissions/models.py:1373
+#: geocity/apps/submissions/models.py:1380
 #: geocity/apps/submissions/search.py:83
 msgid "Contact"
 msgstr ""
@@ -1131,7 +1131,7 @@ msgstr ""
 msgid "Me déconnecter"
 msgstr ""
 
-#: geocity/apps/forms/admin.py:54 geocity/apps/submissions/models.py:1840
+#: geocity/apps/forms/admin.py:54 geocity/apps/submissions/models.py:1847
 msgid "formulaires"
 msgstr ""
 
@@ -1202,7 +1202,7 @@ msgstr ""
 
 #: geocity/apps/forms/admin.py:361 geocity/apps/forms/admin.py:690
 #: geocity/apps/forms/models.py:477 geocity/apps/forms/models.py:822
-#: geocity/apps/submissions/models.py:1811
+#: geocity/apps/submissions/models.py:1818
 msgid "Nom dans l'API"
 msgstr ""
 
@@ -1248,13 +1248,13 @@ msgid "Catégorie"
 msgstr ""
 
 #: geocity/apps/forms/apps.py:7 geocity/apps/submissions/models.py:264
-#: geocity/apps/submissions/models.py:1756
+#: geocity/apps/submissions/models.py:1763
 msgid "Formulaires"
 msgstr ""
 
 #: geocity/apps/forms/models.py:37 geocity/apps/forms/models.py:475
-#: geocity/apps/forms/models.py:820 geocity/apps/submissions/models.py:1742
-#: geocity/apps/submissions/models.py:1809
+#: geocity/apps/forms/models.py:820 geocity/apps/submissions/models.py:1749
+#: geocity/apps/submissions/models.py:1816
 msgid "nom"
 msgstr ""
 
@@ -1514,7 +1514,7 @@ msgid ""
 msgstr ""
 
 #: geocity/apps/forms/models.py:480 geocity/apps/forms/models.py:825
-#: geocity/apps/submissions/models.py:1814
+#: geocity/apps/submissions/models.py:1821
 msgid "Se génère automatiquement lorsque celui-ci est vide."
 msgstr ""
 
@@ -1655,7 +1655,7 @@ msgid ""
 msgstr ""
 
 #: geocity/apps/forms/models.py:743 geocity/apps/forms/models.py:990
-#: geocity/apps/submissions/models.py:1873
+#: geocity/apps/submissions/models.py:1880
 msgid "Celui-ci ne peut pas comporter d'espaces ou de caractères spéciaux"
 msgstr ""
 
@@ -1711,11 +1711,11 @@ msgstr ""
 msgid "Titre à afficher"
 msgstr ""
 
-#: geocity/apps/forms/models.py:828 geocity/apps/submissions/models.py:1827
+#: geocity/apps/forms/models.py:828 geocity/apps/submissions/models.py:1834
 msgid "exemple de donnée à saisir"
 msgstr ""
 
-#: geocity/apps/forms/models.py:831 geocity/apps/submissions/models.py:1830
+#: geocity/apps/forms/models.py:831 geocity/apps/submissions/models.py:1837
 msgid "information complémentaire"
 msgstr ""
 
@@ -1727,8 +1727,8 @@ msgstr ""
 msgid "Nombre de lignes de la zone de texte"
 msgstr ""
 
-#: geocity/apps/forms/models.py:843 geocity/apps/submissions/models.py:1409
-#: geocity/apps/submissions/models.py:1816
+#: geocity/apps/forms/models.py:843 geocity/apps/submissions/models.py:1416
+#: geocity/apps/submissions/models.py:1823
 msgid "obligatoire"
 msgstr ""
 
@@ -1744,11 +1744,11 @@ msgstr ""
 msgid "Entrez un choix par ligne"
 msgstr ""
 
-#: geocity/apps/forms/models.py:853 geocity/apps/submissions/models.py:1833
+#: geocity/apps/forms/models.py:853 geocity/apps/submissions/models.py:1840
 msgid "regex pattern"
 msgstr ""
 
-#: geocity/apps/forms/models.py:856 geocity/apps/submissions/models.py:1836
+#: geocity/apps/forms/models.py:856 geocity/apps/submissions/models.py:1843
 #, python-brace-format
 msgid "Exemple: ^[0-9]{4}$"
 msgstr ""
@@ -1788,7 +1788,7 @@ msgstr ""
 msgid "Ex: \"pdf, jpg, png\""
 msgstr ""
 
-#: geocity/apps/forms/models.py:906 geocity/apps/submissions/models.py:1851
+#: geocity/apps/forms/models.py:906 geocity/apps/submissions/models.py:1858
 msgid "Visible dans l'API light"
 msgstr ""
 
@@ -2399,7 +2399,7 @@ msgid "Type de documents"
 msgstr ""
 
 #: geocity/apps/submissions/admin.py:340
-#: geocity/apps/submissions/models.py:1649
+#: geocity/apps/submissions/models.py:1656
 msgid "2.3 Enquêtes publiques"
 msgstr ""
 
@@ -2525,14 +2525,14 @@ msgstr ""
 
 #: geocity/apps/submissions/forms.py:1363
 #: geocity/apps/submissions/forms.py:1967
-#: geocity/apps/submissions/models.py:1519
+#: geocity/apps/submissions/models.py:1526
 #: geocity/apps/submissions/search.py:464
 msgid "Date de début"
 msgstr ""
 
 #: geocity/apps/submissions/forms.py:1376
 #: geocity/apps/submissions/forms.py:1978
-#: geocity/apps/submissions/models.py:1520
+#: geocity/apps/submissions/models.py:1527
 #: geocity/apps/submissions/search.py:466
 msgid "Date de fin"
 msgstr ""
@@ -2678,7 +2678,7 @@ msgid "Archivée"
 msgstr ""
 
 #: geocity/apps/submissions/models.py:241
-#: geocity/apps/submissions/models.py:1910
+#: geocity/apps/submissions/models.py:1917
 msgid "En attente"
 msgstr ""
 
@@ -2733,8 +2733,8 @@ msgid "Nouvelle date de fin"
 msgstr ""
 
 #: geocity/apps/submissions/models.py:300
-#: geocity/apps/submissions/models.py:1521
-#: geocity/apps/submissions/models.py:1928
+#: geocity/apps/submissions/models.py:1528
+#: geocity/apps/submissions/models.py:1935
 #: geocity/apps/submissions/templates/submissions/submission_detail.html:212
 #: geocity/apps/submissions/templates/submissions/submission_detail.html:246
 msgid "Commentaire"
@@ -2752,243 +2752,248 @@ msgstr ""
 msgid "Facultative, sera transmise au requérant"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:319
+#: geocity/apps/submissions/models.py:318
+#: geocity/apps/submissions/templates/submissions/_submission_actions.html:99
+msgid "Services fees"
+msgstr ""
+
+#: geocity/apps/submissions/models.py:326
 msgid "2.2 Consultation de la demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:320
+#: geocity/apps/submissions/models.py:327
 msgid "2.2 Consultation des demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:322
+#: geocity/apps/submissions/models.py:329
 msgid "Consulter les demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:323
+#: geocity/apps/submissions/models.py:330
 msgid "Traiter les demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:324
+#: geocity/apps/submissions/models.py:331
 #: geocity/apps/submissions/templates/submissions/submission_detail.html:181
 msgid "Modifier les validations"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:325
+#: geocity/apps/submissions/models.py:332
 msgid "Valider les demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:326
+#: geocity/apps/submissions/models.py:333
 msgid "Classer les demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:327
+#: geocity/apps/submissions/models.py:334
 msgid "Modifier les demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:328
+#: geocity/apps/submissions/models.py:335
 msgid "Voir les demandes restreintes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:329
+#: geocity/apps/submissions/models.py:336
 msgid "Rembourser une transaction"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:330
+#: geocity/apps/submissions/models.py:337
 msgid "Revenir sur un remboursement"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:608
+#: geocity/apps/submissions/models.py:615
 msgid "La demande a déjà été archivée"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1350
+#: geocity/apps/submissions/models.py:1357
 #: geocity/apps/submissions/search.py:183
 msgid "Entreprise"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1401
-#: geocity/apps/submissions/models.py:1451
+#: geocity/apps/submissions/models.py:1408
+#: geocity/apps/submissions/models.py:1458
 msgid "type de contact"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1406
+#: geocity/apps/submissions/models.py:1413
 msgid "type de demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1411
+#: geocity/apps/submissions/models.py:1418
 msgid "Dynamique"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1413
+#: geocity/apps/submissions/models.py:1420
 msgid ""
 "Permet à l'utilisateur d'ajouter ce type de contact lors de la saisie, "
 "autant de fois que souhaité."
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1426
-#: geocity/apps/submissions/models.py:1439
+#: geocity/apps/submissions/models.py:1433
+#: geocity/apps/submissions/models.py:1446
 msgid "1.5 Contact"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1427
-#: geocity/apps/submissions/models.py:1440
+#: geocity/apps/submissions/models.py:1434
+#: geocity/apps/submissions/models.py:1447
 msgid "1.5 Contacts"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1455
+#: geocity/apps/submissions/models.py:1462
 msgid "Relation demande-contact"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1456
+#: geocity/apps/submissions/models.py:1463
 msgid "Relations demande-contact"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1469
-#: geocity/apps/submissions/models.py:1888
+#: geocity/apps/submissions/models.py:1476
+#: geocity/apps/submissions/models.py:1895
 msgid "caractéristique"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1475
+#: geocity/apps/submissions/models.py:1482
 msgid "objet"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1522
+#: geocity/apps/submissions/models.py:1529
 msgid "Lien externe"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1524
+#: geocity/apps/submissions/models.py:1531
 msgid "Géométrie obtenue par géocodage d'adresse"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1526
+#: geocity/apps/submissions/models.py:1533
 #: geocity/apps/submissions/steps.py:221
 msgid "Localisation"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1530
+#: geocity/apps/submissions/models.py:1537
 msgid "3.3 Consultation de l'agenda et de la géométrie"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1531
+#: geocity/apps/submissions/models.py:1538
 msgid "3.3 Consultation des agenda et géométries"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1554
+#: geocity/apps/submissions/models.py:1561
 msgid "statut"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1569
+#: geocity/apps/submissions/models.py:1576
 msgid "Status disponible pour l'entité administrative"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1570
+#: geocity/apps/submissions/models.py:1577
 msgid "Status disponibles pour l'entité administratives"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1601
+#: geocity/apps/submissions/models.py:1608
 msgid "Personne ayant archivé la demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1608
+#: geocity/apps/submissions/models.py:1615
 msgid "Archive"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1630
+#: geocity/apps/submissions/models.py:1637
 msgid "Documents complémentaires"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1637
-#: geocity/apps/submissions/models.py:1681
+#: geocity/apps/submissions/models.py:1644
+#: geocity/apps/submissions/models.py:1688
 msgid "Demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1644
+#: geocity/apps/submissions/models.py:1651
 msgid "Demandeur de l'enquête"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1648
+#: geocity/apps/submissions/models.py:1655
 msgid "2.3 Enquête publique"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1659
+#: geocity/apps/submissions/models.py:1666
 msgid "Provisoire"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1660
+#: geocity/apps/submissions/models.py:1667
 msgid "Final"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1661
+#: geocity/apps/submissions/models.py:1668
 msgid "Autre"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1662
+#: geocity/apps/submissions/models.py:1669
 msgid "Annulé"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1665
+#: geocity/apps/submissions/models.py:1672
 #: geocity/apps/submissions/templates/submissions/submission_detail.html:83
 msgid "Document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1667
+#: geocity/apps/submissions/models.py:1674
 msgid "Description du document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1674
+#: geocity/apps/submissions/models.py:1681
 msgid "Propriétaire du document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1685
+#: geocity/apps/submissions/models.py:1692
 msgid "Statut du document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1690
+#: geocity/apps/submissions/models.py:1697
 msgid "Département autorisé à visualiser le document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1693
+#: geocity/apps/submissions/models.py:1700
 msgid "Public"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1698
+#: geocity/apps/submissions/models.py:1705
 msgid "Type du document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1721
+#: geocity/apps/submissions/models.py:1728
 msgid "Le document {} n'a pas pu être supprimé"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1748
+#: geocity/apps/submissions/models.py:1755
 msgid "Type parent"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1792
+#: geocity/apps/submissions/models.py:1799
 msgid "3.2 Catégorie de document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1793
+#: geocity/apps/submissions/models.py:1800
 msgid "3.2 Catégories de document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1804
-#: geocity/apps/submissions/models.py:1805
+#: geocity/apps/submissions/models.py:1811
+#: geocity/apps/submissions/models.py:1812
 msgid "3.2 Type de document"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1818
+#: geocity/apps/submissions/models.py:1825
 msgid "Visible par l'auteur de la demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1821
+#: geocity/apps/submissions/models.py:1828
 msgid "Visible par les validateurs"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1824
+#: geocity/apps/submissions/models.py:1831
 msgid "Editable même après classement de la demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1854
+#: geocity/apps/submissions/models.py:1861
 msgid ""
 "Lorsque cette case est cochée, ce champ est affichée dans la version light "
 "de l'api (/rest/RESSOURCE) si la demande est rendue publique par le pilote."
@@ -2999,57 +3004,57 @@ msgid ""
 "une seule ressource (/rest/RESSOURCE/:ID)."
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1861
+#: geocity/apps/submissions/models.py:1868
 msgid "2.1 Champ de traitement des demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1862
+#: geocity/apps/submissions/models.py:1869
 msgid "2.1 Champs de traitement des demandes"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1894
+#: geocity/apps/submissions/models.py:1901
 msgid "formulaire"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1898
+#: geocity/apps/submissions/models.py:1905
 msgid "traitement info"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1911
+#: geocity/apps/submissions/models.py:1918
 msgid "Approuvé"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1912
+#: geocity/apps/submissions/models.py:1919
 msgid "Refusé"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1920
+#: geocity/apps/submissions/models.py:1927
 #: geocity/apps/submissions/payments/models.py:190
 msgid "Département"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1925
+#: geocity/apps/submissions/models.py:1932
 msgid "Statut de validation"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1932
+#: geocity/apps/submissions/models.py:1939
 #: geocity/apps/submissions/templates/submissions/submission_detail.html:214
 msgid "Commentaire visible par l'auteur de la demande"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1935
+#: geocity/apps/submissions/models.py:1942
 msgid "Validé par"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1937
+#: geocity/apps/submissions/models.py:1944
 msgid "Validé le"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1942
+#: geocity/apps/submissions/models.py:1949
 msgid "3.5 Consultation de la validation par le service"
 msgstr ""
 
-#: geocity/apps/submissions/models.py:1943
+#: geocity/apps/submissions/models.py:1950
 msgid "3.5 Consultation des validations par les services"
 msgstr ""
 
@@ -3063,7 +3068,7 @@ msgid "Pas payée"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:49
-#: geocity/apps/submissions/templates/tables/_submission_prestations_table_actions.html:19
+#: geocity/apps/submissions/templates/tables/_submission_service_fees_table_actions_.html:19
 #: geocity/apps/submissions/templates/tables/_submission_transactions_table_actions.html:23
 msgid "Payée"
 msgstr ""
@@ -3073,7 +3078,7 @@ msgid "À rembourser"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:51
-#: geocity/apps/submissions/templates/tables/_submission_prestations_table_actions.html:15
+#: geocity/apps/submissions/templates/tables/_submission_service_fees_table_actions_.html:15
 #: geocity/apps/submissions/templates/tables/_submission_transactions_table_actions.html:19
 msgid "Remboursée"
 msgstr ""
@@ -3134,7 +3139,7 @@ msgid "Créé par"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:174
-msgid "prestations_created_by"
+msgid "service_fee_created_by"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:175
@@ -3146,7 +3151,7 @@ msgid "Mis à jour par"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:183
-msgid "prestations_updated_by"
+msgid "service_fee_updated_by"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:184
@@ -3179,7 +3184,7 @@ msgid "La prestation a été saisie à cette date."
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:215
-msgid "prestations_type"
+msgid "services_fees_type"
 msgstr ""
 
 #: geocity/apps/submissions/payments/models.py:216
@@ -3314,6 +3319,7 @@ msgstr ""
 #: geocity/apps/submissions/tables.py:180
 #: geocity/apps/submissions/tables.py:262
 #: geocity/apps/submissions/tables.py:323
+#: geocity/apps/submissions/tables.py:395
 msgid "Actions"
 msgstr ""
 
@@ -3337,9 +3343,9 @@ msgstr ""
 msgid "Durée [hh:mm:ss]"
 msgstr ""
 
-#: geocity/apps/submissions/tables.py:409
+#: geocity/apps/submissions/tables.py:410
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:393
-msgid "The prestation table is currently empty."
+msgid "The service fees table is currently empty."
 msgstr ""
 
 #: geocity/apps/submissions/templates/geometrywidget/geometrywidget.html:100
@@ -3384,10 +3390,6 @@ msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:87
 msgid "Paiement en ligne"
-msgstr ""
-
-#: geocity/apps/submissions/templates/submissions/_submission_actions.html:99
-msgid "Prestations"
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:113
@@ -3527,16 +3529,15 @@ msgid "Transactions"
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:379
-msgid "List of recorded prestations."
+msgid "List of recorded service fees."
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:382
-msgid "Table listing already recorded prestations."
+msgid "Table listing already recorded service fees."
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:404
-#: geocity/apps/submissions/templates/submissions/submission_prestations.html:7
-msgid "Add a new prestation"
+msgid "Add a new service fee"
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_summary.html:29
@@ -3860,14 +3861,6 @@ msgstr ""
 msgid "Revenir sur la demande"
 msgstr ""
 
-#: geocity/apps/submissions/templates/submissions/submission_prestations.html:15
-msgid "Save"
-msgstr ""
-
-#: geocity/apps/submissions/templates/submissions/submission_prestations.html:18
-msgid "Save and add a new prestation"
-msgstr ""
-
 #: geocity/apps/submissions/templates/submissions/submission_prolongation.html:9
 msgid "Demande de prolongation de permis"
 msgstr ""
@@ -3880,6 +3873,18 @@ msgstr ""
 #: geocity/apps/submissions/templates/submissions/submission_select_administrative_entity.html:15
 #: geocity/apps/submissions/templates/submissions/submission_select_forms.html:11
 msgid "voir toutes les possibilités"
+msgstr ""
+
+#: geocity/apps/submissions/templates/submissions/submission_service_fees.html:7
+msgid "Add a new prestation"
+msgstr ""
+
+#: geocity/apps/submissions/templates/submissions/submission_service_fees.html:15
+msgid "Save"
+msgstr ""
+
+#: geocity/apps/submissions/templates/submissions/submission_service_fees.html:18
+msgid "Save and add a new service fee"
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/submission_submit.html:28
@@ -3983,7 +3988,7 @@ msgstr ""
 msgid "Prolongation refusée"
 msgstr ""
 
-#: geocity/apps/submissions/templates/tables/_submission_prestations_table_actions.html:12
+#: geocity/apps/submissions/templates/tables/_submission_service_fees_table_actions_.html:12
 #: geocity/apps/submissions/templates/tables/_submission_transactions_table_actions.html:16
 msgid "A rembourser"
 msgstr ""
@@ -4210,16 +4215,25 @@ msgstr ""
 msgid "Une demande a été traitée et classée par le secrétariat"
 msgstr ""
 
-#: geocity/apps/submissions/views.py:2282
+#: geocity/apps/submissions/views.py:2285
+msgid ""
+"Vous n'avez pas les permissions nécessaires pour modifier cette prestation."
+msgstr ""
+
+#: geocity/apps/submissions/views.py:2287
+msgid "La prestation demandée n'existe pas."
+msgstr ""
+
+#: geocity/apps/submissions/views.py:2308
 msgid ""
 "Vous n'avez pas les permissions pour changer le statut de cette transaction"
 msgstr ""
 
-#: geocity/apps/submissions/views.py:2284
+#: geocity/apps/submissions/views.py:2310
 msgid "La transaction demandée n'existe pas"
 msgstr ""
 
-#: geocity/apps/submissions/views.py:2320
+#: geocity/apps/submissions/views.py:2346
 #, python-brace-format
 msgid ""
 "Le statut de la transaction {transaction_id} a été mis à jour en\n"
@@ -4227,7 +4241,7 @@ msgid ""
 "                    "
 msgstr ""
 
-#: geocity/apps/submissions/views.py:2333
+#: geocity/apps/submissions/views.py:2359
 #, python-brace-format
 msgid ""
 "Ne pas oublier d'également mettre à jour la transaction dans {merchant_site}"
