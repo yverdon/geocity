@@ -96,7 +96,7 @@
              href="#prestations"
              role="tab"
              aria-controls="presadd_prestationtations">
-              {% translate "Prestations" %}
+              {% translate "Prestations" %} <span class="badge badge-beta badge-success">Beta</span>
           </a>
         </li>
 
@@ -376,14 +376,15 @@
            role="tabpanel"
            aria-labelledby="prestations-tab"
           >
-          <h4>{% translate "Liste des prestations saisies" %}</h4>
+          <h4>{% translate "List of recorded prestations." %}</h4>
 
           <div class="form-text text-muted mb-3">
             {% translate "Table listing already recorded prestations." %}
           </div>
+          <hr>
 
           <!-- if number of prestation > 0 -->
-          {% if prestations_table %}
+          {% if prestations_table.data  %}
             <div>
               {% render_table prestations_table %}
             </div>
