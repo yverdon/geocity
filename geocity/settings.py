@@ -50,10 +50,13 @@ SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 
 # LIMIT MAX CONNEXIONS ATTEMPTS
 AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
-# Lock out by combination of ip AND User
-AXES_LOCKOUT_PARAMETERS = os.getenv(
-    "AXES_LOCKOUT_PARAMETERS ", ["ip_address", ["username", "user_agent"]]
+# Lock out by combination of ip AND User if not otherwise defined in .env
+AXES_LOCKOUT_PARAMETERS = (
+    os.getenv("AXES_LOCKOUT_PARAMETERS").split(",")
+    if os.getenv("AXES_LOCKOUT_PARAMETERS")
+    else ["ip_address", ["username", "user_agent"]]
 )
+
 AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
 )
@@ -624,6 +627,8 @@ ANONYMOUS_NAME = "Anonyme"
 PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
 EMAIL_USER_PREFIX = "email_user_"
 
+
+# Only for Intranet usage of Geocity
 if ALLOW_REMOTE_USER_AUTH:
     # Add the auth middleware
     MIDDLEWARE += ["django.contrib.auth.middleware.RemoteUserMiddleware"]
