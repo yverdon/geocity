@@ -8,36 +8,35 @@ asgiref==3.7.2
     # via
     #   -r requirements.txt
     #   django
-asttokens==2.2.1
+    #   django-cors-headers
+asttokens==2.4.1
     # via stack-data
-backcall==0.2.0
-    # via ipython
 beautifulsoup4==4.12.2
     # via
     #   -r requirements.txt
     #   django-bootstrap4
-build==0.10.0
+build==1.0.3
     # via pip-tools
-certifi==2023.7.22
+certifi==2023.11.17
     # via
     #   -r requirements.txt
     #   postfinancecheckout
     #   requests
-cffi==1.15.1
+cffi==1.16.0
     # via
     #   -r requirements.txt
     #   cryptography
 cfgv==3.4.0
     # via pre-commit
-charset-normalizer==3.2.0
+charset-normalizer==3.3.2
     # via
     #   -r requirements.txt
     #   requests
 click==8.1.7
     # via pip-tools
-coverage==7.3.0
+coverage==7.3.3
     # via -r requirements_dev.in
-cryptography==41.0.3
+cryptography==41.0.7
     # via
     #   -r requirements.txt
     #   django-rest-knox
@@ -57,9 +56,9 @@ deprecated==1.2.14
     #   jwcrypto
 diffimg==0.3.0
     # via -r requirements_dev.in
-distlib==0.3.7
+distlib==0.3.8
     # via virtualenv
-django==4.2.7
+django==4.2.8
     # via
     #   -r requirements.txt
     #   django-admin-sortable2
@@ -92,11 +91,11 @@ django==4.2.7
     #   django-taggit
     #   django-two-factor-auth
     #   djangorestframework
-django-admin-sortable2==2.1.9
+django-admin-sortable2==2.1.10
     # via -r requirements.txt
 django-allauth==0.59.0
     # via -r requirements.txt
-django-appconf==1.0.5
+django-appconf==1.0.6
     # via
     #   -r requirements.txt
     #   django-select2
@@ -110,7 +109,7 @@ django-ckeditor==6.7.0
     # via -r requirements.txt
 django-constance==3.1.0
     # via -r requirements.txt
-django-cors-headers==4.2.0
+django-cors-headers==4.3.1
     # via -r requirements.txt
 django-crispy-forms==1.14.0
     # via -r requirements.txt
@@ -120,29 +119,29 @@ django-debug-toolbar==4.2.0
     # via -r requirements_dev.in
 django-extensions==3.2.3
     # via -r requirements_dev.in
-django-filter==23.2
+django-filter==23.5
     # via -r requirements.txt
-django-formtools==2.4.1
+django-formtools==2.5.1
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
-django-ipware==5.0.0
+django-ipware==6.0.3
     # via
     #   -r requirements.txt
     #   django-axes
 django-jazzmin==2.6.0
     # via -r requirements.txt
-django-js-asset==2.1.0
+django-js-asset==2.2.0
     # via
     #   -r requirements.txt
     #   django-ckeditor
 django-jsoneditor==0.2.4
     # via -r requirements.txt
-django-jsonform==2.19.0
+django-jsonform==2.21.2
     # via -r requirements.txt
 django-oauth-toolkit==2.3.0
     # via -r requirements.txt
-django-otp==1.2.2
+django-otp==1.3.0
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
@@ -164,17 +163,17 @@ django-rest-knox==4.2.0
     # via -r requirements.txt
 django-select2==8.1.2
     # via -r requirements.txt
-django-simple-captcha==0.5.18
+django-simple-captcha==0.6.0
     # via -r requirements.txt
-django-simple-history==3.3.0
+django-simple-history==3.4.0
     # via -r requirements.txt
-django-tables2==2.6.0
+django-tables2==2.7.0
     # via
     #   -r requirements.txt
     #   django-tables2-column-shifter
 django-tables2-column-shifter==2.2.0
     # via -r requirements.txt
-django-taggit==4.0.0
+django-taggit==5.0.1
     # via -r requirements.txt
 django-two-factor-auth[phonenumbers]==1.14.0
     # via
@@ -187,25 +186,27 @@ djangorestframework==3.14.0
     #   djangorestframework-gis
 djangorestframework-gis==1.0
     # via -r requirements.txt
-docker==6.1.3
+docker==7.0.0
     # via -r requirements.txt
 et-xmlfile==1.1.0
     # via
     #   -r requirements.txt
     #   openpyxl
-executing==1.2.0
+exceptiongroup==1.2.0
+    # via ipython
+executing==2.0.1
     # via stack-data
 factory-boy==3.3.0
     # via -r requirements_dev.in
-faker==19.3.1
+faker==21.0.0
     # via
     #   -r requirements_dev.in
     #   factory-boy
-filelock==3.12.2
+filelock==3.13.1
     # via virtualenv
 filetype==1.2.0
     # via -r requirements.txt
-freezegun==1.2.2
+freezegun==1.4.0
     # via -r requirements_dev.in
 gdal==3.6.3
     # via -r requirements.txt
@@ -213,19 +214,19 @@ gunicorn==21.2.0
     # via -r requirements.txt
 html5lib==1.1
     # via -r requirements.txt
-identify==2.5.27
+identify==2.5.33
     # via pre-commit
-idna==3.4
+idna==3.6
     # via
     #   -r requirements.txt
     #   requests
 ipdb==0.13.13
     # via -r requirements_dev.in
-ipython==8.14.0
+ipython==8.18.1
     # via ipdb
 jdcal==1.4.1
     # via -r requirements.txt
-jedi==0.19.0
+jedi==0.19.1
     # via ipython
 jinja2==3.1.2
     # via -r requirements.txt
@@ -241,7 +242,7 @@ matplotlib-inline==0.1.6
     # via ipython
 nodeenv==1.8.0
     # via pre-commit
-numpy==1.25.2
+numpy==1.26.2
     # via
     #   -r requirements.txt
     #   pandas
@@ -254,14 +255,14 @@ openpyxl==3.1.2
     # via
     #   -r requirements.txt
     #   tablib
-packaging==23.1
+packaging==23.2
     # via
     #   -r requirements.txt
     #   build
     #   django-jsoneditor
     #   docker
     #   gunicorn
-pandas==2.0.3
+pandas==2.1.4
     # via -r requirements.txt
 parso==0.8.3
     # via jedi
@@ -269,14 +270,12 @@ pdf2image==1.16.3
     # via
     #   -r requirements.txt
     #   -r requirements_dev.in
-pexpect==4.8.0
+pexpect==4.9.0
     # via ipython
-phonenumbers==8.13.19
+phonenumbers==8.13.27
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
-pickleshare==0.7.5
-    # via ipython
 pillow==10.1.0
     # via
     #   -r requirements.txt
@@ -285,15 +284,15 @@ pillow==10.1.0
     #   pdf2image
 pip-tools==7.3.0
     # via -r requirements_dev.in
-platformdirs==3.10.0
+platformdirs==4.1.0
     # via virtualenv
 postfinancecheckout==4.0.0
     # via -r requirements.txt
-pre-commit==3.3.3
+pre-commit==3.6.0
     # via -r requirements_dev.in
-prompt-toolkit==3.0.39
+prompt-toolkit==3.0.43
     # via ipython
-psycopg2-binary==2.9.7
+psycopg2-binary==2.9.9
     # via -r requirements.txt
 ptyprocess==0.7.0
     # via pexpect
@@ -303,7 +302,7 @@ pycparser==2.21
     # via
     #   -r requirements.txt
     #   cffi
-pygments==2.16.1
+pygments==2.17.2
     # via ipython
 pyjwt[crypto]==2.8.0
     # via
@@ -323,11 +322,15 @@ python-dateutil==2.8.2
     #   freezegun
     #   pandas
     #   postfinancecheckout
+python-ipware==2.0.1
+    # via
+    #   -r requirements.txt
+    #   django-ipware
 python3-openid==3.2.0
     # via
     #   -r requirements.txt
     #   django-allauth
-pytz==2023.3
+pytz==2023.3.post1
     # via
     #   -r requirements.txt
     #   djangorestframework
@@ -358,7 +361,7 @@ six==1.16.0
     #   html5lib
     #   postfinancecheckout
     #   python-dateutil
-soupsieve==2.4.1
+soupsieve==2.5
     # via
     #   -r requirements.txt
     #   beautifulsoup4
@@ -367,7 +370,7 @@ sqlparse==0.4.4
     #   -r requirements.txt
     #   django
     #   django-debug-toolbar
-stack-data==0.6.2
+stack-data==0.6.3
     # via ipython
 tablib[xlsx]==3.5.0
     # via
@@ -379,11 +382,11 @@ tomli==2.0.1
     #   ipdb
     #   pip-tools
     #   pyproject-hooks
-traitlets==5.9.0
+traitlets==5.14.0
     # via
     #   ipython
     #   matplotlib-inline
-typing-extensions==4.7.1
+typing-extensions==4.9.0
     # via
     #   -r requirements.txt
     #   asgiref
@@ -392,33 +395,29 @@ tzdata==2023.3
     # via
     #   -r requirements.txt
     #   pandas
-unidecode==1.3.6
+unidecode==1.3.7
     # via -r requirements.txt
 uritemplate==4.1.1
     # via -r requirements.txt
-urllib3==2.0.4
+urllib3==2.1.0
     # via
     #   -r requirements.txt
     #   docker
     #   postfinancecheckout
     #   requests
-virtualenv==20.24.3
+virtualenv==20.25.0
     # via pre-commit
-wcwidth==0.2.6
+wcwidth==0.2.12
     # via prompt-toolkit
 webencodings==0.5.1
     # via
     #   -r requirements.txt
     #   html5lib
-websocket-client==1.6.2
-    # via
-    #   -r requirements.txt
-    #   docker
-wheel==0.41.2
+wheel==0.42.0
     # via pip-tools
-whitenoise==6.5.0
+whitenoise==6.6.0
     # via -r requirements.txt
-wrapt==1.15.0
+wrapt==1.16.0
     # via
     #   -r requirements.txt
     #   deprecated
