@@ -38,7 +38,7 @@ urlpatterns = (
 
 
 urlpatterns += [
-    path("", include("geocity.apps.accounts.urls")),
+    path("", include("geocity.apps.accounts.urls", namespace="accounts")),
     path("rest/", include(geocity.apps.api.urls)),  # Django-rest urls
     path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
     path("captcha/", include("captcha.urls")),

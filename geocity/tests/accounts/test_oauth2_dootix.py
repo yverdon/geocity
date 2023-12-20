@@ -1,13 +1,10 @@
 import json
 
-from allauth.socialaccount.tests import OAuth2TestsMixin
 from allauth.tests import MockedResponse, TestCase
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from geocity.apps.accounts.dootix.provider import DootixProvider
-
-User = get_user_model()
+from geocity.tests.accounts.custom_oauth2_test_mixin import CustomOAuth2TestsMixin
 
 # Dootix profile_url success response mock.
 # Happen if login succeeded.
@@ -24,7 +21,7 @@ profile_response_mock = {
 }
 
 
-class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
+class DootixOAuth2Tests(CustomOAuth2TestsMixin, TestCase):
     """
     Default OAuth2 automated tests + dootix specific tests.
     """
