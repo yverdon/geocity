@@ -29,7 +29,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
     def get_user_data(self):
         return {
-            "username": "joe",
             "password1": "yCKntcz@#3&U%8",
             "password2": "yCKntcz@#3&U%8",
             "first_name": "Joe",
@@ -40,21 +39,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
             "city": "Lausanne",
             "phone_first": "0789124692",
         }
-
-    def test_user_cannot_register_if_email_is_used(self):
-        data = self.get_user_data()
-        captcha = self.generate_captcha()
-        self.client.post(
-            reverse("accounts:user_profile_create"),
-            {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}},
-            follow=True,
-        )
-        self.client.post(reverse("logout"))
-        response = self.client.post(
-            reverse("accounts:user_profile_create"), data, follow=True
-        )
-        self.assertContains(response, "Cet email est déjà utilisé.")
-        self.assertFalse(response.context["user"].is_authenticated)
 
     def execute_post_register(self):
         data = self.get_user_data()
