@@ -51,8 +51,8 @@ SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 # LIMIT MAX CONNEXIONS ATTEMPTS
 AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
 # Lock out by combination of ip AND User
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = os.getenv(
-    "AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP", False
+AXES_LOCKOUT_PARAMETERS = os.getenv(
+    "AXES_LOCKOUT_PARAMETERS ", ["ip_address", ["username", "user_agent"]]
 )
 AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
