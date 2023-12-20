@@ -2,9 +2,9 @@
 {% autoescape off %}
 {% blocktranslate %}Bonjour {{ user.get_full_name }}{% endblocktranslate %},
 
-{% translate "Nous devons simplement vérifier votre adresse e-mail avant que vous puissiez accéder à Geocity." %}
+{% translate "Pour votre information, quelqu'un a tenté de créer un compte Geocity avec votre adresse e-mail." %}
 
-{% translate "Vérifiez votre adresse e-mail: " %}https://{{ domain }}{{ url }}
+{% translate "Ceci n'a pas d'implication grave pour vous et vous pouvez sans danger l'ignorer." %}
 
 {% translate "Avec nos meilleures salutations," %}
 {{ signature }}

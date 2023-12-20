@@ -68,7 +68,6 @@ def reset_db():
     """
     with transaction.atomic():
         with connection.cursor() as cursor:
-
             if settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true":
                 cursor.execute(
                     "select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'"
@@ -257,7 +256,6 @@ class Command(BaseCommand):
     ):
         form_order = 0
         for form_category, objs in form_categories:
-
             # Used to manage specific cases on forms
             if (
                 form_category.startswith("RENEWAL_REMINDER")
@@ -319,7 +317,6 @@ class Command(BaseCommand):
         administrative_entity,
         integrator_group,
     ):
-
         result = self.setup_form_specific_cases(form_category)
 
         form_obj = Form.objects.create(
@@ -702,7 +699,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         number = document.getElementById(element).value;
                     }
 
-                    document.getElementById("id_username").value = user + number;
+                    document.getElementById("id_email_or_username").value = user + number;
                     document.getElementById("id_password").value = "demo";
                     document.getElementById("login_button").click();
                 }

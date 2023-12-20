@@ -50,17 +50,20 @@ SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 
 # LIMIT MAX CONNEXIONS ATTEMPTS
 AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
-# Lock out by combination of ip AND User
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = os.getenv(
-    "AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP", False
+# Lock out by combination of ip AND User if not otherwise defined in .env
+AXES_LOCKOUT_PARAMETERS = (
+    os.getenv("AXES_LOCKOUT_PARAMETERS").split(",")
+    if os.getenv("AXES_LOCKOUT_PARAMETERS")
+    else ["ip_address", ["username", "user_agent"]]
 )
+
 AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
 )
 
 AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
 AXES_SENSITIVE_PARAMETERS = ["auth-password"]
-
+AXES_IPWARE_PROXY_COUNT = int(os.getenv("AXES_IPWARE_PROXY_COUNT", 1))
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -207,6 +210,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "axes.middleware.AxesMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 if ENABLE_2FA:
@@ -438,9 +442,11 @@ TEMPLATES = [
 
 AUTHENTICATION_BACKENDS = [
     # AxesBackend
-    "axes.backends.AxesBackend",
-    # Classic django authentication backend
+    "axes.backends.AxesStandaloneBackend",
+    # Classic django authentication backend (login-by-username)
     "django.contrib.auth.backends.ModelBackend",
+    # Login-by-email authentication backend
+    "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     # SocialAccount authentication backend with allauth
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -620,7 +626,10 @@ ANONYMOUS_USER_ZIPCODE = 9999
 ANONYMOUS_USER_PREFIX = "anonymous_user_"
 ANONYMOUS_NAME = "Anonyme"
 PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
+EMAIL_USER_PREFIX = "email_user_"
 
+
+# Only for Intranet usage of Geocity
 if ALLOW_REMOTE_USER_AUTH:
     # Add the auth middleware
     MIDDLEWARE += ["django.contrib.auth.middleware.RemoteUserMiddleware"]
@@ -634,6 +643,7 @@ if ALLOW_REMOTE_USER_AUTH:
         # Classic django authentication backend
         "django.contrib.auth.backends.RemoteUserBackend",
         "django.contrib.auth.backends.ModelBackend",
+        "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     ]
 
 CKEDITOR_CONFIGS = {

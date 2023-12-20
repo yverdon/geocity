@@ -183,6 +183,9 @@ class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    class Media:
+        css = {"all": ("css/admin/admin.css",)}
+
 
 class FormPricesInline(admin.TabularInline, SortableInlineAdminMixin):
     model = models.Form.prices.through
