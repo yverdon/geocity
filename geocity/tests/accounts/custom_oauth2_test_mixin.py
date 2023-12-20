@@ -3,6 +3,7 @@ import hashlib
 from urllib.parse import parse_qs, urlparse
 
 import requests
+from allauth.socialaccount import app_settings
 from allauth.socialaccount.tests import MockedResponse, OAuth2TestsMixin
 
 
@@ -12,7 +13,6 @@ class CustomOAuth2TestsMixin(OAuth2TestsMixin):
     https://github.com/pennersr/django-allauth/blob/main/allauth/socialaccount/tests/__init__.py
     """
 
-    # TODO: PKCE is set at false manually. Need to remove this method, and try to fix test with another solution
     def login(self, resp_mock=None, process="login", with_refresh_token=True):
 
         with self.mocked_response():
@@ -22,6 +22,9 @@ class CustomOAuth2TestsMixin(OAuth2TestsMixin):
         p = urlparse(resp["location"])
         q = parse_qs(p.query)
 
+        pkce_enabled = app_settings.PROVIDERS.get(self.app.provider, {}).get(
+            "OAUTH_PKCE_ENABLED", self.provider.pkce_enabled_default
+        )
         pkce_enabled = False  # Line changed
 
         self.assertEqual("code_challenge" in q, pkce_enabled)
