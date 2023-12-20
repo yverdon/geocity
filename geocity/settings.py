@@ -63,7 +63,8 @@ AXES_LOCKOUT_URL = (
 
 AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
 AXES_SENSITIVE_PARAMETERS = ["auth-password"]
-
+AXES_IPWARE_PROXY_COUNT = int(os.getenv("AXES_IPWARE_PROXY_COUNT", 1))
+print(AXES_IPWARE_PROXY_COUNT)
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -441,7 +442,7 @@ TEMPLATES = [
 
 AUTHENTICATION_BACKENDS = [
     # AxesBackend
-    "axes.backends.AxesBackend",
+    "axes.backends.AxesStandaloneBackend",
     # Classic django authentication backend (login-by-username)
     "django.contrib.auth.backends.ModelBackend",
     # Login-by-email authentication backend

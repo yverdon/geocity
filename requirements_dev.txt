@@ -100,8 +100,10 @@ django-appconf==1.0.5
     # via
     #   -r requirements.txt
     #   django-select2
-django-axes==6.2.0
-    # via -r requirements.txt
+django-axes[ipware]==6.2.0
+    # via
+    #   -r requirements.txt
+    #   django-axes
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.txt
 django-bootstrap4==21.2
@@ -126,6 +128,10 @@ django-formtools==2.4.1
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
+django-ipware==6.0.3
+    # via
+    #   -r requirements.txt
+    #   django-axes
 django-jazzmin==2.6.0
     # via -r requirements.txt
 django-js-asset==2.1.0
@@ -319,6 +325,10 @@ python-dateutil==2.8.2
     #   freezegun
     #   pandas
     #   postfinancecheckout
+python-ipware==2.0.1
+    # via
+    #   -r requirements.txt
+    #   django-ipware
 python3-openid==3.2.0
     # via
     #   -r requirements.txt
