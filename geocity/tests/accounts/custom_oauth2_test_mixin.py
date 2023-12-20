@@ -25,7 +25,6 @@ class CustomOAuth2TestsMixin(OAuth2TestsMixin):
         pkce_enabled = app_settings.PROVIDERS.get(self.app.provider, {}).get(
             "OAUTH_PKCE_ENABLED", self.provider.pkce_enabled_default
         )
-        pkce_enabled = False  # Line changed
 
         self.assertEqual("code_challenge" in q, pkce_enabled)
         self.assertEqual("code_challenge_method" in q, pkce_enabled)
