@@ -1,16 +1,18 @@
 import base64
 import hashlib
-
-# import allauth.app_settings
 from urllib.parse import parse_qs, urlparse
 
 import requests
 from allauth.socialaccount.tests import MockedResponse, OAuth2TestsMixin
 
 
-class CostumOAuth2TestsMixin(OAuth2TestsMixin):
+class CustomOAuth2TestsMixin(OAuth2TestsMixin):
+    """
+    Override from OAuth2TestsMixin login method to fix error at args[0] == "POST"
+    https://github.com/pennersr/django-allauth/blob/main/allauth/socialaccount/tests/__init__.py
+    """
+
     # TODO: PKCE is set at false manually. Need to remove this method, and try to fix test with another solution
-    # Override from OAuth2TestsMixin.login https://github.com/pennersr/django-allauth/blob/main/allauth/socialaccount/tests/__init__.py
     def login(self, resp_mock=None, process="login", with_refresh_token=True):
 
         with self.mocked_response():
