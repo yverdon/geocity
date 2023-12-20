@@ -64,7 +64,6 @@ AXES_LOCKOUT_URL = (
 AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
 AXES_SENSITIVE_PARAMETERS = ["auth-password"]
 AXES_IPWARE_PROXY_COUNT = int(os.getenv("AXES_IPWARE_PROXY_COUNT", 1))
-print(AXES_IPWARE_PROXY_COUNT)
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
 # SECURITY WARNING: keep the secret key used in production secret!
