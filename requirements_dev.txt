@@ -99,8 +99,10 @@ django-appconf==1.0.6
     # via
     #   -r requirements.txt
     #   django-select2
-django-axes==5.41.1
-    # via -r requirements.txt
+django-axes[ipware]==6.2.0
+    # via
+    #   -r requirements.txt
+    #   django-axes
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.txt
 django-bootstrap4==21.2

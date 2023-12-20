@@ -66,7 +66,7 @@ django-allauth==0.59.0
     # via -r requirements.in
 django-appconf==1.0.6
     # via django-select2
-django-axes==5.41.1
+django-axes[ipware]==6.2.0
     # via -r requirements.in
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.in

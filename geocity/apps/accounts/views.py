@@ -12,22 +12,15 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, HttpResponseRedirect, StreamingHttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.http import require_POST
-
-if settings.ENABLE_2FA:
-    from two_factor.views import LoginView, ProfileView
-else:
-    from django.contrib.auth.views import LoginView
-
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 
 from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
@@ -61,7 +54,7 @@ def logout_view(request):
     )
 
 
-# User has tried to many login attempts
+# User has tried too many login attempts
 def lockout_view(request):
     return render(
         request,
@@ -93,7 +86,6 @@ class SetCurrentSiteMixin:
 
 
 class CustomPasswordResetView(PasswordResetView):
-
     extra_email_context = {"custom_host": ""}
 
     def get_context_data(self, **kwargs):
@@ -108,16 +100,30 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
-# Create this class to simulate ProfileView in a non 2FA context
-class FakeView:
-    pass
+if settings.ENABLE_2FA:
+    from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
+    from two_factor.views import LoginView as LoginView2FA
+    from two_factor.views import ProfileView as ProfileView2FA
+
+    class BaseLoginView2FA(LoginView2FA):
+        form_list = (
+            ("auth", forms.EmailAuthenticationForm),
+            ("token", AuthenticationTokenForm),
+            ("backup", BackupTokenForm),
+        )
+
+else:
+    from django.contrib.auth.views import LoginView as LoginViewDjango
+
+    class BaseLoginView(LoginViewDjango):
+        form_class = forms.EmailAuthenticationForm
+
+    # Create this class to simulate ProfileView in a non 2FA context
+    class FakeView:
+        pass
 
 
-if not settings.ENABLE_2FA:
-    ProfileView = FakeView
-
-
-class Custom2FAProfileView(ProfileView):
+class Custom2FAProfileView(ProfileView2FA if settings.ENABLE_2FA else FakeView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         url_qs = ""
@@ -129,7 +135,9 @@ class Custom2FAProfileView(ProfileView):
         return update_context_with_filters(context, params_str, url_qs)
 
 
-class CustomLoginView(LoginView, SetCurrentSiteMixin):
+class CustomLoginView(
+    BaseLoginView2FA if settings.ENABLE_2FA else BaseLoginView, SetCurrentSiteMixin
+):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
         # check if we need to display an activation message
@@ -214,7 +222,6 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         return update_context_with_filters(context, params_str, url_qs)
 
     def get_success_url(self):
-
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
         filter_qs = (
             qs_dict["next"][0].replace(settings.PREFIX_URL, "").replace("/", "")
@@ -314,33 +321,55 @@ def user_profile_create(request):
     is_valid = django_user_form.is_valid() and user_profile_form.is_valid()
 
     if is_valid:
-        new_user = django_user_form.save()
-        # email wasn't verified yet, so account isn't active just yet
-        new_user.is_active = False
-        new_user.save()
-        user_profile_form.instance.user = new_user
-        user_profile_form.save()
+        if django_user_form.email_already_known:
+            attacked_user = models.User.objects.filter(
+                email__iexact=django_user_form.cleaned_data["email"]
+            ).first()
 
-        mail_subject = _("Activer votre compte")
-        message = render_to_string(
-            "registration/emails/email_confirmation.txt",
-            {
-                "user": new_user,
-                "domain": get_current_site(request).domain,
-                "url": reverse(
-                    "accounts:activate_account",
-                    kwargs={
-                        # we need the user id to validate the token
-                        "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
-                        "token": default_token_generator.make_token(new_user),
-                    },
-                ),
-                "signature": _("L'équipe de Geocity"),
-            },
-        )
+            mail_subject = _(
+                "Quelqu'un a tenté de créer un compte avec votre adresse e-mail"
+            )
+            message = render_to_string(
+                "registration/emails/email_enumeration_attack_evaded.txt",
+                {
+                    "user": attacked_user,
+                    "domain": get_current_site(request).domain,
+                    "signature": _("L'équipe de Geocity"),
+                },
+            )
 
-        email = EmailMessage(mail_subject, message, to=[new_user.email])
-        email.send()
+            email = EmailMessage(mail_subject, message, to=[attacked_user.email])
+            email.send()
+
+        else:
+            new_user = django_user_form.save()
+            # email wasn't verified yet, so account isn't active just yet
+            new_user.is_active = False
+            new_user.save()
+            user_profile_form.instance.user = new_user
+            user_profile_form.save()
+
+            mail_subject = _("Activer votre compte")
+            message = render_to_string(
+                "registration/emails/email_confirmation.txt",
+                {
+                    "user": new_user,
+                    "domain": get_current_site(request).domain,
+                    "url": reverse(
+                        "accounts:activate_account",
+                        kwargs={
+                            # we need the user id to validate the token
+                            "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
+                            "token": default_token_generator.make_token(new_user),
+                        },
+                    ),
+                    "signature": _("L'équipe de Geocity"),
+                },
+            )
+
+            email = EmailMessage(mail_subject, message, to=[new_user.email])
+            email.send()
+
         messages.success(
             request,
             _(

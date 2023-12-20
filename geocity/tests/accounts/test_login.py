@@ -32,7 +32,7 @@ if not settings.ENABLE_2FA:
             user = factories.UserFactory()
             response = self.client.post(
                 reverse("accounts:account_login"),
-                {"username": user.username, "password": "password"},
+                {"email_or_username": user.username, "password": "password"},
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
@@ -67,7 +67,7 @@ if settings.ENABLE_2FA:
             user = factories.UserFactory()
             response = self.login(
                 data={
-                    "auth-username": user.username,
+                    "auth-email_or_username": user.username,
                     "auth-password": "password",
                     "custom_login_view-current_step": "auth",
                 }
@@ -84,7 +84,7 @@ if settings.ENABLE_2FA:
             user.totpdevice_set.create(name="default", key=random_hex())
             response = self.login(
                 data={
-                    "auth-username": user.username,
+                    "auth-email_or_username": user.username,
                     "auth-password": "password",
                     "custom_login_view-current_step": "auth",
                 }
@@ -140,7 +140,6 @@ class TestLoginPage(TestCase):
         self.assertHTMLEqual(description, expected_description)
 
     def test_get_standard_login_view(self):
-
         response = self.client.get(
             reverse("accounts:account_login"),
         )

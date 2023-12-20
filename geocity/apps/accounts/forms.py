@@ -3,9 +3,9 @@ from allauth.socialaccount.providers.base import ProviderException
 from captcha.fields import CaptchaField
 from django import forms
 from django.conf import settings
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate
+from django.contrib.auth.forms import AuthenticationForm, BaseUserCreationForm
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from geocity.fields import AddressWidget
@@ -17,18 +17,96 @@ from .geomapfish.adapter import GeomapfishSocialAccountAdapter
 from .geomapfish.provider import GeomapfishProvider
 
 
-def check_existing_email(email, user):
-    if (
-        models.User.objects.filter(email=email)
-        .exclude(Q(id=user.id) if user else Q())
-        .exists()
-    ):
-        raise forms.ValidationError(_("Cet email est déjà utilisé."))
+class EmailAuthenticationForm(forms.Form):
+    """Largely copied over from django's AuthenticationForm."""
 
-    return email
+    email_or_username = forms.CharField(
+        label=_("Email/Username"),
+        widget=forms.TextInput(attrs={"autofocus": True, "maxlength": 254}),
+        max_length=254,
+    )
+    password = forms.CharField(
+        label=_("Password"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_cache = None
+        self.request = request
+
+    def get_user(self):
+        return self.user_cache
+
+    def clean(self):
+        email_or_username = self.cleaned_data.get("email_or_username")
+        password = self.cleaned_data.get("password")
+
+        if email_or_username is not None and password:
+            # Try with email first
+            self.user_cache = authenticate(
+                self.request, email=email_or_username, password=password
+            )
+            if self.user_cache:
+                if self.user_cache.is_active:
+                    return self.cleaned_data
+
+                raise forms.ValidationError(
+                    AuthenticationForm.error_messages["inactive"], code="inactive"
+                )
+
+            # Then try with username
+            self.user_cache = authenticate(
+                self.request, username=email_or_username, password=password
+            )
+            if self.user_cache:
+                if self.user_cache.is_active:
+                    return self.cleaned_data
+
+                raise forms.ValidationError(
+                    AuthenticationForm.error_messages["inactive"], code="inactive"
+                )
+
+            # Nothing matched :(
+            raise forms.ValidationError(
+                AuthenticationForm.error_messages["invalid_login"],
+                code="invalid_login",
+                params={"username": _("Email/Username")},
+            )
 
 
-class NewDjangoAuthUserForm(UserCreationForm):
+class EmailUserCreationForm(BaseUserCreationForm):
+    class Meta(BaseUserCreationForm.Meta):
+        fields = ("email",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = True
+        self.email_already_known = False
+
+    def clean_email(self):
+        """Reject emails that differ only in case."""
+        email = self.cleaned_data.get("email")
+
+        if not email:
+            self.add_error("email", "")
+
+        if email and models.User.objects.filter(email__iexact=email).exists():
+            self.email_already_known = True
+
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = f"{settings.EMAIL_USER_PREFIX}{user.email}"
+
+        if commit:
+            user.save()
+
+        return user
+
+
+class NewDjangoAuthUserForm(EmailUserCreationForm):
     first_name = forms.CharField(
         label=_("Prénom"),
         max_length=30,
@@ -37,43 +115,16 @@ class NewDjangoAuthUserForm(UserCreationForm):
         label=_("Nom"),
         max_length=150,
     )
-    email = forms.EmailField(
-        label=_("Email"),
-        max_length=254,
-    )
     required_css_class = "required"
-
-    def clean_email(self):
-        return check_existing_email(self.cleaned_data["email"], user=None)
 
     def clean(self):
         cleaned_data = super().clean()
 
-        if not "username" in cleaned_data:
-            raise forms.ValidationError({"username": ""})
-
-        if not "first_name" in cleaned_data:
+        if "first_name" not in cleaned_data:
             raise forms.ValidationError({"first_name": ""})
 
-        if not "last_name" in cleaned_data:
+        if "last_name" not in cleaned_data:
             raise forms.ValidationError({"last_name": ""})
-
-        if not "email" in cleaned_data:
-            raise forms.ValidationError({"email": ""})
-
-        for reserved_usernames in (
-            settings.TEMPORARY_USER_PREFIX,
-            settings.ANONYMOUS_USER_PREFIX,
-        ):
-            if cleaned_data["username"].startswith(reserved_usernames):
-                raise forms.ValidationError(
-                    {
-                        "username": _(
-                            "Le nom d'utilisat·eur·rice ne peut pas commencer par %s"
-                        )
-                        % reserved_usernames
-                    }
-                )
 
         if cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
             raise forms.ValidationError(
@@ -92,10 +143,9 @@ class NewDjangoAuthUserForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data["email"]
         user.first_name = self.cleaned_data["first_name"]
         user.last_name = self.cleaned_data["last_name"]
-        user.backend = "django.contrib.auth.backends.ModelBackend"
+        user.backend = "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend"
 
         if commit:
             user.save()
@@ -105,6 +155,13 @@ class NewDjangoAuthUserForm(UserCreationForm):
 
 class DjangoAuthUserForm(forms.ModelForm):
     """User"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.username.startswith(settings.EMAIL_USER_PREFIX):
+            field = self.fields["username"]
+            field.widget = field.hidden_widget()
 
     first_name = forms.CharField(
         max_length=30,
@@ -127,10 +184,11 @@ class DjangoAuthUserForm(forms.ModelForm):
             attrs={"placeholder": "ex: exemple@exemple.com", "required": "required"}
         ),
     )
-    required_css_class = "required"
+    username = forms.CharField(
+        max_length=150, label=_("Identifiant"), disabled=True, required=False
+    )
 
-    def clean_email(self):
-        return check_existing_email(self.cleaned_data["email"], self.instance)
+    required_css_class = "required"
 
     def clean_first_name(self):
         if self.cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
@@ -150,7 +208,7 @@ class DjangoAuthUserForm(forms.ModelForm):
 
     class Meta:
         model = models.User
-        fields = ["first_name", "last_name", "email"]
+        fields = ["first_name", "last_name", "email", "username"]
 
 
 class GenericUserProfileForm(forms.ModelForm):
