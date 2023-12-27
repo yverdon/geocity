@@ -1,12 +1,13 @@
 import ipaddress
 
 from constance import config
+from django.urls import resolve
 from django.utils.translation import gettext_lazy as _
 from knox.auth import TokenAuthentication
 from rest_framework import exceptions
 
 # Todo: Use name to get route path instead of hardcoding
-api_public_routes = ["/rest/events/", "/rest/current_user/"]
+api_public_routes = ["events", "current_user", "agenda"]
 
 
 def get_client_ip(request):
@@ -40,10 +41,17 @@ def check_request_ip_is_allowed(request):
 
 
 def check_is_public_route(request):
-    if request.path in api_public_routes:
-        return True
+    # Resolve request
+    resolved_match = resolve(request.path)
 
-    return False
+    # Url_name correspond to route_name
+    url_name = resolved_match.url_name
+
+    # If route should be public and is in the request, return true.
+    # Example : api_public_routes = ["events", "current_user", "agenda"]
+    # url_name = agenda # Will return True
+    # url_name = submission # Will return False
+    return any(route in url_name for route in api_public_routes)
 
 
 class InternalTokenAuthentication(TokenAuthentication):

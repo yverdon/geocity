@@ -699,7 +699,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         number = document.getElementById(element).value;
                     }
 
-                    document.getElementById("id_username").value = user + number;
+                    document.getElementById("id_email_or_username").value = user + number;
                     document.getElementById("id_password").value = "demo";
                     document.getElementById("login_button").click();
                 }

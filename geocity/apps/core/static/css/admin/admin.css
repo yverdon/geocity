@@ -10,3 +10,8 @@
 .selector select {
     overflow-x: auto;
 }
+
+/*Reduce select2 field width so that CRUD button remain visible*/
+tr .select2 {
+    width: 70% !important;
+}
