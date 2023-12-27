@@ -4,14 +4,14 @@
 {% load bootstrap4 %}
 
 {% block content %}
-<h3>{% translate "Add a new prestation" %}</h3>
+<h3>{% translate "Add a new service fee" %}</h3>
   <hr>
   <form method="post">
     {% csrf_token %}
     {{ form.media }}
     {% bootstrap_form form layout='horizontal' %}
     <div class="text-right">
-        <input name="action" type="hidden" value="add_service_fee">
+        <input name="action" type="hidden" value="create_service_fee">
         <button class="btn btn-primary" name="save">
           {% translate "Save" %}
         </button>
