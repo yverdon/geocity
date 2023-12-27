@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block content %}
+<h3>{% translate "Update a service fee" %}</h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.media }}
+    {% bootstrap_form form layout='horizontal' %}
+    <div class="text-right">
+        <input name="action" type="hidden" value="update_service_fee">
+        <button class="btn btn-primary" name="save">
+          {% translate "Save" %}
+        </button>
+    </div>
+  </form>
+{% endblock %}

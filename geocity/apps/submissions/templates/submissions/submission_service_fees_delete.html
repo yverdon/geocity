@@ -1,0 +1,24 @@
+{% extends "base_generic.html" %}
+
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block content %}
+  <h3 class="mt-2">{% translate "Delete service fee?" %}</h3>
+  <hr>
+  <form method="POST">
+    {% csrf_token %}
+    <p>
+      {% translate "Are you sure you want to delete the service fee: " %}
+    </p>
+    <p>
+      {{ service_fee.services_fees_type.name }}
+    </p>
+    <div>
+      {% bootstrap_button "Confirm" button_type="submit" button_class="btn-primary" value="Confirm" %}
+      <a class="ml-2" href="{% url 'submissions:submission_detail' submission_id=service_fee.submission.pk %}">
+        {% translate "Cancel" %}
+      </a>
+    </div>
+  </form>
+{% endblock %}
