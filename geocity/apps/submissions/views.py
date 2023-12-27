@@ -60,7 +60,7 @@ from .payments.services import (
 )
 from .search import search_result_to_json, search_submissions
 from .services import send_refund_email
-from .shortcuts import get_submission_for_user_or_404
+from .shortcuts import get_service_fee_for_user_or_404, get_submission_for_user_or_404
 from .steps import (
     StepType,
     get_anonymous_steps,
@@ -126,7 +126,6 @@ def get_submission_for_edition(user, submission_id):
 
 def get_submission_for_prolongation(user, submission_id):
     allowed_statuses = models.Submission.PROLONGABLE_STATUSES
-
     submission = get_submission_for_user_or_404(
         user,
         submission_id,
@@ -140,16 +139,23 @@ def get_submission_for_prolongation(user, submission_id):
 
 def get_submission_service_fee(user, submission_id):
     allowed_statuses = models.Submission.SERVICE_FEES_STATUSES
-    print(f"allowed_statuses: {allowed_statuses}")
     submission = get_submission_for_user_or_404(
         user,
         submission_id,
         statuses=allowed_statuses,
     )
 
-    print(f"Coucou submission: {submission}")
-
     return submission
+
+
+def get_service_fee(user, service_fee_id):
+    allowed_statuses = models.Submission.SERVICE_FEES_STATUSES
+    service_fee = get_service_fee_for_user_or_404(
+        user,
+        service_fee_id,
+    )
+
+    return service_fee
 
 
 def redirect_bad_status_to_detail(func):
@@ -283,6 +289,12 @@ class SubmissionDetailView(View):
             # that can see the prestation table
             data=self.submission.get_service_fees()
         )
+        datat = self.submission.get_service_fees()
+        print(f"type(ServicesFeesTable): {type(ServicesFeesTable)}")
+        print(f"data of the service_fees_table: {datat}")
+        print(f"type data of the service_fees_table: {type(datat)}")
+        print(f"dir data of the service_fees_table: {dir(datat)}")
+        print(80 * "#")
 
         return {
             **kwargs,
@@ -368,7 +380,8 @@ class SubmissionDetailView(View):
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
             models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
-            models.ACTION_ADD_SERVICE_FEE: self.get_service_fee_form,
+            models.ACTION_CREATE_SERVICE_FEE: self.get_service_fee_form,
+            models.ACTION_UPDATE_SERVICE_FEE: self.get_service_fee_form,
         }
 
         return (
@@ -440,8 +453,11 @@ class SubmissionDetailView(View):
         return None
 
     def get_service_fee_form(self, data=None, **kwargs):
-        # TODO: create has permission to add a service fee
-        if permissions.has_permission_to_add_service_fees(
+        # TODO: create has permission to create a service fee
+        # TODO: create has permission to update a service fee
+        if permissions.has_permission_to_create_service_fees(
+            self.request.user, self.submission
+        ) or permissions.has_permission_to_create_service_fees(
             self.request.user, self.submission
         ):
             form = forms.ServicesFeesForm(
@@ -586,7 +602,9 @@ class SubmissionDetailView(View):
             return self.handle_complementary_documents_form_submission(form)
         elif action == models.ACTION_REQUEST_INQUIRY:
             return self.handle_request_inquiry_form_submission(form)
-        elif action == models.ACTION_ADD_SERVICE_FEE:
+        elif action == models.ACTION_CREATE_SERVICE_FEE:
+            return self.handle_service_fee_form_submission(form)
+        elif action == models.ACTION_UPDATE_SERVICE_FEE:
             return self.handle_service_fee_form_submission(form)
 
     def handle_service_fee_form_submission(self, form):
@@ -2209,7 +2227,7 @@ def administrative_entities_geojson(request, administrative_entity_id):
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def create_new_submission_service_fees(request, submission_id, data=None):
+def create_submission_service_fees(request, submission_id, data=None):
     """Docstring"""
     print(80 * "XxX")
     print(f"submission_id ____: {submission_id}")
@@ -2218,21 +2236,47 @@ def create_new_submission_service_fees(request, submission_id, data=None):
         request.user,
         submission_id,
     )
+    print(f"submission admin entites: {submission.administrative_entity}")
+    d = PermitDepartment.objects.filter(group__in=request.user.groups.all())
+    print(80 * "#", f"\n length department: {len(d)}\n", 80 * "#")
+    departments = PermitDepartment.objects.filter(
+        group__in=request.user.groups.all()
+    ).first()
+    # departments = PermitDepartment.objects.filter(
+    #     administrative_entity=submission.administrative_entity,
+    # )
+    print(f"departments: {departments}")
+    print(f"type departments: {type(departments)}")
+    print(f"dir departments: {dir(departments)}")
+    # print(f"departments values: {departments.values()}")
+    # print(f"departments values_list: {departments.values_list()}")
+    # print(f"departments values_list: {dir(departments.values_list())}")
+
     print(80 * "yYy")
 
     if request.method == "GET":
-        print(80 * "T")
+        logger.info("In GET method")
+        print(80 * "TtT")
+        initial = {
+            "provided_by": request.user,
+        }
         form = forms.ServicesFeesForm(
             submission=submission,
+            initial=initial,
             user=request.user,
         )
+        context = {
+            "form": form,
+        }
         print(f"form0.is_bound ____: {form.is_bound}")
         return render(
             request,
-            "submissions/submission_service_fees.html",
-            {"form": form},
+            "submissions/submission_service_fees_create.html",
+            context,
         )
-    elif request.method == "POST":
+
+    elif request.method in ("POST"):
+        logger.info("In POST method")
         data = request.POST
         print(f"submission_id ____: {submission_id}")
         print(f"submission _______: {submission}")
@@ -2246,6 +2290,9 @@ def create_new_submission_service_fees(request, submission_id, data=None):
             data=data,
             user=request.user,
         )
+        context = {
+            "form": form,
+        }
         print(f"form _____________: {dir(form)}")
         print(f"form fields ______: {form.fields}")
         print(f"form data ________: {form.data}")
@@ -2253,16 +2300,19 @@ def create_new_submission_service_fees(request, submission_id, data=None):
         print(f"form.errors ______: {form.errors}")
         print(f"form.is_bound ____: {form.is_bound}")
         if form.is_valid():
-            logger.success(_("form is valid. Processing data."))
+            logger.info(_("Form is valid. Processing data."))
             obj = form.save(commit=False)
             obj.submission = submission
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.permit_department = departments
             obj.save()
             success_message = _("La prestation a bien été renseignée.")
             messages.success(request, success_message)
 
             if "save_continue" in request.POST:
                 return redirect(
-                    "submissions:create_new_submission_service_fees",
+                    "submissions:create_submission_service_fees",
                     submission_id=submission.pk,
                 )
             elif "save" in request.POST:
@@ -2272,14 +2322,110 @@ def create_new_submission_service_fees(request, submission_id, data=None):
             else:
                 raise HttpResponse(status=404)
         else:
+            logger.error(_("Form is not valid. Cannot process data."))
             return render(
                 request,
-                "submissions/submission_service_fees.html",
-                {"form": form},
+                "submissions/submission_service_fees_create.html",
+                context,
             )
     else:
-        logger.error(_("form is not valid. Cannot process data."))
         raise HttpResponse(status=400)
+
+
+@redirect_bad_status_to_detail
+@login_required
+@permanent_user_required
+@check_mandatory_2FA
+def update_submission_service_fees(request, submission_id, service_fee_id, data=None):
+    """Docstring"""
+    submission = get_submission_service_fee(
+        request.user,
+        submission_id,
+    )
+    service_fee = get_service_fee(
+        request.user,
+        service_fee_id,
+    )
+    departments = PermitDepartment.objects.filter(
+        group__in=request.user.groups.all()
+    ).first()
+
+    # Trick: transform the time_spent_on_task variable otherwise it doesn't
+    # appear in the form:
+    time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
+
+    form = forms.ServicesFeesForm(
+        submission=submission,
+        instance=service_fee,
+        # Trick: follow-up
+        time_spent_on_task=time_spent_on_task,
+        user=request.user,
+    )
+    context = {"form": form}
+    print(f"DIR form: {dir(form)}")
+
+    if request.method == "GET":
+        return render(
+            request,
+            "submissions/submission_service_fees_update.html",
+            context,
+        )
+
+    elif request.method == "POST":
+        data = request.POST
+        form = forms.ServicesFeesForm(
+            submission=submission,
+            instance=service_fee,
+            data=data,
+            user=request.user,
+        )
+        if form.is_valid():
+            logger.info(_("Form is valid. Processing data."))
+            obj = form.save(commit=False)
+            obj.submission = submission
+            # obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.permit_department = departments
+            obj.save()
+            success_message = _("The service fee has been updated successfully.")
+            messages.success(request, success_message)
+
+            if "save" in request.POST:
+                return redirect(
+                    "submissions:submission_detail", submission_id=submission.pk
+                )
+            else:
+                raise HttpResponse(status=404)
+        else:
+            logger.error(_("Form is not valid. Cannot process data."))
+            return render(
+                request,
+                "submissions/submission_service_fees_update.html",
+                context,
+            )
+
+
+@redirect_bad_status_to_detail
+@login_required
+@permanent_user_required
+@check_mandatory_2FA
+def delete_submission_service_fees(request, submission_id, service_fee_id, data=None):
+    """Docstring"""
+    service_fee = get_service_fee(
+        request.user,
+        service_fee_id,
+    )
+    context = {"service_fee": service_fee}
+
+    if request.method == "GET":
+        return render(
+            request, "submissions/submission_service_fees_delete.html", context
+        )
+
+    elif request.method == "POST":
+        service_fee.delete()
+        messages.success(request, _("The service fee has been deleted successfully."))
+        return redirect("submissions:submission_detail", submission_id=submission_id)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -2288,9 +2434,9 @@ class EditServiceFee(View):
     """Docstring"""
 
     permission_error_message = _(
-        "Vous n'avez pas les permissions nécessaires pour modifier cette prestation."
+        "You do not have the necessary permissions to modify this service fee."
     )
-    not_exist_error_message = _("La prestation demandée n'existe pas.")
+    not_exist_error_message = _("")
 
     def get(self, request, *args, **kwargs):
         try:
@@ -2302,16 +2448,16 @@ class EditServiceFee(View):
 
         messages.error(request, error_message)
 
-        return redirect(reverse_lazy("submissions:submissions_list"))
+        return redirect("submissions:create_submission_service_fees")
 
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class ChangeTransactionStatus(View):
     permission_error_message = _(
-        "Vous n'avez pas les permissions pour changer le statut de cette transaction"
+        "You do not have permissions to change the status of this transaction."
     )
-    not_exist_error_message = _("La transaction demandée n'existe pas")
+    not_exist_error_message = _("The requested transaction does not exist.")
 
     def get(self, request, *args, **kwargs):
         try:
