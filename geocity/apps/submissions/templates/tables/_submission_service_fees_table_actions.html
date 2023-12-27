@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load submissions_extras %}
+
+<ul class="list-inline text-left">
+
+  <li>
+    <a title="{% translate 'Edit service fee' %}"
+       href="{% url 'submissions:update_submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}">
+        <i class="fa fa-edit fa-lg"></i>
+    </a>
+  </li>
+
+  <li>
+    <a title="{% translate 'Delete service fee' %}"
+       href="{% url 'submissions:delete_submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}">
+        <i class="fa fa-trash fa-lg"></i>
+    </a>
+  </li>
+
+</ul>
