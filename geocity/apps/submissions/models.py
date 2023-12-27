@@ -48,7 +48,8 @@ ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
 ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
-ACTION_ADD_SERVICE_FEE = "add_service_fee"
+ACTION_CREATE_SERVICE_FEE = "create_service_fee"
+ACTION_UPDATE_SERVICE_FEE = "update_service_fee"
 
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
@@ -60,7 +61,8 @@ ACTIONS = [
     ACTION_PROLONG,
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
-    ACTION_ADD_SERVICE_FEE,
+    ACTION_CREATE_SERVICE_FEE,
+    ACTION_UPDATE_SERVICE_FEE,
 ]
 
 logger = logging.getLogger(__name__)
@@ -163,6 +165,7 @@ class ContactTypeForAdminSite(ContactType):
 
 
 class Submission(models.Model):
+    # TODO: add a field for service_fees_total_price
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
     STATUS_APPROVED = 2
@@ -1106,7 +1109,7 @@ class Submission(models.Model):
                 Submission.STATUS_AWAITING_VALIDATION,
                 Submission.STATUS_PROCESSING,
             ],
-            "add_service_fee": list(Submission.AMENDABLE_STATUSES),
+            "create_service_fee": list(Submission.SERVICE_FEES_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (
@@ -1211,7 +1214,7 @@ class Submission(models.Model):
             return None
         return self.submission_price.get_transactions()
 
-    # ServicesFees
+    # ServiceFees
     def get_service_fees(self):
         return ServicesFees.objects.filter(
             submission=self.pk,
