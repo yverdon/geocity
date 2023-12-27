@@ -1253,12 +1253,15 @@ class ServicesFeesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
-        disable_fields = kwargs.pop("disable_fields", False)
         current_user = kwargs.pop("user", None)
+        time_spent_on_task = kwargs.pop("time_spent_on_task", None)
 
         kwargs["initial"] = {
             **kwargs.get("initial", {}),
-            "provided_by": current_user,
+            # prefer initializing form in the view as the editor may not
+            # be equal to the creator:
+            # "provided_by": current_user,
+            "time_spent_on_task": time_spent_on_task,
         }
 
         super().__init__(*args, **kwargs)
@@ -1375,10 +1378,10 @@ class ServicesFeesForm(forms.ModelForm):
 
         return provided_at
 
-    # def clean(self):
-    #     cleaned_data = super().clean()
+    def clean(self):
+        cleaned_data = super().clean()
 
-    #     return cleaned_data
+        return cleaned_data
 
 
 # extend django gis osm openlayers widget
