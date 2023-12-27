@@ -4,7 +4,6 @@
 
 <div class="container">
   {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
-  <h2>{% translate "" %}</h2>
   <div class="row">
     <div class="col">
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
@@ -95,7 +94,9 @@
              data-toggle="tab"
              href="#services-fees"
              role="tab"
-             aria-controls="add_service_fee">
+             aria-controls="create_service_fee"
+             aria-selected="{% if active_form == 'service_fees' %}true{% else %}false{% endif %}"
+             >
               {% translate "Services fees" %} <span class="badge badge-beta badge-success">Beta</span>
           </a>
         </li>
@@ -372,7 +373,8 @@
 
         {% endif %}
 
-        <div class='tab-pane' id="services-fees"
+        <div class="tab-pane{% if active_form == 'services_fees' %} show active{% endif  %}"
+           id="services-fees"
            role="tabpanel"
            aria-labelledby="services-fees-tab"
           >
@@ -382,7 +384,6 @@
             {% translate "Table listing already recorded service fees." %}
           </div>
           <hr>
-
 
           {% if service_fees_table.data %}
             <div>
@@ -394,12 +395,11 @@
             </div>
           {% endif %}
 
-
           <div class="text-right">
-            <input name="action" type="hidden" value="add_service_fee">
+            <input name="action" type="hidden" value="create_service_fee">
             <a class="btn btn-primary"
                name="action"
-               href="{% url 'submissions:create_new_submission_service_fees' submission_id=submission.pk %}"
+               href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}"x
               >
               {% translate "Add a new service fee" %}
             </a>
