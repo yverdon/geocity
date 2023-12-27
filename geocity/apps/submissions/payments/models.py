@@ -124,24 +124,24 @@ class ServicesFeesType(models.Model):
         AdministrativeEntity,
         null=True,
         on_delete=models.CASCADE,
-        verbose_name=_("Entité administrative"),
-        related_name=_("administrative_entity"),
-        help_text=_("Entité administrative."),
+        verbose_name=_("Administrative entity"),
+        related_name="administrative_entity",
+        help_text=_("Administrative entity."),
     )
     name = models.CharField(
-        verbose_name=_("Prestation"),
+        verbose_name=_("Service fee"),
         max_length=255,
         null=False,
     )
     is_visible_by_validator = models.BooleanField(
         verbose_name=_("visible by validator"),
-        help_text=_("Est visible par le validateur"),
+        help_text=_("Is visible by the validator"),
     )
     integrator = models.ForeignKey(
         Group,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name=_("Groupe des administrateurs"),
+        verbose_name=_("Administrators group"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
@@ -158,11 +158,11 @@ class ServicesFees(models.Model):
     # created or updated the current prestation. Those fields SHOULD NOT be
     # exposed in the form. Use the other ones.
     created_at = models.DateTimeField(
-        verbose_name=_("Date de création."),
+        verbose_name=_("Creation date."),
         auto_now_add=True,
     )
     updated_at = models.DateTimeField(
-        verbose_name=_("Date de dernière modification."),
+        verbose_name=_("Last modification date."),
         auto_now=True,
     )
     created_by = models.ForeignKey(
@@ -170,26 +170,26 @@ class ServicesFees(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         max_length=255,
-        verbose_name=_("Créé par"),
-        related_name=_("service_fee_created_by"),
-        help_text=_("La prestation a été créée par cet utilisateur."),
+        verbose_name=_("Created by"),
+        related_name="service_fee_created_by",
+        help_text=_("The service fee was created by this user."),
     )
     updated_by = models.ForeignKey(
         User,
         null=True,
         on_delete=models.SET_NULL,
         max_length=255,
-        verbose_name=_("Mis à jour par"),
-        related_name=_("service_fee_updated_by"),
-        help_text=_("La prestation a été mise à jour par cet utilisateur."),
+        verbose_name=_("Updated by"),
+        related_name="service_fee_updated_by",
+        help_text=_("The service fee was updated by this user."),
     )
     permit_department = models.ForeignKey(
         PermitDepartment,
         null=True,
         on_delete=models.CASCADE,
-        verbose_name=_("Département"),
-        related_name=_("permit_department"),
-        help_text=_("Département."),
+        verbose_name=_("Departement"),
+        related_name="permit_department",
+        help_text=_("Departement."),
     )
     # Exposed fields to select the name of the user the prestation has been done by
     provided_by = models.ForeignKey(
@@ -197,49 +197,47 @@ class ServicesFees(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         max_length=255,
-        verbose_name=_("Saisie par"),
+        verbose_name=_("Provided by"),
         related_name="service_fee_provided_by",
-        help_text=_("La prestation a été effectuée au nom de cet utilisateur."),
+        help_text=_("The service fee was provided on behalf of this user."),
     )
     provided_at = models.DateField(
         default=timezone.now,
-        verbose_name=_("Date de saisie"),
-        help_text=_("La prestation a été saisie à cette date."),
+        verbose_name=_("Provided date"),
+        help_text=_("The service fee was provided on this date."),
     )
-    # TODO: GROS TOUT DOUX: créer une FK vers submission
-    # ERROR: IMPOSSIBLE TO CREATE A FK: CIRCULAR IMPORT!
     submission = models.ForeignKey(
         "Submission",
         on_delete=models.CASCADE,
-        verbose_name=_("Demande"),
+        verbose_name=_("Request"),
         related_name="submission",
-        help_text=_("Demande"),
+        help_text=_("Request"),
     )
     services_fees_type = models.ForeignKey(
         "ServicesFeesType",
         on_delete=models.CASCADE,
-        verbose_name=_("Prestation"),
-        related_name=_("services_fees_type"),
-        help_text=_("Choix de la prestation ; à effectuer dans une liste prédéfinie."),
+        verbose_name=_("Service fee type"),
+        related_name="services_fees_type",
+        help_text=_("Choice of service; to be selected from a predefined list."),
     )
     time_spent_on_task = models.DurationField(
         default=0,
-        verbose_name=_("Durée [m]"),
-        help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
+        verbose_name=_("Duration [m]"),
+        help_text=_("Time spent performing the service (in minutes)."),
     )
     pricing = MoneyField(
         default=settings.DEFAULT_SERVICES_FEES_RATE,
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
-        verbose_name=_("Tarif horaire [CHF]"),
+        verbose_name=_("Hourly rate [CHF]"),
     )
     monetary_amount = MoneyField(
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
         default=0.0,
-        verbose_name=_("Montant [CHF]"),
+        verbose_name=_("Amount [CHF]"),
     )
 
     # Methods
