@@ -68,7 +68,6 @@ def reset_db():
     """
     with transaction.atomic():
         with connection.cursor() as cursor:
-
             if settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true":
                 cursor.execute(
                     "select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'"
@@ -257,7 +256,6 @@ class Command(BaseCommand):
     ):
         form_order = 0
         for form_category, objs in form_categories:
-
             # Used to manage specific cases on forms
             if (
                 form_category.startswith("RENEWAL_REMINDER")
@@ -319,7 +317,6 @@ class Command(BaseCommand):
         administrative_entity,
         integrator_group,
     ):
-
         result = self.setup_form_specific_cases(form_category)
 
         form_obj = Form.objects.create(
@@ -362,7 +359,7 @@ class Command(BaseCommand):
         expiration_reminder = False
         days_before_reminder = None
         map_widget_configuration = None
-        agenda_visible = None
+        agenda_visible = False
         geo_widget_option = Form.GEO_WIDGET_GENERIC
 
         # Configure specific form in order to illustrate full potential of Geocity
