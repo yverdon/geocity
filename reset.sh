@@ -26,7 +26,7 @@ printf "Applying migrations...\n"
 docker compose exec web python3 manage.py migrate
 
 printf "Applying fixtures...\n"
-#docker compose exec web python3 manage.py fixturize
+docker compose exec web python3 manage.py fixturize
 
 printf "Logging...\n"
 docker compose logs --follow
