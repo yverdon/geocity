@@ -36,9 +36,18 @@ def has_permission_to_amend_submission(user, submission):
     )
 
 
-def has_permission_to_add_service_fees(user, submission):
+def has_permission_to_create_service_fees(user, submission):
     return (
-        user.has_perm("submissions.add_service_fee")
+        user.has_perm("submissions.create_service_fee")
+        and submission.administrative_entity
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_submission(user, submission)
+    )
+
+
+def has_permission_to_update_service_fees(user, submission):
+    return (
+        user.has_perm("submissions.update_service_fee")
         and submission.administrative_entity
         in AdministrativeEntity.objects.associated_to_user(user)
         and is_backoffice_of_submission(user, submission)
