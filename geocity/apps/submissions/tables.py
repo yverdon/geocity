@@ -376,36 +376,42 @@ class ServicesFeesTable(tables.Table):
     #         "provided_by": current_user,
     #     }
 
-    #     super().__init__(*args, **kwargs)
+    #     super().__init__(*args,every **kwargs)
 
+    # TODO: set permissions: pilots can see all service fees.
+    # validators can only see validators' service fees.
     # TODO: do a second summary table (based on the classify)
+    permit_department = tables.Column(
+        verbose_name=_("Permit department"),
+        orderable=True,
+    )
     services_fees_type = tables.Column(
         verbose_name=_("Prestation"),
         orderable=True,
     )
     provided_by = tables.Column(
-        verbose_name=_("Saisie par"),
+        verbose_name=_("Provided by"),
         orderable=True,
     )
     provided_at = tables.Column(
-        verbose_name=_("Date de création"),
+        verbose_name=_("Creation date"),
         orderable=True,
     )
     time_spent_on_task = tables.Column(
-        verbose_name=_("Durée [hh:mm:ss]"),
+        verbose_name=_("Duration [hh:mm:ss]"),
         orderable=True,
     )
     pricing = tables.Column(
-        verbose_name=_("Tarif horaire [CHF]"),
+        verbose_name=_("Hourly rate [CHF]"),
         orderable=True,
     )
     monetary_amount = tables.Column(
-        verbose_name=_("Montant [CHF]"),
+        verbose_name=_("Amount [CHF]"),
         orderable=True,
     )
     actions = tables.TemplateColumn(
         # template_name="tables/_submission_actions.html",
-        template_name="tables/_submission_forms.html",
+        template_name="tables/_submission_service_fees_table_actions.html",
         verbose_name=_("Actions"),
         orderable=False,
     )
@@ -413,6 +419,7 @@ class ServicesFeesTable(tables.Table):
     class Meta:
         model = ServicesFees
         fields = (
+            "permit_department",
             "services_fees_type",
             "provided_by",
             "provided_at",
