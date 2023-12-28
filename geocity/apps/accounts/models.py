@@ -349,7 +349,7 @@ class AdministrativeEntity(models.Model):
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
-        default=0.0,
+        default=settings.DEFAULT_SERVICES_FEES_RATE,
         verbose_name=_("Tarif horaire des prestations de l'entité administrative"),
     )
 
