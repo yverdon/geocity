@@ -1258,17 +1258,13 @@ class ServicesFeesForm(forms.ModelForm):
 
         kwargs["initial"] = {
             **kwargs.get("initial", {}),
-            # prefer initializing form in the view as the editor may not
-            # be equal to the creator:
+            # prefer initializing the 'provided_by' entry in the view as the
+            # editor may not be equal to the creator:
             # "provided_by": current_user,
             "time_spent_on_task": time_spent_on_task,
         }
 
         super().__init__(*args, **kwargs)
-
-        self.fields["services_fees_type"].queryset = ServicesFeesType.objects.filter(
-            administrative_entity=self.submission.administrative_entity
-        )
 
         print(f"dir current user: {dir(current_user)}")
         print(
@@ -1320,12 +1316,17 @@ class ServicesFeesForm(forms.ModelForm):
                 self.fields[
                     "services_fees_type"
                 ].queryset = ServicesFeesType.objects.filter(
+                    administrative_entity=self.submission.administrative_entity,
                     is_visible_by_validator=True,
                 )
         # Group of the current user is a backoffice (pilot) group
         else:
             groups_of_the_current_user = backoffice_groups_of_the_current_user
-            self.fields["services_fees_type"].queryset = ServicesFeesType.objects.all()
+            self.fields[
+                "services_fees_type"
+            ].queryset = ServicesFeesType.objects.filter(
+                administrative_entity=self.submission.administrative_entity
+            )
 
         restricted_users_to_display = User.objects.filter(
             groups__in=groups_of_the_current_user
