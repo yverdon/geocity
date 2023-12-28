@@ -22,7 +22,8 @@ services:
       - ./_dev_volumes/private_documents:/private_documents
       - ./_dev_volumes/archive:/archive
     depends_on:
-      - "postgres"
+      postgres:
+        condition: service_healthy
     ports:
       - "${DJANGO_DOCKER_PORT}:9000"
 
