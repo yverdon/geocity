@@ -721,7 +721,7 @@ PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
 
 # Services fees
 ## Default rate [CHF] for services fees
-DEFAULT_SERVICES_FEES_RATE = 140.00
+DEFAULT_SERVICES_FEES_RATE = 0.00
 
 ## djmoney currencies: https://django-money.readthedocs.io/en/latest/#adding-a-new-currency
 CURRENCIES = ("USD", "EUR", "CHF")
