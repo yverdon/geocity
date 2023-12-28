@@ -242,9 +242,14 @@ class ServicesFees(models.Model):
 
     # Methods
     def save(self, *args, **kwargs):
+        pricing = self.services_fees_type.administrative_entity.services_fees_rate
+        print(80 * "#-#")
+        print(f"princig: {pricing}")
+        print(80 * "#-#")
+        self.pricing = pricing
         if not self.monetary_amount:
             self.monetary_amount = (
-                self.pricing * self.time_spent_on_task.total_seconds() / 3600
+                pricing * self.time_spent_on_task.total_seconds() / 3600
             )
 
         super(ServicesFees, self).save(*args, **kwargs)
