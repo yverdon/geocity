@@ -2238,7 +2238,7 @@ def create_submission_service_fees(request, submission_id, data=None):
     )
     print(f"submission admin entites: {submission.administrative_entity}")
     d = PermitDepartment.objects.filter(group__in=request.user.groups.all())
-    print(80 * "#", f"\n length department: {len(d)}\n", 80 * "#")
+    print(80 * "#", f"\n Length of department: {len(d)}\n", 80 * "#", sep="")
     departments = PermitDepartment.objects.filter(
         group__in=request.user.groups.all()
     ).first()
