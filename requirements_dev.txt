@@ -15,8 +15,6 @@ babel==2.13.1
     # via
     #   -r requirements.txt
     #   py-moneyed
-backcall==0.2.0
-    # via ipython
 beautifulsoup4==4.12.2
     # via
     #   -r requirements.txt
