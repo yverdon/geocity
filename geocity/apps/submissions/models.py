@@ -32,6 +32,7 @@ from PIL import Image
 from simple_history.models import HistoricalRecords
 
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
+from geocity.apps.accounts.users import get_departments
 from geocity.apps.accounts.validators import validate_email
 from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
@@ -50,6 +51,7 @@ ACTION_REQUEST_INQUIRY = "request_inquiry"
 ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
 ACTION_CREATE_SERVICE_FEE = "create_service_fee"
 ACTION_UPDATE_SERVICE_FEE = "update_service_fee"
+ACTION_DELETE_SERVICE_FEE = "delete_service_fee"
 
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
@@ -63,6 +65,7 @@ ACTIONS = [
     ACTION_REQUEST_INQUIRY,
     ACTION_CREATE_SERVICE_FEE,
     ACTION_UPDATE_SERVICE_FEE,
+    ACTION_DELETE_SERVICE_FEE,
 ]
 
 logger = logging.getLogger(__name__)
@@ -312,6 +315,11 @@ class Submission(models.Model):
         max_length=2048,
         blank=True,
         help_text=_("Facultative, sera transmise au requérant"),
+    )
+    service_fees_total_price = models.IntegerField(
+        null=True,
+        verbose_name=_("Total price of services fees"),
+        help_text=_("Total price of services fees"),
     )
 
     history = HistoricalRecords()
@@ -1215,9 +1223,13 @@ class Submission(models.Model):
         return self.submission_price.get_transactions()
 
     # ServiceFees
-    def get_service_fees(self):
+    def get_service_fees_for_user(self, user):
+        department = get_departments(user).first()
+        if department.is_backoffice:
+            return ServicesFees.objects.filter(Q(submission=self.pk))
+
         return ServicesFees.objects.filter(
-            submission=self.pk,
+            Q(submission=self.pk) & (Q(created_by=user) | Q(provided_by=user))
         )
 
     def get_history(self):
