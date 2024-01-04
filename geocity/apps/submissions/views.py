@@ -285,16 +285,9 @@ class SubmissionDetailView(View):
 
         service_fees_table = None
         service_fees_table = ServicesFeesTable(
-            # TODO: check that it is only the current submission
-            # that can see the prestation table
-            data=self.submission.get_service_fees()
+            data=self.submission.get_service_fees_for_user(self.request.user),
         )
-        datat = self.submission.get_service_fees()
-        print(f"type(ServicesFeesTable): {type(ServicesFeesTable)}")
-        print(f"data of the service_fees_table: {datat}")
-        print(f"type data of the service_fees_table: {type(datat)}")
-        print(f"dir data of the service_fees_table: {dir(datat)}")
-        print(80 * "#")
+        datat = (self.submission.get_service_fees_for_user(self.request.user),)
 
         return {
             **kwargs,
@@ -382,6 +375,7 @@ class SubmissionDetailView(View):
             models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
             models.ACTION_CREATE_SERVICE_FEE: self.get_service_fee_form,
             models.ACTION_UPDATE_SERVICE_FEE: self.get_service_fee_form,
+            models.ACTION_DELETE_SERVICE_FEE: self.get_service_fee_form,
         }
 
         return (
@@ -453,11 +447,9 @@ class SubmissionDetailView(View):
         return None
 
     def get_service_fee_form(self, data=None, **kwargs):
-        # TODO: create has permission to create a service fee
-        # TODO: create has permission to update a service fee
         if permissions.has_permission_to_create_service_fees(
             self.request.user, self.submission
-        ) or permissions.has_permission_to_create_service_fees(
+        ) or permissions.has_permission_to_update_service_fees(
             self.request.user, self.submission
         ):
             form = forms.ServicesFeesForm(
@@ -466,8 +458,6 @@ class SubmissionDetailView(View):
                 data=data,
                 user=self.request.user,
             )
-            print(f"form data: {form.data}")
-            # print(f"form cleande_data: {form.cleaned_data}")
 
             return form
 
@@ -605,6 +595,8 @@ class SubmissionDetailView(View):
         elif action == models.ACTION_CREATE_SERVICE_FEE:
             return self.handle_service_fee_form_submission(form)
         elif action == models.ACTION_UPDATE_SERVICE_FEE:
+            return self.handle_service_fee_form_submission(form)
+        elif action == models.ACTION_DELETE_SERVICE_FEE:
             return self.handle_service_fee_form_submission(form)
 
     def handle_service_fee_form_submission(self, form):
@@ -2229,34 +2221,19 @@ def administrative_entities_geojson(request, administrative_entity_id):
 @check_mandatory_2FA
 def create_submission_service_fees(request, submission_id, data=None):
     """Docstring"""
-    print(80 * "XxX")
-    print(f"submission_id ____: {submission_id}")
-    print(f"user _____________: {request.user}")
     submission = get_submission_service_fee(
         request.user,
         submission_id,
     )
-    print(f"submission admin entites: {submission.administrative_entity}")
-    d = PermitDepartment.objects.filter(group__in=request.user.groups.all())
-    print(80 * "#", f"\n Length of department: {len(d)}\n", 80 * "#", sep="")
-    departments = PermitDepartment.objects.filter(
-        group__in=request.user.groups.all()
-    ).first()
-    # departments = PermitDepartment.objects.filter(
+    logger.debug(f"submission admin entites: {submission.administrative_entity}")
+    departments = get_departments(request.user)
+    department = departments.first()
+    # dpts = PermitDepartment.objects.filter(
     #     administrative_entity=submission.administrative_entity,
     # )
-    print(f"departments: {departments}")
-    print(f"type departments: {type(departments)}")
-    print(f"dir departments: {dir(departments)}")
-    # print(f"departments values: {departments.values()}")
-    # print(f"departments values_list: {departments.values_list()}")
-    # print(f"departments values_list: {dir(departments.values_list())}")
-
-    print(80 * "yYy")
+    # print(f"dpts: {(dpts)}")
 
     if request.method == "GET":
-        logger.info("In GET method")
-        print(80 * "TtT")
         initial = {
             "provided_by": request.user,
         }
@@ -2268,7 +2245,7 @@ def create_submission_service_fees(request, submission_id, data=None):
         context = {
             "form": form,
         }
-        print(f"form0.is_bound ____: {form.is_bound}")
+
         return render(
             request,
             "submissions/submission_service_fees_create.html",
@@ -2276,14 +2253,7 @@ def create_submission_service_fees(request, submission_id, data=None):
         )
 
     elif request.method in ("POST"):
-        logger.info("In POST method")
         data = request.POST
-        print(f"submission_id ____: {submission_id}")
-        print(f"submission _______: {submission}")
-        print(f"request __________: {request}")
-        print(f"request.POST: {(data)}")
-        print(f"type of request.POST: {type(data)}")
-        print(f"dir request.POST: {dir(data)}")
         form = forms.ServicesFeesForm(
             submission=submission,
             # initial=initial,
@@ -2293,19 +2263,14 @@ def create_submission_service_fees(request, submission_id, data=None):
         context = {
             "form": form,
         }
-        print(f"form _____________: {dir(form)}")
-        print(f"form fields ______: {form.fields}")
-        print(f"form data ________: {form.data}")
-        print(f"form.is_valid() ? : {form.is_valid()}")
-        print(f"form.errors ______: {form.errors}")
-        print(f"form.is_bound ____: {form.is_bound}")
+
         if form.is_valid():
             logger.info(_("Form is valid. Processing data."))
             obj = form.save(commit=False)
             obj.submission = submission
             obj.created_by = request.user
             obj.updated_by = request.user
-            obj.permit_department = departments
+            obj.permit_department = department
             obj.save()
             success_message = _("La prestation a bien été renseignée.")
             messages.success(request, success_message)
@@ -2362,7 +2327,6 @@ def update_submission_service_fees(request, submission_id, service_fee_id, data=
         user=request.user,
     )
     context = {"form": form}
-    print(f"DIR form: {dir(form)}")
 
     if request.method == "GET":
         return render(
