@@ -54,6 +54,15 @@ def has_permission_to_update_service_fees(user, submission):
     )
 
 
+def has_permission_to_delete_service_fees(user, submission):
+    return (
+        user.has_perm("submissions.delete_service_fee")
+        and submission.administrative_entity
+        in AdministrativeEntity.objects.associated_to_user(user)
+        and is_backoffice_of_submission(user, submission)
+    )
+
+
 def has_permission_to_amend_submission_in_form(user, form):
     return (
         user.has_perm("submissions.amend_submission")
