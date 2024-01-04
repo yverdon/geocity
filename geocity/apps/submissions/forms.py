@@ -1,4 +1,5 @@
 import io
+import logging
 import mimetypes
 import string
 from collections import defaultdict
@@ -42,6 +43,8 @@ from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
 from .payments.models import ServicesFees, ServicesFeesType, SubmissionPrice
 from .permissions import has_permission_to_amend_submission
+
+logger = logging.getLogger(__name__)
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -1266,21 +1269,19 @@ class ServicesFeesForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        print(f"dir current user: {dir(current_user)}")
-        print(
-            f"X current user get_all_permissions: {(current_user.get_all_permissions())}"
+        logger.debug(
+            f"Current user get_all_permissions: {(current_user.get_all_permissions())}"
         )
-        print(
-            f"X current user get_group_permissions: {(current_user.get_group_permissions())}"
+        logger.debug(
+            f"Current user get_group_permissions: {(current_user.get_group_permissions())}"
         )
-        print(
-            f"X current user get_user_permissions: {(current_user.get_user_permissions())}"
+        logger.debug(
+            f"Current user get_user_permissions: {(current_user.get_user_permissions())}"
         )
 
         submission_departments = PermitDepartment.objects.filter(
             administrative_entity=self.submission.administrative_entity,
         )
-        print(f"submission_departments: {submission_departments}")
 
         # users_to_display = User.objects.filter(
         #    groups__permit_department__administrative_entity=self.submission.administrative_entity
@@ -1295,7 +1296,6 @@ class ServicesFeesForm(forms.ModelForm):
         user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
             current_user
         ).values_list("pk", flat=True)
-        print(f"user_administrative_entities: {user_administrative_entities}")
 
         current_administrative_entity = self.submission.administrative_entity
 
@@ -1371,9 +1371,7 @@ class ServicesFeesForm(forms.ModelForm):
         return timedelta(minutes=time_spent_on_task)
 
     def clean_provided_at(self):
-        print("INSIDE INSIDE clean_provided_at")
         provided_at = self.cleaned_data["provided_at"]
-        print(f"cleaned_data.provided_at__XXX__: {provided_at}")
         if not isinstance(provided_at, date):
             raise ValidationError({"provided_at": _("This date is wrongly formatted.")})
 
