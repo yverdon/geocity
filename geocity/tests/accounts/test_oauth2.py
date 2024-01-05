@@ -1,11 +1,11 @@
 import json
 
-from allauth.socialaccount.tests import OAuth2TestsMixin
 from allauth.tests import MockedResponse, TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
+from geocity.tests.accounts.custom_oauth2_test_mixin import CustomOAuth2TestsMixin
 
 User = get_user_model()
 
@@ -49,7 +49,7 @@ profile_response_mock = {
 }
 
 
-class GeomapfishOAuth2Tests(OAuth2TestsMixin, TestCase):
+class GeomapfishOAuth2Tests(CustomOAuth2TestsMixin, TestCase):
     provider_id = GeomapfishProvider.id
 
     def get_mocked_response(self, email="foo@bar.ch", username="test"):

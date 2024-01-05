@@ -16,7 +16,7 @@ services:
     volumes:
       - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
       - ${ARCHIVE_DIR}:/archive
-      - static_root:/static_root/geocity-wc-map/
+      - static_root:/external_statics
       # to allow to spawn new QGIS containers
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -56,12 +56,14 @@ services:
       SESSION_COOKIE_SAMESITE:
       SECURE_PROXY_SSL_HEADER:
       AXES_FAILURE_LIMIT:
-      AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP:
+      AXES_LOCKOUT_PARAMETERS:
       AXES_COOLOFF_TIME:
+      AXES_IPWARE_PROXY_COUNT:
       DRF_THROTTLE_RATE_PERMITS_API:
       DRF_THROTTLE_RATE_PERMITS_DETAILS_API:
       DRF_THROTTLE_RATE_EVENTS_API:
       DRF_THROTTLE_RATE_SEARCH_API:
+      DRF_THROTTLE_RATE_AGENDA_API:
       ALLOW_REMOTE_USER_AUTH:
       LOCATIONS_SEARCH_API:
       LOCATIONS_SEARCH_API_DETAILS:
@@ -70,6 +72,10 @@ services:
       AUTHOR_IBAN_VISIBLE:
       PAYMENT_PROCESSING_TEST_ENVIRONMENT:
       PAYMENT_CURRENCY:
+      LOCAL_TIME_ZONE_UTC:
+      SITE_DOMAIN:
+      USE_THUMBOR:
+      THUMBOR_SERVICE_URL:
     ports:
       - "${DJANGO_DOCKER_PORT}:9000"
     networks:
@@ -103,9 +109,8 @@ services:
     image: external_statics
     build:
       context: services/external_statics
-    working_dir: /app/geocity-wc-map
     volumes:
-      - static_root:/app/geocity-wc-map/dist/
+      - static_root:/app/
 
 networks:
   # Use this for containers that should only be able to communicate with Django

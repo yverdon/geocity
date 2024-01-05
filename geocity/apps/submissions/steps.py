@@ -150,7 +150,7 @@ def get_forms_step(
 
     if candidate_forms.count() == 1 and all(
         [
-            not candidate_form.has_exceeded_maximum_submissions()
+            not candidate_form.has_exceeded_maximum_submissions(user)
             for candidate_form in candidate_forms
         ]
     ):
