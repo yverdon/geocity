@@ -451,6 +451,7 @@ class Command(BaseCommand):
         field, created = Field.objects.get_or_create(
             integrator=integrator,
             name=name,
+            content=name,
             api_name=convert_string_to_api_key(name),
             placeholder=placeholder,
             help_text=help_text,

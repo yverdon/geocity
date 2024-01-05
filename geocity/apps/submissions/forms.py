@@ -540,7 +540,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         """
         default_kwargs = {
             "required": self.enable_required and prop.is_mandatory,
-            "label": prop.name,
+            "label": prop.content,
             "help_text": prop.help_text if prop.help_text != "" else "",
         }
 

@@ -641,6 +641,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "name",
+                    "content",
                     "placeholder",
                     "help_text",
                     "input_type",
