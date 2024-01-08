@@ -375,6 +375,7 @@ class TransactionsTable(tables.Table):
 
 class PandasExportMixin(ExportMixin):
     def create_export(self, export_format):
+        advanced = self.request.GET.get("_advanced", False)
 
         if not export_format in ["xlsx"]:
             raise NotImplementedError
@@ -383,10 +384,13 @@ class PandasExportMixin(ExportMixin):
         user_is_backoffice_or_integrator = self.request.user.groups.filter(
             Q(permit_department__is_backoffice=True)
             | Q(permit_department__is_integrator_admin=True),
-        )
+        ).exists()
 
-        # If user isn't pilot, integrator or superuser, he uses ExportMixin instead of PandasExportMixin
-        if not (user_is_backoffice_or_integrator or self.request.user.is_superuser):
+        # If user doesn't used advanced and isn't pilot, integrator or superuser, he uses ExportMixin instead of PandasExportMixin
+        can_export_advanced = advanced and (
+            user_is_backoffice_or_integrator or self.request.user.is_superuser
+        )
+        if not can_export_advanced:
             return super().create_export(export_format)
 
         records = {}

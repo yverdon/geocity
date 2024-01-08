@@ -1803,7 +1803,13 @@ class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
         params = {key: value[0] for key, value in dict(self.request.GET).items()}
         context["display_clear_filters"] = bool(params)
         params.update({"_export": "xlsx"})
-        context["export_csv_url_params"] = urllib.parse.urlencode(params)
+        context["export_csv_url_params_simple"] = urllib.parse.urlencode(params)
+        params.update({"_advanced": True})
+        context["export_csv_url_params_advanced"] = urllib.parse.urlencode(params)
+        context["user_is_backoffice_or_integrator"] = self.request.user.groups.filter(
+            Q(permit_department__is_backoffice=True)
+            | Q(permit_department__is_integrator_admin=True),
+        ).exists()
         return context
 
 
