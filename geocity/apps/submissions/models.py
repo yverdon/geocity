@@ -49,6 +49,7 @@ ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
 ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
+ACTION_MANAGE_CFC2_AMOUNT = "manage_cfc2_amount"
 ACTION_CREATE_SERVICE_FEE = "create_service_fee"
 ACTION_UPDATE_SERVICE_FEE = "update_service_fee"
 ACTION_DELETE_SERVICE_FEE = "delete_service_fee"
@@ -63,6 +64,7 @@ ACTIONS = [
     ACTION_PROLONG,
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
+    ACTION_MANAGE_CFC2_AMOUNT,
     ACTION_CREATE_SERVICE_FEE,
     ACTION_UPDATE_SERVICE_FEE,
     ACTION_DELETE_SERVICE_FEE,
@@ -168,7 +170,6 @@ class ContactTypeForAdminSite(ContactType):
 
 
 class Submission(models.Model):
-    # TODO: add a field for service_fees_total_price
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
     STATUS_APPROVED = 2
@@ -318,8 +319,8 @@ class Submission(models.Model):
     )
     service_fees_total_price = models.IntegerField(
         null=True,
-        verbose_name=_("Total price of services fees"),
-        help_text=_("Total price of services fees"),
+        verbose_name=_("Prix total des prestations"),
+        help_text=_("Prix total des prestations"),
     )
 
     history = HistoricalRecords()
@@ -1117,7 +1118,10 @@ class Submission(models.Model):
                 Submission.STATUS_AWAITING_VALIDATION,
                 Submission.STATUS_PROCESSING,
             ],
+            "manage_cfc2_amount": list(Submission.SERVICE_FEES_STATUSES),
             "create_service_fee": list(Submission.SERVICE_FEES_STATUSES),
+            "update_service_fee": list(Submission.SERVICE_FEES_STATUSES),
+            "delete_service_fee": list(Submission.SERVICE_FEES_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (
@@ -1224,10 +1228,15 @@ class Submission(models.Model):
 
     # ServiceFees
     def get_service_fees_for_user(self, user):
+        # Standard users don't belong to a departement (None)
         department = get_departments(user).first()
-        if department.is_backoffice:
+        # Pilot users can see all services fees
+        if department and department.is_backoffice:
             return ServicesFees.objects.filter(Q(submission=self.pk))
 
+        # Non pilot users can see only those services fees created by themselves
+        # or created on behalf of their own names
+        # if department:
         return ServicesFees.objects.filter(
             Q(submission=self.pk) & (Q(created_by=user) | Q(provided_by=user))
         )
