@@ -382,7 +382,7 @@ class ServicesFeesTable(tables.Table):
     # validators can only see validators' service fees.
     # TODO: do a second summary table (based on the classify)
     permit_department = tables.Column(
-        verbose_name=_("Permit department"),
+        verbose_name=_("Service"),
         orderable=True,
     )
     services_fees_type = tables.Column(
@@ -390,23 +390,23 @@ class ServicesFeesTable(tables.Table):
         orderable=True,
     )
     provided_by = tables.Column(
-        verbose_name=_("Provided by"),
+        verbose_name=_("Saisie par"),
         orderable=True,
     )
     provided_at = tables.Column(
-        verbose_name=_("Creation date"),
+        verbose_name=_("Date de création"),
         orderable=True,
     )
     time_spent_on_task = tables.Column(
-        verbose_name=_("Duration [hh:mm:ss]"),
+        verbose_name=_("Durée [hh:mm:ss]"),
         orderable=True,
     )
-    pricing = tables.Column(
-        verbose_name=_("Hourly rate [CHF]"),
+    hourly_rate = tables.Column(
+        verbose_name=_("Tarif horaire [CHF]"),
         orderable=True,
     )
     monetary_amount = tables.Column(
-        verbose_name=_("Amount [CHF]"),
+        verbose_name=_("Montant [CHF]"),
         orderable=True,
     )
     actions = tables.TemplateColumn(
@@ -424,9 +424,9 @@ class ServicesFeesTable(tables.Table):
             "provided_by",
             "provided_at",
             "time_spent_on_task",
-            "pricing",
+            "hourly_rate",
             "monetary_amount",
             # "actions",
         )
-        empty_text = _("The service fees table is currently empty.")
+        empty_text = _("Le tableau des prestations est actuellement vide.")
         template_name = "django_tables2/bootstrap.html"
