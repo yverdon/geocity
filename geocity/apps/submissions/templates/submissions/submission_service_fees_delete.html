@@ -4,21 +4,26 @@
 {% load bootstrap4 %}
 
 {% block content %}
-  <h3 class="mt-2">{% translate "Delete service fee?" %}</h3>
+  <h3 class="mt-2">{% translate "Supprimer la prestation ?" %}</h3>
   <hr>
+  <p>
+    {% translate "Êtes-vous certain de vouloir supprimer la prestation suivante: " %}
+  </p>
+  <form method="GET">
+    {% csrf_token %}
+    {% bootstrap_form form layout='horizontal' %}
+  </form>
   <form method="POST">
     {% csrf_token %}
-    <p>
-      {% translate "Are you sure you want to delete the service fee: " %}
-    </p>
-    <p>
-      {{ service_fee.services_fees_type.name }}
-    </p>
+
     <div>
-      {% bootstrap_button "Confirm" button_type="submit" button_class="btn-primary" value="Confirm" %}
-      <a class="ml-2" href="{% url 'submissions:submission_detail' submission_id=service_fee.submission.pk %}">
-        {% translate "Cancel" %}
-      </a>
+      <button class="btn btn-primary" name="confirm" type="submit" value="Confirm">
+        {% translate "Confirmer la suppression" %}
+      </button>
+      <button class="btn btn-primary" name="cancel" type="submit" value="Cancel">
+        {% translate "Annuler" %}
+      </button>
     </div>
   </form>
+
 {% endblock %}

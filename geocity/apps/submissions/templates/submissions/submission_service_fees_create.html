@@ -4,20 +4,21 @@
 {% load bootstrap4 %}
 
 {% block content %}
-<h3>{% translate "Add a new service fee" %}</h3>
+<h3>{% translate "Ajouter une nouvelle prestation" %}</h3>
   <hr>
-  <form method="post">
+  <form method="POST">
     {% csrf_token %}
     {{ form.media }}
     {% bootstrap_form form layout='horizontal' %}
+
     <div class="text-right">
-        <input name="action" type="hidden" value="create_service_fee">
-        <button class="btn btn-primary" name="save">
-          {% translate "Save" %}
-        </button>
-        <button class="btn btn-primary" name="save_continue">
-          {% translate "Save and add a new service fee" %}
-        </button>
+      <input name="action" type="hidden" value="create_service_fee">
+      <button class="btn btn-primary" name="save">
+        {% translate "Enregistrer" %}
+      </button>
+      <button class="btn btn-primary" name="save_continue">
+        {% translate "Enregistrer et ajouter une nouvelle prestation" %}
+      </button>
     </div>
   </form>
 {% endblock %}
