@@ -4,14 +4,14 @@
 <ul class="list-inline text-left">
 
   <li>
-    <a title="{% translate 'Edit service fee' %}"
+    <a title="{% translate 'Modifier la prestation' %}"
        href="{% url 'submissions:update_submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}">
         <i class="fa fa-edit fa-lg"></i>
     </a>
   </li>
 
   <li>
-    <a title="{% translate 'Delete service fee' %}"
+    <a title="{% translate 'Supprimer la prestation' %}"
        href="{% url 'submissions:delete_submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}">
         <i class="fa fa-trash fa-lg"></i>
     </a>
