@@ -119,29 +119,52 @@ class Transaction(models.Model):
         return f"refund_{self.transaction_id}.pdf", output
 
 
+class SubmissionCFC2Price(models.Model):
+    submission = models.OneToOneField(
+        "Submission",
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande"),
+        related_name="submissioncfc2price",
+        help_text=_("Demande"),
+    )
+    cfc2_price = MoneyField(
+        default=0.0,
+        decimal_places=2,
+        max_digits=12,
+        default_currency="CHF",
+        verbose_name=_("Montant CFC 2"),
+    )
+
+
 class ServicesFeesType(models.Model):
     administrative_entity = models.ForeignKey(
         AdministrativeEntity,
         null=True,
         on_delete=models.CASCADE,
-        verbose_name=_("Administrative entity"),
+        verbose_name=_("Entité administrative"),
         related_name="administrative_entity",
-        help_text=_("Administrative entity."),
+        help_text=_("Entité administrative."),
     )
     name = models.CharField(
-        verbose_name=_("Service fee"),
+        verbose_name=_("Prestation"),
         max_length=255,
         null=False,
     )
+    is_fixed_price = models.IntegerField(
+        null=True,
+        default=False,
+        verbose_name=_("Forfait"),
+        help_text=_("Cette prestation est forfaitaire."),
+    )
     is_visible_by_validator = models.BooleanField(
-        verbose_name=_("visible by validator"),
-        help_text=_("Is visible by the validator"),
+        verbose_name=_("Visible par le validateur"),
+        help_text=_("Est visible par le validateur"),
     )
     integrator = models.ForeignKey(
         Group,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name=_("Administrators group"),
+        verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
@@ -158,11 +181,11 @@ class ServicesFees(models.Model):
     # created or updated the current prestation. Those fields SHOULD NOT be
     # exposed in the form. Use the other ones.
     created_at = models.DateTimeField(
-        verbose_name=_("Creation date."),
+        verbose_name=_("Date de création."),
         auto_now_add=True,
     )
     updated_at = models.DateTimeField(
-        verbose_name=_("Last modification date."),
+        verbose_name=_("Date de dernière modification."),
         auto_now=True,
     )
     created_by = models.ForeignKey(
@@ -170,26 +193,26 @@ class ServicesFees(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         max_length=255,
-        verbose_name=_("Created by"),
+        verbose_name=_("Créée par"),
         related_name="service_fee_created_by",
-        help_text=_("The service fee was created by this user."),
+        help_text=_("La prestation a été créé par cet utilisateur."),
     )
     updated_by = models.ForeignKey(
         User,
         null=True,
         on_delete=models.SET_NULL,
         max_length=255,
-        verbose_name=_("Updated by"),
+        verbose_name=_("Mise à jour par"),
         related_name="service_fee_updated_by",
-        help_text=_("The service fee was updated by this user."),
+        help_text=_("La prestation a été mise à jour par cet utilisateur."),
     )
     permit_department = models.ForeignKey(
         PermitDepartment,
         null=True,
         on_delete=models.CASCADE,
-        verbose_name=_("Departement"),
+        verbose_name=_("Département"),
         related_name="permit_department",
-        help_text=_("Departement."),
+        help_text=_("Département."),
     )
     # Exposed fields to select the name of the user the prestation has been done by
     provided_by = models.ForeignKey(
@@ -197,56 +220,58 @@ class ServicesFees(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         max_length=255,
-        verbose_name=_("Provided by"),
+        verbose_name=_("Saisie par"),
         related_name="service_fee_provided_by",
-        help_text=_("The service fee was provided on behalf of this user."),
+        help_text=_("La prestation a été effectuée au nom de cet utilisateur."),
     )
     provided_at = models.DateField(
         default=timezone.now,
-        verbose_name=_("Provided date"),
-        help_text=_("The service fee was provided on this date."),
+        verbose_name=_("Saisie le"),
+        help_text=_("La prestation a été saisie à cette date."),
     )
     submission = models.ForeignKey(
         "Submission",
         on_delete=models.CASCADE,
-        verbose_name=_("Request"),
+        verbose_name=_("Demande"),
         related_name="submission",
-        help_text=_("Request"),
+        help_text=_("Demande"),
     )
     services_fees_type = models.ForeignKey(
         "ServicesFeesType",
         on_delete=models.CASCADE,
-        verbose_name=_("Service fee type"),
+        verbose_name=_("Type de prestation"),
         related_name="services_fees_type",
-        help_text=_("Choice of service; to be selected from a predefined list."),
+        help_text=_("Choix de la prestation ; à effectuer dans une liste prédéfinie."),
     )
     time_spent_on_task = models.DurationField(
         default=0,
-        verbose_name=_("Duration [m]"),
-        help_text=_("Time spent performing the service (in minutes)."),
+        verbose_name=_("Durée [m]"),
+        help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
     )
-    pricing = MoneyField(
+    hourly_rate = MoneyField(
         default=settings.DEFAULT_SERVICES_FEES_RATE,
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
-        verbose_name=_("Hourly rate [CHF]"),
+        verbose_name=_("Tarif horaire [CHF]"),
     )
     monetary_amount = MoneyField(
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
         default=0.0,
-        verbose_name=_("Amount [CHF]"),
+        verbose_name=_("Montant [CHF]"),
     )
 
     # Methods
     def save(self, *args, **kwargs):
-        pricing = self.services_fees_type.administrative_entity.services_fees_rate
-        self.pricing = pricing
+        hourly_rate = (
+            self.services_fees_type.administrative_entity.services_fees_hourly_rate
+        )
+        self.hourly_rate = hourly_rate
         if not self.monetary_amount:
             self.monetary_amount = (
-                pricing * self.time_spent_on_task.total_seconds() / 3600
+                hourly_rate * self.time_spent_on_task.total_seconds() / 3600
             )
 
         super(ServicesFees, self).save(*args, **kwargs)
