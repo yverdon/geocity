@@ -345,12 +345,23 @@ class AdministrativeEntity(models.Model):
     signature_sheet_description = models.TextField(
         _("Texte explicatif relatif au volet de transmission"), blank=True
     )
-    services_fees_rate = MoneyField(
+    min_cfc2_price = MoneyField(
+        decimal_places=2,
+        max_digits=12,
+        default_currency="CHF",
+        default=4e6,
+        verbose_name=_("Montant CFC 2 minimal"),
+        help_text=_(
+            "Montant CFC 2 minimal pour les demandes faites à l'entité administrative courante"
+        ),
+    )
+    services_fees_hourly_rate = MoneyField(
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
         default=settings.DEFAULT_SERVICES_FEES_RATE,
-        verbose_name=_("Tarif horaire des prestations de l'entité administrative"),
+        verbose_name=_("Tarif horaire"),
+        help_text=_("Tarif horaire des prestations de l'entité administrative"),
     )
 
     objects = AdministrativeEntityManager()
