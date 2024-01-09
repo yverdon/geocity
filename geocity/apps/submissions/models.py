@@ -50,9 +50,6 @@ ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
 ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
 ACTION_MANAGE_CFC2_AMOUNT = "manage_cfc2_amount"
-ACTION_CREATE_SERVICE_FEE = "create_service_fee"
-ACTION_UPDATE_SERVICE_FEE = "update_service_fee"
-ACTION_DELETE_SERVICE_FEE = "delete_service_fee"
 
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
@@ -65,9 +62,6 @@ ACTIONS = [
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
     ACTION_MANAGE_CFC2_AMOUNT,
-    ACTION_CREATE_SERVICE_FEE,
-    ACTION_UPDATE_SERVICE_FEE,
-    ACTION_DELETE_SERVICE_FEE,
 ]
 
 logger = logging.getLogger(__name__)
