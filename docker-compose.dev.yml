@@ -28,7 +28,7 @@ services:
       - "${DJANGO_DOCKER_PORT}:9000"
 
   postgres:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:13-3.2
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-U", "${PGUSER}" ]
