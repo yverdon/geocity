@@ -899,8 +899,6 @@ class Field(models.Model):
         related_name="map_widget_configuration_field",
         verbose_name=_("Configuration de la carte avancée"),
     )
-    is_public_when_permitrequest_is_public = models.BooleanField(
-        _("Afficher ce champs au grand public si la demande est publique"),
     public_if_submission_public = models.BooleanField(
         _("Information publique"),
         default=False,
