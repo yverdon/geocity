@@ -29,6 +29,8 @@ from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2MultipleWidget, Select2Widget
 
 from geocity.apps.accounts.models import (
+    AGENDA_PUBLIC_TYPE_CHOICES,
+    BOOLEAN_CHOICES,
     PUBLIC_TYPE_CHOICES,
     AdministrativeEntity,
     PermitDepartment,
@@ -39,6 +41,7 @@ from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
 from .payments.models import SubmissionPrice
+from .permissions import has_permission_to_amend_submission
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -273,8 +276,15 @@ class FormsSelectForm(forms.Form):
             for form in forms:
                 form_name = form.name
                 if form.has_exceeded_maximum_submissions():
-                    form_name = f"{form_name} <span class='px-5 text-danger'>{form.max_submissions_message}</span>"
-                    disabled_choices.add(form.pk)
+                    max_submission_msg = f"<span class='pl-3 text-danger'>{form.max_submissions_message}</span>"
+                    if (
+                        form.max_submissions_bypass_enabled
+                        and has_permission_to_amend_submission(self.user, self.instance)
+                    ):
+                        form_name = f"{form_name} <s class='text-danger'>{max_submission_msg}</s> <span class='pl-1 text-danger'>(formulaire actif pour l'utilisateur courant)</span>"
+                    else:
+                        form_name = f"{form_name} {max_submission_msg}"
+                        disabled_choices.add(form.pk)
                 forms_list.append((form.pk, form_name))
 
             forms_by_category.append((category, forms_list))
@@ -289,7 +299,12 @@ class FormsSelectForm(forms.Form):
         selected_forms = models.Form.objects.filter(
             pk__in=self.cleaned_data["selected_forms"]
         )
-        if any([form.has_exceeded_maximum_submissions() for form in selected_forms]):
+        if any(
+            [
+                form.has_exceeded_maximum_submissions(self.user)
+                for form in selected_forms
+            ]
+        ):
             raise forms.ValidationError(selected_forms.first().max_submissions_message)
         return self.cleaned_data["selected_forms"]
 
@@ -326,7 +341,7 @@ class FormsSingleSelectForm(FormsSelectForm):
 
     def clean_selected_forms(self):
         selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
-        if selected_form.has_exceeded_maximum_submissions():
+        if selected_form.has_exceeded_maximum_submissions(self.user):
             raise forms.ValidationError(selected_form.max_submissions_message)
         return self.cleaned_data["selected_forms"]
 
@@ -971,12 +986,20 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         model = models.Submission
         fields = [
             "is_public",
+            "is_public_agenda",
+            "featured_agenda",
             "shortname",
             "status",
         ]
         widgets = {
             "is_public": forms.RadioSelect(
                 choices=PUBLIC_TYPE_CHOICES,
+            ),
+            "is_public_agenda": forms.RadioSelect(
+                choices=AGENDA_PUBLIC_TYPE_CHOICES,
+            ),
+            "featured_agenda": forms.RadioSelect(
+                choices=BOOLEAN_CHOICES,
             ),
         }
 
@@ -1068,10 +1091,15 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             if (
                 not self.instance.forms.filter(
                     permanent_publication_enabled=True
-                ).count()
+                ).exists()
                 == self.instance.forms.count()
             ):
                 self.fields["is_public"].widget = forms.HiddenInput()
+
+            # Hide agenda fields if agenda is not activated
+            if not self.instance.forms.filter(agenda_visible=True).exists():
+                self.fields["is_public_agenda"].widget = forms.HiddenInput()
+                self.fields["featured_agenda"].widget = forms.HiddenInput()
 
             for form, field in self.get_fields():
                 field_name = self.get_field_name(form.id, field.id)
@@ -1466,7 +1494,9 @@ class SubmissionGeoTimeForm(forms.ModelForm):
 
             min_starts_at = self.submission.get_min_starts_at()
             # add two hours of tolerance in the validation
-            if starts_at <= min_starts_at - timedelta(hours=2):
+            if starts_at <= min_starts_at - timedelta(
+                hours=settings.LOCAL_TIME_ZONE_UTC
+            ):
                 raise ValidationError(
                     {
                         "starts_at": _(
@@ -1478,7 +1508,9 @@ class SubmissionGeoTimeForm(forms.ModelForm):
 
             if self.submission.max_validity is not None:
                 max_ends_at = starts_at + timedelta(days=self.submission.max_validity)
-                if ends_at > max_ends_at + timedelta(hours=2):
+                if ends_at > max_ends_at + timedelta(
+                    hours=settings.LOCAL_TIME_ZONE_UTC
+                ):
                     raise ValidationError(
                         {
                             "ends_at": _(

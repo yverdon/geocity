@@ -50,17 +50,20 @@ SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 
 # LIMIT MAX CONNEXIONS ATTEMPTS
 AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
-# Lock out by combination of ip AND User
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = os.getenv(
-    "AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP", False
+# Lock out by combination of ip AND User if not otherwise defined in .env
+AXES_LOCKOUT_PARAMETERS = (
+    os.getenv("AXES_LOCKOUT_PARAMETERS").split(",")
+    if os.getenv("AXES_LOCKOUT_PARAMETERS")
+    else ["ip_address", ["username", "user_agent"]]
 )
+
 AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
 )
 
 AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
 AXES_SENSITIVE_PARAMETERS = ["auth-password"]
-
+AXES_IPWARE_PROXY_COUNT = int(os.getenv("AXES_IPWARE_PROXY_COUNT", 1))
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -107,7 +110,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 #  Or we need to add an attribute in the Submission to save the site where it has
 #  been initiated.
 SITE_ID = None
-SITE_DOMAIN = None
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", None)
 # Default domain on which all forms could be made visible by any integrator
 DEFAULT_SITE = os.getenv("DEFAULT_SITE")
 
@@ -116,6 +119,10 @@ AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true
 
 # Allow REMOTE_USER Authentication
 ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
+
+# Thumbor image service
+USE_THUMBOR = os.getenv("USE_THUMBOR", "true").lower() == "true"
+THUMBOR_SERVICE_URL = os.getenv("THUMBOR_SERVICE_URL", "None")
 
 SITE_HTTPS = ENV == "PROD"
 
@@ -127,6 +134,8 @@ if ENV == "DEV":
 
 LOCATIONS_SEARCH_API = os.getenv("LOCATIONS_SEARCH_API")
 LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
+
+LOCAL_TIME_ZONE_UTC = int(os.getenv("LOCAL_TIME_ZONE_UTC", +1))
 
 # Application definition
 INSTALLED_APPS = [
@@ -201,6 +210,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "axes.middleware.AxesMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 if ENABLE_2FA:
@@ -432,9 +442,11 @@ TEMPLATES = [
 
 AUTHENTICATION_BACKENDS = [
     # AxesBackend
-    "axes.backends.AxesBackend",
-    # Classic django authentication backend
+    "axes.backends.AxesStandaloneBackend",
+    # Classic django authentication backend (login-by-username)
     "django.contrib.auth.backends.ModelBackend",
+    # Login-by-email authentication backend
+    "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     # SocialAccount authentication backend with allauth
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -548,10 +560,9 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
-if DEBUG:
-    STATICFILES_DIRS = [
-        "/static_map/",
-    ]
+STATICFILES_DIRS = [
+    "/external_statics/",
+]
 
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"
@@ -574,7 +585,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "geocity.auth.InternalTokenAuthentication",
     ),
-    "DEFAULT_PAGINATION_CLASS": "geocity.apps.django_wfs3.pagination.CustomPagination",
+    "DEFAULT_PAGINATION_CLASS": "geocity.apps.api.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
     ],
@@ -587,6 +598,8 @@ REST_FRAMEWORK = {
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
         # Full API for search
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
+        # Full API for agenda app
+        "agenda": os.getenv("DRF_THROTTLE_RATE_AGENDA_API"),
     },
 }
 
@@ -613,7 +626,10 @@ ANONYMOUS_USER_ZIPCODE = 9999
 ANONYMOUS_USER_PREFIX = "anonymous_user_"
 ANONYMOUS_NAME = "Anonyme"
 PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
+EMAIL_USER_PREFIX = "email_user_"
 
+
+# Only for Intranet usage of Geocity
 if ALLOW_REMOTE_USER_AUTH:
     # Add the auth middleware
     MIDDLEWARE += ["django.contrib.auth.middleware.RemoteUserMiddleware"]
@@ -627,6 +643,7 @@ if ALLOW_REMOTE_USER_AUTH:
         # Classic django authentication backend
         "django.contrib.auth.backends.RemoteUserBackend",
         "django.contrib.auth.backends.ModelBackend",
+        "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     ]
 
 CKEDITOR_CONFIGS = {

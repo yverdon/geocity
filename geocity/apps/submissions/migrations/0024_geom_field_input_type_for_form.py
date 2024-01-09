@@ -7,8 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0026_geom_field_input_type_for_form"),
-        ("submissions", "0022_contactform_and_more"),
+        ("forms", "0028_geom_field_input_type_for_form"),
+        ("submissions", "0023_historicalsubmission_featured_agenda_and_more"),
     ]
 
     operations = [

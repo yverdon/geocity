@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block content-fluid %}
+<div class="container mb-0 px-3 px-md-0">
+    <a href="{% url 'accounts:account_login' %}" class="btn btn-primary">Page de connexion</a>
+</div>
+{% endblock %}

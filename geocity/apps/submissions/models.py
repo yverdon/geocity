@@ -211,6 +211,15 @@ class Submission(models.Model):
         STATUS_INQUIRY_IN_PROGRESS,
     }
 
+    VISIBLE_IN_AGENDA_STATUSES = {
+        STATUS_SUBMITTED_FOR_VALIDATION,
+        STATUS_PROCESSING,
+        STATUS_AWAITING_VALIDATION,
+        STATUS_APPROVED,
+        STATUS_RECEIVED,
+        STATUS_INQUIRY_IN_PROGRESS,
+    }
+
     PROLONGATION_STATUS_PENDING = 0
     PROLONGATION_STATUS_APPROVED = 1
     PROLONGATION_STATUS_REJECTED = 2
@@ -269,6 +278,8 @@ class Submission(models.Model):
         verbose_name=_("Destinataire de la facture"),
     )
     is_public = models.BooleanField(_("Publication calendrier"), default=False)
+    is_public_agenda = models.BooleanField(_("Publication agenda"), default=False)
+    featured_agenda = models.BooleanField(_("Mise en vedette"), default=False)
     prolongation_date = models.DateTimeField(
         _("Nouvelle date de fin"), null=True, blank=True
     )
@@ -495,6 +506,17 @@ class Submission(models.Model):
                 )
 
     @staticmethod
+    def get_submission_site_domain(url_split):
+        if "submissions" in url_split:
+            submission_id_index = url_split.index("submissions") + 1
+        else:
+            return None
+
+        submission_id = url_split[submission_id_index]
+        submission = Submission.objects.get(id=submission_id)
+        return submission.get_site(use_default=False)
+
+    @staticmethod
     def get_absolute_url(relative_url):
         protocol = "https" if settings.SITE_HTTPS else "http"
         port = (
@@ -503,14 +525,12 @@ class Submission(models.Model):
             else ""
         )
 
-        if settings.SITE_DOMAIN:
-            site_domain = settings.SITE_DOMAIN
+        url_split = relative_url.split("/")
+        submission_site = Submission.get_submission_site_domain(url_split)
+        if submission_site:
+            site_domain = submission_site
         else:
-            url_split = relative_url.split("/")
-            submission_id_index = url_split.index("submissions") + 1
-            submission_id = url_split[submission_id_index]
-            submission = Submission.objects.get(id=submission_id)
-            site_domain = submission.get_site(use_default=False)
+            site_domain = settings.SITE_DOMAIN
 
         return f"{protocol}://{site_domain}{port}{relative_url}"
 
@@ -1290,13 +1310,15 @@ class Submission(models.Model):
         comp_doc.authorised_departments.set(PermitDepartment.objects.all())
         return comp_doc
 
-    def has_any_form_with_exceeded_submissions(self):
-        return any(form.has_exceeded_maximum_submissions() for form in self.forms.all())
+    def has_any_form_with_exceeded_submissions(self, user_for_bypass=None):
+        return any(
+            form.has_exceeded_maximum_submissions(user_for_bypass)
+            for form in self.forms.all()
+        )
 
     def get_maximum_submissions_message(self):
         for form in self.forms.all():
-            if form.has_exceeded_maximum_submissions():
-                return form.max_submissions_message
+            return form.max_submissions_message
 
 
 class Contact(models.Model):
@@ -1815,6 +1837,15 @@ class SubmissionAmendField(models.Model):
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
+    api_light = models.BooleanField(
+        _("Visible dans l'API light"),
+        default=False,
+        help_text=_(
+            """Lorsque cette case est cochée, ce champ est affichée dans la version light de l'api (/rest/RESSOURCE) si la demande est rendue publique par le pilote.<br>
+            Afin de ne pas afficher trop d'informations, le champ est masqué pour améliorer la rapidité de l'API.<br>
+            Pour afficher la version normale de l'api, il faut se rendre sur une seule ressource (/rest/RESSOURCE/:ID)."""
+        ),
+    )
 
     class Meta:
         verbose_name = _("2.1 Champ de traitement des demandes")
@@ -1846,7 +1877,7 @@ class SubmissionAmendFieldValue(models.Model):
         SubmissionAmendField,
         verbose_name=_("caractéristique"),
         on_delete=models.PROTECT,
-        related_name="+",
+        related_name="amend_field_value",
     )
     form = models.ForeignKey(
         SelectedForm,
