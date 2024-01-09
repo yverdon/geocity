@@ -1308,10 +1308,6 @@ class ServicesFeesForm(forms.ModelForm):
 
         #  Used in delete_submission_service_fees() view:
         if delete:
-            print(f"time: {(self.fields['time_spent_on_task'])}")
-            print(f"time: {dir(self.fields['time_spent_on_task'])}")
-            print(self.data)
-            print(80 * "#")
             for field_name in self.fields:
                 self.fields[field_name].widget.attrs["readonly"] = True
 
