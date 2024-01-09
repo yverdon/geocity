@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const choicesRowElement = choicesElement.closest('.form-group');
     const choicesLabelElement = choicesRowElement.querySelector('label');
     const isChoicesVisible = inputType === 'list_single' || inputType === 'list_multiple';
-    
+
     const mapWidgetConfigurationElement = document.getElementById('id_map_widget_configuration');
     const mapWidgetConfigurationRowElement = mapWidgetConfigurationElement.closest('.form-group');
     const mapWidgetConfigurationLabelElement = mapWidgetConfigurationRowElement.querySelector('label');

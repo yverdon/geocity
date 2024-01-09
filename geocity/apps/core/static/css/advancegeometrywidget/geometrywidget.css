@@ -1,9 +1,9 @@
-#map-ro-result {
+.map-ro-result {
   width: 100%;
   height: 30vh;
 }
 
-#map-custom-modal-button {
+.map-custom-modal-button {
   border: 1px solid #008c6f;
   color: #008c6f;
   width: 222px;
@@ -13,11 +13,11 @@
   margin-top: 4px;
 }
 
-#map-custom-modal-button > i {
+.map-custom-modal-button > i {
   padding-right: 7px;
 }
 
-#geo-invalid-content {
+.geo-invalid-content {
   color: #dc3545;
   display: none;
   width: 100%;
@@ -25,18 +25,18 @@
   font-size: 80%;
 }
 
-#map-custom-modal {
+.map-custom-modal {
   position: fixed;
   z-index: 1022;
   background-color: white;
 }
 
-#web-component-advanced {
+.web-component-advanced {
   margin-left: auto;
   margin-right: auto;
 }
 
-#map-custom-modal-overlay {
+.map-custom-modal-overlay {
   position: fixed;
   z-index: 1021;
   top: 0;
@@ -81,7 +81,7 @@
   align-items: center;
 }
 
-#modal-validation-button {
+.modal-validation-button {
   width: 229px;
   height: 36px;
   color: white;

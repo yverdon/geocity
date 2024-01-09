@@ -726,7 +726,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         options = {
             "map_widget_configuration": [field.map_widget_configuration.configuration],
         }
-
+        print("Geometric Field setup")
         widget = GeometryWidgetAdvanced(attrs={"options": options})
         widget.attrs["options"]["edit_geom"] = True
 
@@ -1381,7 +1381,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             and not self.instance.comes_from_automatic_geocoding
         ):
             del self.fields["geom"]
-
+            print("tutu")
         else:
             options = self.get_widget_options(self.submission)
             if options["geo_widget_option"][0] == 2:

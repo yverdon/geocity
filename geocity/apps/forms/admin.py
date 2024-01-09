@@ -704,7 +704,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 return Form(*args, **kwargs)
 
         return RequestForm
-    
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name in ["map_widget_configuration"]:
             kwargs["queryset"] = filter_for_user(
@@ -712,6 +712,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class FormCategoryAdminForm(forms.ModelForm):
     class Meta:
