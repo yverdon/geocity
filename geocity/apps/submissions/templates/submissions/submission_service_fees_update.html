@@ -12,13 +12,13 @@
     {% bootstrap_form service_fees_form layout='horizontal' %}
 
     <div class="text-right">
-        <input name="action" type="hidden" value="update_service_fee">
-        <button class="btn btn-primary" name="save">
-          {% translate "Enregistrer" %}
-        </button>
-        <button class="btn btn-primary" name="cancel">
-          {% translate "Annuler" %}
-        </button>
+      <input name="action" type="hidden" value="update_service_fee">
+      <button class="btn btn-primary" name="save" type="submit" value="Save">
+        {% translate "Enregistrer" %}
+      </button>
+      <button class="btn btn-primary" name="cancel" type="submit" value="Cancel">
+        {% translate "Annuler" %}
+      </button>
     </div>
   </form>
 {% endblock %}

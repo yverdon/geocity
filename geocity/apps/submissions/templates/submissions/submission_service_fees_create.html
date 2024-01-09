@@ -13,11 +13,14 @@
 
     <div class="text-right">
       <input name="action" type="hidden" value="create_service_fee">
-      <button class="btn btn-primary" name="save">
+      <button class="btn btn-primary" name="save" type="submit" value="Save">
         {% translate "Enregistrer" %}
       </button>
-      <button class="btn btn-primary" name="save_continue">
+      <button class="btn btn-primary" name="save_continue" type="submit" value="Save_Continue">
         {% translate "Enregistrer et ajouter une nouvelle prestation" %}
+      </button>
+      <button class="btn btn-primary" name="cancel" type="submit" value="Cancel">
+        {% translate "Annuler" %}
       </button>
     </div>
   </form>

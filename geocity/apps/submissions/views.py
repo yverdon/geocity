@@ -2238,6 +2238,9 @@ def administrative_entities_geojson(request, administrative_entity_id):
 
 
 def to_service_fees_page(submission_id=None):
+    """
+    Function to return to the main service fees page.
+    """
     target = reverse(
         "submissions:submission_detail",
         kwargs={"submission_id": submission_id},
@@ -2266,11 +2269,6 @@ def create_submission_service_fees(request, submission_id, data=None):
     #     administrative_entity=submission.administrative_entity,
     # )
     # print(f"dpts: {(dpts)}")
-    has_permis = permissions.has_permission_to_create_service_fees(
-        request.user, submission
-    )
-    permis = permissions.has_permission_to_create_service_fees(request.user, submission)
-    print(f"permis: {(permis)}")
     if permissions.has_permission_to_create_service_fees(request.user, submission):
         if request.method == "GET":
             initial = {
@@ -2292,6 +2290,15 @@ def create_submission_service_fees(request, submission_id, data=None):
             )
 
         elif request.method in ("POST"):
+            if "cancel" in request.POST:
+                messages.success(
+                    request,
+                    _(
+                        "Aucune prestation n'a été créée en raison de l'annulation de l'utilisateur."
+                    ),
+                )
+                return redirect(to_service_fees_page(submission_id))
+
             data = request.POST
             service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
@@ -2387,7 +2394,6 @@ def update_submission_service_fees(request, submission_id, service_fee_id, data=
                 return redirect(to_service_fees_page(submission_id))
 
             data = request.POST
-            print(f"DATAAAAAAAAAAAAAAAAAAAAAA: {data}")
             service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
                 instance=service_fee,
