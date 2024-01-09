@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0025_alter_form_quick_access_slug"),
+        ("forms", "0027_remove_field_is_public_when_permitrequest_is_public_and_more"),
     ]
 
     operations = [
