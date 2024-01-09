@@ -20,7 +20,7 @@ from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
 
 # import fixturize file
-from ..fixturize_data.fixturize import *
+from ..fixturize_data.generic_example import *
 
 
 def strip_accents(text):
@@ -116,7 +116,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Resetting database...")
         reset_db()
-        setup_media(images_folder)
+        # setup_media(images_folder)
         self.stdout.write("")
         self.stdout.write("░██████╗███████╗███████╗██████╗░")
         self.stdout.write("██╔════╝██╔════╝██╔════╝██╔══██╗")
@@ -359,7 +359,7 @@ class Command(BaseCommand):
         expiration_reminder = False
         days_before_reminder = None
         map_widget_configuration = None
-        agenda_visible = None
+        agenda_visible = False
         geo_widget_option = Form.GEO_WIDGET_GENERIC
 
         # Configure specific form in order to illustrate full potential of Geocity
