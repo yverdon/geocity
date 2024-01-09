@@ -1132,7 +1132,7 @@ msgstr ""
 #: geocity/apps/core/templates/base_generic.html:117
 #: geocity/apps/core/templates/base_generic.html:142
 msgid "Interface d'administration"
-msgstr "Commune"
+msgstr "Administration interface"
 
 #: geocity/apps/core/templates/base_generic.html:120
 #: geocity/apps/core/templates/base_generic.html:147
