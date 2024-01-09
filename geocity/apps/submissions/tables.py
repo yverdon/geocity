@@ -2,6 +2,7 @@ from datetime import datetime
 
 import django_tables2 as tables
 from django.conf import settings
+from django.db.models import F, Sum
 from django.template.defaultfilters import floatformat
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -362,6 +363,23 @@ class TransactionsTable(tables.Table):
         )
         template_name = "django_tables2/bootstrap.html"
 
+class MoneteryAmountColumn(tables.Column):
+    total_monetary_amount = 0
+
+    def render(self, value, bound_column, record):
+        total_amount = ServicesFees.objects.aggregate(
+            total=Sum(F("monetary_amount"))
+        )['total']
+        # total_amount = record.monetary_amount.amount.aggregate(
+        #     total=Sum(F("monetary_amount"))
+        # )['total']
+        self.total_monetary_amount = total_amount
+        self.currency = value.currency
+        return value
+
+    def render_footer(self, bound_column, table):
+        return (f"{round(self.total_monetary_amount, 2)} {self.currency}")
+
 
 class ServicesFeesTable(tables.Table):
     """Docstring"""
@@ -384,6 +402,7 @@ class ServicesFeesTable(tables.Table):
     permit_department = tables.Column(
         verbose_name=_("Service"),
         orderable=True,
+        footer=_("Totaux :"),
     )
     services_fees_type = tables.Column(
         verbose_name=_("Prestation"),
@@ -405,7 +424,7 @@ class ServicesFeesTable(tables.Table):
         verbose_name=_("Tarif horaire [CHF]"),
         orderable=True,
     )
-    monetary_amount = tables.Column(
+    monetary_amount = MoneteryAmountColumn(
         verbose_name=_("Montant [CHF]"),
         orderable=True,
     )
@@ -415,6 +434,7 @@ class ServicesFeesTable(tables.Table):
         verbose_name=_("Actions"),
         orderable=False,
     )
+
 
     class Meta:
         model = ServicesFees
