@@ -2237,6 +2237,18 @@ def administrative_entities_geojson(request, administrative_entity_id):
     return JsonResponse(geojson, safe=False)
 
 
+def to_service_fees_page(submission_id=None):
+    target = reverse(
+        "submissions:submission_detail",
+        kwargs={"submission_id": submission_id},
+    )
+    query_string = urllib.parse.urlencode(
+        {"prev_active_form": "services_fees"}
+    )
+
+    return f"{target}?{query_string}"
+
+
 @redirect_bad_status_to_detail
 @login_required
 @permanent_user_required
@@ -2308,14 +2320,7 @@ def create_submission_service_fees(request, submission_id, data=None):
                         submission_id=submission.pk,
                     )
                 elif "save" in request.POST:
-                    target = reverse(
-                        "submissions:submission_detail",
-                        kwargs={"submission_id": submission_id},
-                    )
-                    query_string = urllib.parse.urlencode(
-                        {"prev_active_form": "services_fees"}
-                    )
-                    return redirect(f"{target}?{query_string}")
+                    return redirect(to_service_fees_page(submission_id))
                 else:
                     raise HttpResponse(status=404)
             else:
@@ -2372,7 +2377,17 @@ def update_submission_service_fees(request, submission_id, service_fee_id, data=
             )
 
         elif request.method == "POST":
+            if "cancel" in request.POST:
+                messages.success(
+                    request,
+                    _(
+                        "La prestation n'a pas été modifiée en raison de l'annulation de l'utilisateur."
+                    ),
+                )
+                return redirect(to_service_fees_page(submission_id))
+
             data = request.POST
+            print(f"DATAAAAAAAAAAAAAAAAAAAAAA: {data}")
             service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
                 instance=service_fee,
@@ -2391,14 +2406,7 @@ def update_submission_service_fees(request, submission_id, service_fee_id, data=
                 messages.success(request, success_message)
 
                 if "save" in request.POST:
-                    target = reverse(
-                        "submissions:submission_detail",
-                        kwargs={"submission_id": submission_id},
-                    )
-                    query_string = urllib.parse.urlencode(
-                        {"prev_active_form": "services_fees"}
-                    )
-                    return redirect(f"{target}?{query_string}")
+                    return redirect(to_service_fees_page(submission_id))
                 else:
                     raise HttpResponse(status=404)
             else:
@@ -2462,12 +2470,8 @@ def delete_submission_service_fees(request, submission_id, service_fee_id, data=
                     ),
                 )
 
-        target = reverse(
-            "submissions:submission_detail",
-            kwargs={"submission_id": submission_id},
-        )
-        query_string = urllib.parse.urlencode({"prev_active_form": "services_fees"})
-        return redirect(f"{target}?{query_string}")
+        return redirect(to_service_fees_page(submission_id))
+
 
 
 @method_decorator(login_required, name="dispatch")
