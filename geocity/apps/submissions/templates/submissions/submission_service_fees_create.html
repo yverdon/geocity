@@ -26,11 +26,6 @@
           <i class="fa fa-times" aria-hidden="true"></i>&nbsp;
           {% translate "Annuler" %}
       </button>
-      <a href="{% url 'submissions:submission_detail' submission_id=submission.pk %}?prev_active_form=services_fees"
-        class="btn btn-primary">
-        <i class="fa fa-times" aria-hidden="true"></i>&nbsp;
-        {% translate "Annuler" %}
-      </a>
     </div>
   </form>
 {% endblock %}
