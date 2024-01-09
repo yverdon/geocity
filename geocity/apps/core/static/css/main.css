@@ -159,6 +159,10 @@ input:focus {
   vertical-align: baseline;
 }
 
+.table tfoot {
+  font-weight: bold;
+}
+
 .page-item.active .page-link {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
