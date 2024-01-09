@@ -11,8 +11,9 @@
   </p>
   <form method="GET">
     {% csrf_token %}
-    {% bootstrap_form form layout='horizontal' %}
+    {% bootstrap_form service_fees_form layout='horizontal' %}
   </form>
+  <hr>
   <form method="POST">
     {% csrf_token %}
 

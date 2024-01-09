@@ -8,8 +8,9 @@
   <hr>
   <form method="POST">
     {% csrf_token %}
-    {{ form.media }}
-    {% bootstrap_form form layout='horizontal' %}
+    {{ service_fees_form.media }}
+    {% bootstrap_form service_fees_form layout='horizontal' %}
+
     <div class="text-right">
         <input name="action" type="hidden" value="update_service_fee">
         <button class="btn btn-primary" name="save">
