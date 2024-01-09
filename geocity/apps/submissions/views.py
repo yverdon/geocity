@@ -377,9 +377,6 @@ class SubmissionDetailView(View):
             models.ACTION_PROLONG: self.get_prolongation_form,
             models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
             models.ACTION_MANAGE_CFC2_AMOUNT: self.get_cfc2_amount_form,
-            # models.ACTION_CREATE_SERVICE_FEE: self.get_service_fee_form,
-            # models.ACTION_UPDATE_SERVICE_FEE: self.get_service_fee_form,
-            # models.ACTION_DELETE_SERVICE_FEE: self.get_service_fee_form,
         }
 
         return (
@@ -627,12 +624,6 @@ class SubmissionDetailView(View):
             return self.handle_request_inquiry_form_submission(form)
         elif action == models.ACTION_MANAGE_CFC2_AMOUNT:
             return self.handle_cfc2_amount_form_submission(form)
-        # elif action == models.ACTION_CREATE_SERVICE_FEE:
-        #     return self.handle_service_fee_form_submission(form)
-        # elif action == models.ACTION_UPDATE_SERVICE_FEE:
-        #     return self.handle_service_fee_form_submission(form)
-        # elif action == models.ACTION_DELETE_SERVICE_FEE:
-        #     return self.handle_service_fee_form_submission(form)
 
     def handle_cfc2_amount_form_submission(self, form):
         if "delete" in self.request.POST:
