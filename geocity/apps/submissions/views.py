@@ -476,22 +476,6 @@ class SubmissionDetailView(View):
 
         return True
 
-    # def get_service_fee_form(self, data=None, **kwargs):
-    #     if permissions.has_permission_to_create_service_fees(
-    #         self.request.user, self.submission
-    #     ) or permissions.has_permission_to_update_service_fees(
-    #         self.request.user, self.submission
-    #     ):
-    #         form = forms.ServicesFeesForm(
-    #             submission=self.submission,
-    #             # initial=initial,
-    #             data=data,
-    #             user=self.request.user,
-    #         )
-
-    #         return form
-
-    #     return None
 
     def get_request_inquiry_form(self, data=None, **kwargs):
         if not permissions.has_permission_to_amend_submission(
@@ -650,18 +634,6 @@ class SubmissionDetailView(View):
 
         return redirect(f"{target}?{query_string}")
 
-    # def handle_service_fee_form_submission(self, form):
-    #     form.save()
-    #     success_message = _("La prestation a été enregistrée avec succès.")
-    #     messages.success(self.request, success_message)
-
-    #     if "save_continue" in self.request.POST:
-    #         return redirect(
-    #             "submissions:submission_detail",
-    #             submission_id=self.submission.pk,
-    #         )
-    #     else:
-    #         return redirect("submissions:submissions_list")
 
     def handle_amend_form_submission(self, form):
         initial_status = (
