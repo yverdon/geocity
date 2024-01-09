@@ -340,6 +340,9 @@ class Submission(models.Model):
             ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
+            ("create_service_fee", _("Créer une prestation")),
+            ("update_service_fee", _("Modifier une prestation")),
+            ("delete_service_fee", _("Supprimer une prestation")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
