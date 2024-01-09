@@ -6,14 +6,14 @@
   <li>
     <a title="{% translate 'Modifier la prestation' %}"
        href="{% url 'submissions:update_submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}">
-        <i class="fa fa-edit fa-lg"></i>
+        <i class="fa fa-edit fa-lg" aria-hidden="true"></i>
     </a>
   </li>
 
   <li>
     <a title="{% translate 'Supprimer la prestation' %}"
        href="{% url 'submissions:delete_submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}">
-        <i class="fa fa-trash fa-lg"></i>
+        <i class="fa fa-trash fa-lg" aria-hidden="true"></i>
     </a>
   </li>
 

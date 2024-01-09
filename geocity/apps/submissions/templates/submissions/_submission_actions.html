@@ -411,10 +411,12 @@
 
                   <div class="text-right">
                     <input name="action" type="hidden" value="manage_cfc2_amount">
-                    <button class="btn btn-primary" name="save">
+                    <button class="btn btn-primary" name="save" type="submit" value="Save">
+                      <i class="fa fa-save" aria-hidden="true"></i>&nbsp;
                       {% translate "Enregistrer" %}
                     </button>
                     <button class="btn btn-primary" name="delete" value="delete_cfc2_amount">
+                      <i class="fa fa-trash fa-trash-white" aria-hidden="true"></i>&nbsp;
                       {% translate "Supprimer" %}
                     </button>
                   </div>
@@ -442,6 +444,7 @@
                   name="action"
                   href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}"x
                   >
+                    <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
                     {% translate "Ajouter une nouvelle prestation" %}
                 </a>
               </div>

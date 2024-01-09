@@ -2281,6 +2281,7 @@ def create_submission_service_fees(request, submission_id, data=None):
             )
             context = {
                 "service_fees_form": service_fees_form,
+                "submission": submission,
             }
 
             return render(

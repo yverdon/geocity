@@ -407,6 +407,10 @@ h5 {
   color: crimson;
 }
 
+.fa-trash-white {
+  color: #ffffff;
+}
+
 .table-container {
   overflow-x: visible;
 }
