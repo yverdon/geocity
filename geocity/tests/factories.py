@@ -464,6 +464,7 @@ class FieldFactory(factory.django.DjangoModelFactory):
         model = forms_models.Field
 
     name = factory.Faker("word")
+    content = factory.Faker("word")
     placeholder = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TEXT
