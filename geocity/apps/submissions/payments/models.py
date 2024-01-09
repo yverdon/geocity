@@ -265,13 +265,12 @@ class ServicesFees(models.Model):
 
     # Methods
     def save(self, *args, **kwargs):
-        hourly_rate = (
+        self.hourly_rate = (
             self.services_fees_type.administrative_entity.services_fees_hourly_rate
         )
-        self.hourly_rate = hourly_rate
-        if not self.monetary_amount:
+        if self.hourly_rate:
             self.monetary_amount = (
-                hourly_rate * self.time_spent_on_task.total_seconds() / 3600
+                self.hourly_rate * self.time_spent_on_task.total_seconds() / 3600
             )
 
         super(ServicesFees, self).save(*args, **kwargs)
