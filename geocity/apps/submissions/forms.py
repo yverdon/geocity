@@ -41,7 +41,12 @@ from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import ServicesFees, ServicesFeesType, SubmissionPrice
+from .payments.models import (
+    ServicesFees,
+    ServicesFeesType,
+    SubmissionCFC2Price,
+    SubmissionPrice,
+)
 from .permissions import has_permission_to_amend_submission
 
 logger = logging.getLogger(__name__)
@@ -615,11 +620,11 @@ class FieldsForm(PartialValidationMixin, forms.Form):
     def get_date_field_kwargs(self, field, default_kwargs):
         return {
             **default_kwargs,
-            "input_formats": [settings.DATE_INPUT_FORMAT],
+            "input_formats": settings.DATE_INPUT_FORMATS,
             "widget": DatePickerInput(
                 options={
                     "format": "DD.MM.YYYY",
-                    "locale": "fr-CH",
+                    "locale": settings.LANGUAGE_CODE,
                     "useCurrent": False,
                     "minDate": "1900/01/01",
                     "maxDate": "2100/12/31",
@@ -1235,30 +1240,62 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
 
+class CFC2Form(forms.ModelForm):
+    """Docstring"""
+
+    required_css_class = "required"
+
+    def __init__(self, *args, **kwargs):
+        self.submission = kwargs.pop("submission", None)
+        current_user = kwargs.pop("user", None)
+        instance = kwargs["instance"]
+
+        kwargs["initial"] = {
+            **kwargs.get("initial", {}),
+        }
+        if instance:
+            kwargs["initial"] = {
+                **kwargs.get("initial", {}),
+                "cfc2_price": instance.cfc2_price,
+            }
+
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = SubmissionCFC2Price
+        fields = [
+            "cfc2_price",
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        return cleaned_data
+
+
 class ServicesFeesForm(forms.ModelForm):
     """Docstring"""
 
     # provided_at = forms.DateField(
     #     label=_("Date de saisie"),
     #     initial=timezone.now(),
-    #     input_formats=[settings.DATE_INPUT_FORMAT],
+    #     input_formats=settings.DATE_INPUT_FORMATS,
     #     widget=DatePickerInput(
     #         options={
     #             "format": "DD-MM-YYYY",
-    #             "locale": "fr-CH",
+    #             "locale": settings.LANGUAGE_CODE,
     #             "useCurrent": False,
     #         }
     #     ),
     #     help_text=_(
-    #         "La prestation a été saisie à cette date."
+    #         "The service fee was provided on this date."
     #     ),
     # )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, delete=None, **kwargs):
         self.submission = kwargs.pop("submission", None)
         current_user = kwargs.pop("user", None)
         time_spent_on_task = kwargs.pop("time_spent_on_task", None)
-
         kwargs["initial"] = {
             **kwargs.get("initial", {}),
             # prefer initializing the 'provided_by' entry in the view as the
@@ -1268,6 +1305,15 @@ class ServicesFeesForm(forms.ModelForm):
         }
 
         super().__init__(*args, **kwargs)
+
+        #  Used in delete_submission_service_fees() view:
+        if delete:
+            print(f"time: {(self.fields['time_spent_on_task'])}")
+            print(f"time: {dir(self.fields['time_spent_on_task'])}")
+            print(self.data)
+            print(80 * "#")
+            for field_name in self.fields:
+                self.fields[field_name].widget.attrs["readonly"] = True
 
         logger.debug(
             f"Current user get_all_permissions: {(current_user.get_all_permissions())}"
@@ -1338,6 +1384,7 @@ class ServicesFeesForm(forms.ModelForm):
 
     class Meta:
         model = ServicesFees
+        localized_fields = "__all__"
         fields = [
             "services_fees_type",
             "provided_by",
@@ -1352,7 +1399,7 @@ class ServicesFeesForm(forms.ModelForm):
             "provided_at": DatePickerInput(
                 options={
                     "format": "DD.MM.YYYY",
-                    "locale": "fr-CH",
+                    "locale": settings.LANGUAGE_CODE,
                     "useCurrent": False,
                 }
             ),
@@ -1412,11 +1459,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date de début"),
-        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        input_formats=settings.DATETIME_INPUT_FORMATS,
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             },
             attrs={"autocomplete": "off"},
@@ -1425,11 +1472,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     )
     ends_at = forms.DateTimeField(
         label=_("Date de fin"),
-        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        input_formats=settings.DATETIME_INPUT_FORMATS,
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             },
             attrs={"autocomplete": "off"},
@@ -1720,11 +1767,11 @@ class SubmissionValidationPokeForm(forms.Form):
 class SubmissionProlongationForm(forms.ModelForm):
     prolongation_date = forms.DateTimeField(
         label=_("Nouvelle date de fin demandée"),
-        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        input_formats=settings.DATETIME_INPUT_FORMATS,
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
                 "minDate": (datetime.today()).strftime("%Y/%m/%d"),
             }
@@ -1756,7 +1803,7 @@ class SubmissionProlongationForm(forms.ModelForm):
                     _(
                         "La date de prolongation doit être postérieure à la date originale de fin (%s)."
                     )
-                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMAT)
+                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMATS[0])
                 )
 
 
@@ -1937,7 +1984,7 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         ) and not self.cleaned_data.get("is_public"):
             raise ValidationError(
                 _(
-                    "Un département doit être renseigner ou le document doit être publique"
+                    "Un département doit être renseigné ou le document doit être publique"
                 )
             )
 
@@ -2016,22 +2063,22 @@ class AnonymousRequestForm(forms.Form):
 class SubmissionInquiryForm(forms.ModelForm):
     start_date = forms.DateField(
         label=_("Date de début"),
-        input_formats=[settings.DATE_INPUT_FORMAT],
+        input_formats=settings.DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             }
         ),
     )
     end_date = forms.DateField(
         label=_("Date de fin"),
-        input_formats=[settings.DATE_INPUT_FORMAT],
+        input_formats=settings.DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             }
         ),
