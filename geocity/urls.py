@@ -23,15 +23,18 @@ if settings.ENABLE_2FA:
 
 
 # Django-configuration
+urlpatterns = [
+    path("", submissions_views.submission_select_administrative_entity),
+    path("submissions/", include("geocity.apps.submissions.urls")),
+    path("forms/", include("geocity.apps.forms.urls")),
+    path("reports/", include("geocity.apps.reports.urls")),
+    # Backward compatibility for Geocity < 2.1, will be deprecated in 3.0
+    re_path(r"permit-requests/.*", legacy_urls_redirect),
+]
+
+# Append default urlpatterns for external providers
 urlpatterns = (
-    [
-        path("", submissions_views.submission_select_administrative_entity),
-        path("submissions/", include("geocity.apps.submissions.urls")),
-        path("forms/", include("geocity.apps.forms.urls")),
-        path("reports/", include("geocity.apps.reports.urls")),
-        # Backward compatibility for Geocity < 2.1, will be deprecated in 3.0
-        re_path(r"permit-requests/.*", legacy_urls_redirect),
-    ]
+    urlpatterns
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)
 )
