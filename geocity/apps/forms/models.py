@@ -545,6 +545,9 @@ class Form(models.Model):
             Le pilote peut alors contrôler la publication dans l'agenda dans l'onglet traitement"""
         ),
     )
+    disable_validation_by_validators = models.BooleanField(
+        _("Désactiver la validation par les services"), default=False
+    )
 
     # All objects
     objects = FormQuerySet().as_manager()
