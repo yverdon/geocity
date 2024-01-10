@@ -115,3 +115,35 @@ def get_users_list_for_integrator_admin(user, remove_anonymous=False):
             anonymous_users.append(user.pk)
     qs = qs.exclude(pk__in=anonymous_users)
     return qs
+
+
+def is_backoffice_in_department(user, department):
+    """
+    Check if user is backoffice for a given department (group)
+    a.k.a. administrative entity.
+    """
+    current_user_groups_pk = user.groups.all().values_list("pk", flat=True)
+    # Find the group of this user and filter by is_backoffice
+    departments_of_the_current_user = models.PermitDepartment.objects.filter(
+        administrative_entity=department,
+        is_backoffice=True,
+        pk__in=current_user_groups_pk,
+    )
+
+    return any(current_user_groups_pk.intersection(departments_of_the_current_user))
+
+
+def is_validator_in_department(user, department):
+    """
+    Check if user is validator for a given department (group)
+    a.k.a. administrative entity.
+    """
+    current_user_groups_pk = user.groups.all().values_list("pk", flat=True)
+    # Find the group of this user and filter by is_validator
+    departments_of_the_current_user = models.PermitDepartment.objects.filter(
+        administrative_entity=department,
+        is_validator=True,
+        pk__in=current_user_groups_pk,
+    )
+
+    return any(current_user_groups_pk.intersection(departments_of_the_current_user))
