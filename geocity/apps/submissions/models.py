@@ -629,9 +629,12 @@ class Submission(models.Model):
     @property
     def validation_by_validators_is_disabled(self):
         # Return true only if all forms have validation by validators disabled
-        return not any(
-            not form.disable_validation_by_validators for form in self.forms.all()
-        )
+        if any(self.forms.all()):
+            return not any(
+                not form.disable_validation_by_validators for form in self.forms.all()
+            )
+        else:
+            return False
 
     @property
     def complementary_documents(self):
