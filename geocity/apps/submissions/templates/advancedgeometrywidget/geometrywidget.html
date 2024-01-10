@@ -10,40 +10,36 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 {% endblock %}
 
-<div data-role="advanced-map-widget">
   <div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget-{{ id }} >
     <div id="map-ro-result-{{ id }}" class="map-ro-result"></div>
     <div id="map-custom-modal-button-{{ id }}" class="cursor map-custom-modal-button">
-      <i class="fa fa-map"></i> Localiser sur une carte
+      <i class="fa fa-map"></i>{% translate 'Localiser sur une carte' %}
     </div>
     <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized-{{ id }}">{{ serialized }}</textarea>
-    <div id="geo-invalid-content-{{ id }}" class="geo-invalid-content">No geometry value provided.</div>
+    <div id="geo-invalid-content-{{ id }}" class="geo-invalid-content">{% translate 'Aucune valeur géométrique fournie' %}</div>
   </div>
 
   <div id="map-custom-modal-overlay-{{ id }}" style="display: none" class="map-custom-modal-overlay">
   </div>
-
   <div id="map-custom-modal-{{ id }}" class="map-custom-modal" style="display: none">
     <div class="map-modal-header">
-      <p>Sélection de la localisation</p>
+      <p>{% translate 'Sélection de la localisation' %}</p>
       <i id="modal-close-button-{{ id }}" class="fa fa-times cursor"></i>
     </div>
     <div id="web-component-advanced-{{ id }}" class="web-component-advanced">
     </div>
     <div class="validate-layout">
       <div id="modal-validation-button-{{ id }}" class="cursor modal-validation-button">
-        Valider
+        {% translate 'Valider' %}
       </div>
     </div>
 
   </div>
-</div>
 
 {% block scripts %}
 <script type="module" src="{% static 'geocity-wc-map/dist/geocity-wc-map.js' %}"></script>
 <script src="{% static 'js/advancegeometrywidget/geometrywidget.js' %}"></script>
 <script>
-
   document.addEventListener("DOMContentLoaded", () => {
     initMapWidget("{{ id }}")
   });

@@ -11,6 +11,8 @@ function initMapWidget (fieldId) {
   const optionsDiv = document.querySelectorAll(
     `[data-geometry-widget-${fieldId}]:not([data-initialize='0'])`
   );
+  const parentDjangoFieldDiv = document.getElementById(`div_${fieldId}`);
+  const validationDiv = document.getElementById(`geo-invalid-content-${fieldId}`);
   validationButton.style.opacity = 0.5;
   const map = document.getElementById(`map-custom-modal-${fieldId}`);
   const overlay = document.getElementById(`map-custom-modal-overlay-${fieldId}`);
@@ -80,6 +82,7 @@ function initMapWidget (fieldId) {
     } else if (serialized.value) {
       setupReadOnlyMap();
     }
+
   }
 
   let createMap = () => {
@@ -142,8 +145,8 @@ function initMapWidget (fieldId) {
       buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`
       toogleModal("none");
       updateReadOnlyMap();
+      validationDiv.style.display = "none";
     }
-
   });
 
   window.addEventListener("position-selected", (event) => {
@@ -161,12 +164,22 @@ function initMapWidget (fieldId) {
     editableMap.style.setProperty('--window-modal-size', modalHeight + 'px');
   })
 
-  const isInvalid = document
-    .querySelectorAll(`[data-geometry-widget-${fieldId}]:not([data-initialize='0'])`)[0]
-    ?.parentNode?.parentNode?.classList.contains("is-invalid");
-  if (isInvalid) {
-    document.getElementById("geo-invalid-content").style.display = "block";
+  // Ensure field has a value and is required
+  let updateValidationMessage = () => {
+    const geomFieldValue = document.getElementById(fieldId).value;
+    if (parentDjangoFieldDiv) {
+    // Widget is used on detail step
+      if (geomFieldValue == '' && parentDjangoFieldDiv && parentDjangoFieldDiv.classList.contains("required")) {
+        validationDiv.style.display = "block";
+        }
+    } else {
+    // Widget is used on geotime step
+      if (geomFieldValue == '') {
+        validationDiv.style.display = "block";
+      }
+    }
   }
+  updateValidationMessage();
 
   if (serialized.value) {
     setupReadOnlyMap();
