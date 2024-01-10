@@ -1,6 +1,6 @@
 
 function initMapWidget (fieldId) {
-
+  "use strict";
   const readOnlyMap = document.getElementById(`map-ro-result-${fieldId}`);
   readOnlyMap.style.display = 'none';
   const editableMap = document.getElementById(`web-component-advanced-${fieldId}`);
@@ -28,12 +28,12 @@ function initMapWidget (fieldId) {
     options = JSON.parse(optionsDiv[0].dataset.options);
   }
 
-  setupReadOnlyMap = () => {
+  let setupReadOnlyMap = () => {
     readOnlyMap.style.display = 'block';
     setupMap(readOnlyMap, options, true);
   }
 
-  parseCoordinates = (data) => {
+  let parseCoordinates = (data) => {
     const selections = [];
     if (options.map_widget_configuration[0].outputFormat == 'GeometryCollection') {
       data.geometries.forEach((geometry) => {
@@ -47,7 +47,7 @@ function initMapWidget (fieldId) {
     return selections;
   }
 
-  setupMap = (container, options, readonly) => {
+  let setupMap = (container, options, readonly) => {
     if (options && options.map_widget_configuration) {
       const wc = document.createElement("openlayers-element");
       wc.options = options.map_widget_configuration[0];
@@ -66,7 +66,7 @@ function initMapWidget (fieldId) {
     }
   }
 
-  updateReadOnlyMap = () => {
+  let updateReadOnlyMap = () => {
     // update map only if exists. If there is no value when the form is set.
     // The read-only map is not instanciated but created when data is set.
     if (readOnlyMap && readOnlyMap.lastChild && serialized.value) {
@@ -82,7 +82,7 @@ function initMapWidget (fieldId) {
     }
   }
 
-  createMap = () => {
+  let createMap = () => {
     if (!mapIsCreated) {
         if (editableMap) {
           setupMap(editableMap, options, false)
@@ -101,7 +101,7 @@ function initMapWidget (fieldId) {
     }
   };
 
-  toogleModal = (state) => {
+  let toogleModal = (state) => {
 
     map.style.display = state;
     overlay.style.display = state;
@@ -123,7 +123,7 @@ function initMapWidget (fieldId) {
     }
   });
 
-  closeModal = () => {
+  let closeModal = () => {
     toogleModal("none");
   };
 
