@@ -13,6 +13,14 @@
   margin-top: 4px;
 }
 
+.disable-map-modal-button .map-custom-modal-button {
+  visibility: hidden;
+}
+
+.disable-map-modal-button {
+  width: 100%;
+}
+
 .map-custom-modal-button > i {
   padding-right: 7px;
 }
