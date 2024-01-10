@@ -33,11 +33,11 @@ function initMapWidget (fieldId) {
   let setupReadOnlyMap = () => {
     readOnlyMap.style.display = 'block';
     setupMap(readOnlyMap, options, true);
-  }
+  };
 
   let parseCoordinates = (data) => {
     const selections = [];
-    if (options.map_widget_configuration[0].outputFormat == 'GeometryCollection') {
+    if (options.map_widget_configuration[0].outputFormat == "GeometryCollection") {
       data.geometries.forEach((geometry) => {
         selections.push(geometry.coordinates[0]);
       });
@@ -47,7 +47,7 @@ function initMapWidget (fieldId) {
       })
     }
     return selections;
-  }
+  };
 
   let setupMap = (container, options, readonly) => {
     if (options && options.map_widget_configuration) {
@@ -66,7 +66,7 @@ function initMapWidget (fieldId) {
       const modalHeight = window.innerHeight;
       container.style.setProperty('--window-modal-size', modalHeight + 'px');
     }
-  }
+  };
 
   let updateReadOnlyMap = () => {
     // update map only if exists. If there is no value when the form is set.
@@ -83,22 +83,22 @@ function initMapWidget (fieldId) {
       setupReadOnlyMap();
     }
 
-  }
+  };
 
   let createMap = () => {
     if (!mapIsCreated) {
         if (editableMap) {
-          setupMap(editableMap, options, false)
+          setupMap(editableMap, options, false);
           mapIsCreated = true;
         }
     } else if (editableMap.lastChild) {
       if (serialized.value) {
         const states = {
-          readonly: false,
+          readonly: false
         };
         const data = JSON.parse(serialized.value);
         const selections = parseCoordinates(data);
-        states['currentSelections'] = selections;
+        states["currentSelections"] = selections;
         editableMap.lastChild.states = states;
       }
     }
@@ -108,15 +108,17 @@ function initMapWidget (fieldId) {
 
     map.style.display = state;
     overlay.style.display = state;
-    if (state == "block") document.body.style.overflow = "hidden";
-    else {
-      document.body.style.overflow = "visible"
+    if (state == "block") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "visible";
       editableMap.lastChild.states = {
-        readonly: true,
-        currentSelections: []
-      }
-    };
+        currentSelections: [],
+        readonly: true
+      };
+    }
   };
+
   buttonModal.addEventListener("click", () => {
     if (isModalOpen) {
       toogleModal("none");
@@ -142,7 +144,7 @@ function initMapWidget (fieldId) {
     if (selectedValues != "")
     {
       serialized.value = selectedValues;
-      buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`
+      buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`;
       toogleModal("none");
       updateReadOnlyMap();
       validationDiv.style.display = "none";
@@ -159,26 +161,26 @@ function initMapWidget (fieldId) {
     }
   });
 
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     const modalHeight = window.innerHeight;
-    editableMap.style.setProperty('--window-modal-size', modalHeight + 'px');
-  })
+    editableMap.style.setProperty("--window-modal-size", modalHeight + "px");
+  });
 
   // Ensure field has a value and is required
   let updateValidationMessage = () => {
     const geomFieldValue = document.getElementById(fieldId).value;
     if (parentDjangoFieldDiv) {
     // Widget is used on detail step
-      if (geomFieldValue == '' && parentDjangoFieldDiv && parentDjangoFieldDiv.classList.contains("required")) {
+      if (geomFieldValue == "" && parentDjangoFieldDiv && parentDjangoFieldDiv.classList.contains("required")) {
         validationDiv.style.display = "block";
         }
     } else {
     // Widget is used on geotime step
-      if (geomFieldValue == '') {
+      if (geomFieldValue == "") {
         validationDiv.style.display = "block";
       }
     }
-  }
+  };
   updateValidationMessage();
 
   if (serialized.value) {
@@ -187,9 +189,9 @@ function initMapWidget (fieldId) {
   }
 
   if (options && !options.edit_geom) {
-    buttonModal.style.display = 'none';
+    buttonModal.style.display = "none";
   } else {
-    buttonModal.style.display = 'flex';
+    buttonModal.style.display = "flex";
   }
 
-};
+}
