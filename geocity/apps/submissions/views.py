@@ -2296,7 +2296,10 @@ def create_submission_service_fees(request, submission_id, data=None):
                 )
                 return redirect(to_service_fees_page(submission_id))
 
-            data = request.POST
+            data = request.POST.copy()
+            data["provided_by"] = (
+                request.user if "provided_by" not in data else data["provided_by"]
+            )
             service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
                 # initial=initial,
@@ -2390,7 +2393,10 @@ def update_submission_service_fees(request, submission_id, service_fee_id, data=
                 )
                 return redirect(to_service_fees_page(submission_id))
 
-            data = request.POST
+            data = request.POST.copy()
+            data["provided_by"] = (
+                request.user if "provided_by" not in data else data["provided_by"]
+            )
             service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
                 instance=service_fee,
