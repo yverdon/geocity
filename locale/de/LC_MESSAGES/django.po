@@ -4045,11 +4045,11 @@ msgid "Prolongation refusée"
 msgstr ""
 
 #: geocity/apps/submissions/templates/tables/_submission_service_fees_table_actions.html:7
-msgid "Modifier la prestation"
+msgid "Modifier la prestation."
 msgstr ""
 
 #: geocity/apps/submissions/templates/tables/_submission_service_fees_table_actions.html:14
-msgid "Supprimer la prestation"
+msgid "Supprimer la prestation."
 msgstr ""
 
 #: geocity/apps/submissions/templates/tables/_submission_status.html:5
