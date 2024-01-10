@@ -176,10 +176,11 @@ class ServicesFeesType(models.Model):
 class ServicesFees(models.Model):
     """Docstring"""
 
-    # Hidden mandatory fields
-    # created and updated fields to keep tracks of the user that has effectively
-    # created or updated the current prestation. Those fields SHOULD NOT be
-    # exposed in the form. Use the other ones.
+    # Hidden yet mandatory fields
+    # created_* and updated_* fields to keep tracks of the user that has
+    # effectively created or updated the current prestation.
+    # Those fields SHOULD NOT be exposed in the form.
+    # Use the other ones, e.g. provided_*
     created_at = models.DateTimeField(
         verbose_name=_("Date de création."),
         auto_now_add=True,
@@ -214,7 +215,9 @@ class ServicesFees(models.Model):
         related_name="permit_department",
         help_text=_("Département."),
     )
-    # Exposed fields to select the name of the user the prestation has been done by
+    # Exposed fields: fields which can be used in the form based on that model.
+    # The "provided_by" field is used to select the name of the user
+    # on whose behalf the service was provided.
     provided_by = models.ForeignKey(
         User,
         null=True,
@@ -250,17 +253,30 @@ class ServicesFees(models.Model):
     )
     hourly_rate = MoneyField(
         default=settings.DEFAULT_SERVICES_FEES_RATE,
+        # null=True, # For fixed price service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
         verbose_name=_("Tarif horaire [CHF]"),
+        help_text=_("Le tarif horaire de la prestation. Choisi par l'intégrateur."),
     )
+    # The "monetary_amount" field must only be exposed for fixed price service fees
     monetary_amount = MoneyField(
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
         default=0.0,
         verbose_name=_("Montant [CHF]"),
+        help_text=_(
+            """Le montant de la prestation.
+            Calulé automatiquement en fonction du tarif horaire.
+            Est fixe si la prestation est forfaitaire."""
+        ),
+    )
+    is_fixed_price = models.BooleanField(
+        default=False,
+        verbose_name=_("Prestation forfaitaire"),
+        help_text=_("La prestation est forfaitaire."),
     )
 
     # Methods
