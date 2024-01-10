@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import django_tables2 as tables
 from django.conf import settings
@@ -386,11 +386,20 @@ class ServicesFeesTable(tables.Table):
 
         def render(self, value, bound_column, record):
             self.total_monetary_amount += value
-            self.currency = value.currency
             return value
 
         def render_footer(self, bound_column, table):
             return self.total_monetary_amount
+
+    class TimeSpentOnTaskAmountColumn(tables.Column):
+        time_spent_on_task_amount = 0
+
+        def render(self, value, bound_column, record):
+            self.time_spent_on_task_amount += value.total_seconds()
+            return value
+
+        def render_footer(self, bound_column, table):
+            return timedelta(seconds=self.time_spent_on_task_amount)
 
     permit_department = tables.Column(
         verbose_name=_("Service"),
@@ -409,7 +418,7 @@ class ServicesFeesTable(tables.Table):
         verbose_name=_("Date de création"),
         orderable=True,
     )
-    time_spent_on_task = tables.Column(
+    time_spent_on_task = TimeSpentOnTaskAmountColumn(
         verbose_name=_("Durée [hh:mm:ss]"),
         orderable=True,
     )
