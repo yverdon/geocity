@@ -18,11 +18,13 @@
     {% csrf_token %}
 
     <div class="text-right">
-      <button class="btn btn-primary" name="confirm" type="submit" value="Confirm">
+      <button class="btn btn-primary" name="confirm" type="submit" value="Confirm"
+        title="{% translate 'Supprimer définitivement la prestation.' %}">
         <i class="fa fa-trash fa-trash-white" aria-hidden="true"></i>&nbsp;
         {% translate "Confirmer la suppression" %}
       </button>
-      <button class="btn btn-primary" name="cancel" type="submit" value="Cancel">
+      <button class="btn btn-primary" name="cancel" type="submit" value="Cancel"
+        title="{% translate 'Annuler la suppression de la prestation et revenir l\'onglet général des prestations.' %}">
         <i class="fa fa-times" aria-hidden="true"></i>&nbsp;
         {% translate "Annuler" %}
       </button>
