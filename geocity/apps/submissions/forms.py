@@ -36,6 +36,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
+from geocity.apps.accounts.users import is_backoffice_in_department
 from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
@@ -1310,6 +1311,7 @@ class ServicesFeesForm(forms.ModelForm):
         if delete:
             for field_name in self.fields:
                 self.fields[field_name].widget.attrs["readonly"] = True
+                self.fields[field_name].widget.attrs["disabled"] = True
 
         logger.debug(
             f"Current user get_all_permissions: {(current_user.get_all_permissions())}"
@@ -1374,7 +1376,15 @@ class ServicesFeesForm(forms.ModelForm):
             groups__in=groups_of_the_current_user
         )
 
-        self.fields["provided_by"].queryset = restricted_users_to_display
+        if is_backoffice_in_department(current_user, current_administrative_entity):
+            self.fields["provided_by"].queryset = restricted_users_to_display
+        else:
+            # Get only current user in list for validators
+            # Validator A should not see validator B or C, but only himself.
+            self.fields["provided_by"].queryset = User.objects.filter(
+                pk=current_user.id
+            )
+            self.fields["provided_by"].widget.attrs["disabled"] = True
 
     required_css_class = "required"
 
