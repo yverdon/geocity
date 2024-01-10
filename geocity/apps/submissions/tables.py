@@ -390,7 +390,7 @@ class ServicesFeesTable(tables.Table):
             return value
 
         def render_footer(self, bound_column, table):
-            return f"{round(self.total_monetary_amount, 2)} {self.currency}"
+            return self.total_monetary_amount
 
     permit_department = tables.Column(
         verbose_name=_("Service"),
