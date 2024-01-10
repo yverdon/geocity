@@ -16,9 +16,12 @@ from django.utils.translation import gettext_lazy as _
 from django_tables2.export.views import ExportMixin
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
+from geocity.apps.accounts.models import AdministrativeEntity
+
 from ..api.serializers import SubmissionPrintSerializer
 from . import models
 from .payments.models import Transaction
+from .permissions import has_permission_to_amend_submission
 
 ATTRIBUTES = {
     "th": {
@@ -380,25 +383,24 @@ class PandasExportMixin(ExportMixin):
         if not export_format in ["xlsx"]:
             raise NotImplementedError
 
-        # Check if user has any group pilot or integrator
-        user_is_backoffice_or_integrator = self.request.user.groups.filter(
-            Q(permit_department__is_backoffice=True)
-            | Q(permit_department__is_integrator_admin=True),
-        ).exists()
-
-        # If user doesn't used advanced and isn't pilot, integrator or superuser, he uses ExportMixin instead of PandasExportMixin
-        can_export_advanced = advanced and (
-            user_is_backoffice_or_integrator or self.request.user.is_superuser
-        )
-        if not can_export_advanced:
+        if not advanced:
             return super().create_export(export_format)
 
-        records = {}
+        # Retrieve entities where user is back-office
+        entities = AdministrativeEntity.objects.associated_to_user(self.request.user)
 
         # Take all submission except status draft
         submissions_qs = self.get_pandas_table_data().filter(
-            ~Q(status=models.Submission.STATUS_DRAFT)
+            Q(administrative_entity__in=entities),
+            ~Q(status=models.Submission.STATUS_DRAFT),
         )
+
+        if not has_permission_to_amend_submission(
+            self.request.user, submissions_qs.first()
+        ):
+            return super().create_export(export_format)
+
+        records = {}
 
         # Make sure there will be no bypass
         submissions_list = submissions_qs.values_list("id", flat=True)
