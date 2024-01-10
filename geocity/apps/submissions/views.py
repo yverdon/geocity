@@ -476,7 +476,6 @@ class SubmissionDetailView(View):
 
         return True
 
-
     def get_request_inquiry_form(self, data=None, **kwargs):
         if not permissions.has_permission_to_amend_submission(
             self.request.user, self.submission
@@ -633,7 +632,6 @@ class SubmissionDetailView(View):
         query_string = urllib.parse.urlencode({"prev_active_form": "services_fees"})
 
         return redirect(f"{target}?{query_string}")
-
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -2245,9 +2243,7 @@ def to_service_fees_page(submission_id=None):
         "submissions:submission_detail",
         kwargs={"submission_id": submission_id},
     )
-    query_string = urllib.parse.urlencode(
-        {"prev_active_form": "services_fees"}
-    )
+    query_string = urllib.parse.urlencode({"prev_active_form": "services_fees"})
 
     return f"{target}?{query_string}"
 
@@ -2478,7 +2474,6 @@ def delete_submission_service_fees(request, submission_id, service_fee_id, data=
                 )
 
         return redirect(to_service_fees_page(submission_id))
-
 
 
 @method_decorator(login_required, name="dispatch")
