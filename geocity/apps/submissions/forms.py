@@ -1304,6 +1304,16 @@ class ServicesFeesForm(forms.ModelForm):
             # "provided_by": current_user,
             "time_spent_on_task": time_spent_on_task,
         }
+        # This is mandatory because the "provided_by" field is disabled for
+        # validators here after:
+        print(kwargs.keys())
+        if "data" in kwargs:
+            print(f"COUCOU DATA: {kwargs['data']}")
+            data = kwargs["data"].copy()
+            data["provided_by"] = (
+                current_user if "provided_by" not in data else data["provided_by"]
+            )
+            kwargs["data"] = data
 
         super().__init__(*args, **kwargs)
 
