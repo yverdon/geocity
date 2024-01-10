@@ -615,6 +615,8 @@ class Form(models.Model):
         return has_exceeded
 
     def clean(self):
+        from geocity.apps.submissions.models import Submission
+
         if self.max_submissions is not None and self.max_submissions < 1:
             raise ValidationError(
                 {
@@ -749,6 +751,24 @@ class Form(models.Model):
                 )
         else:
             self.api_name = convert_string_to_api_key(self.name)
+
+        if (
+            self.disable_validation_by_validators
+            and Submission.objects.filter(
+                status__in=[
+                    Submission.STATUS_SUBMITTED_FOR_VALIDATION,
+                    Submission.STATUS_AWAITING_VALIDATION,
+                ],
+                forms__pk=self.pk,
+            ).exists()
+        ):
+            raise ValidationError(
+                {
+                    "disable_validation_by_validators": _(
+                        "Impossible de désactiver la validation tant que des demandes liées à ce formulaire sont en attente ou en cours de validation."
+                    )
+                }
+            )
 
 
 class FormField(models.Model):
