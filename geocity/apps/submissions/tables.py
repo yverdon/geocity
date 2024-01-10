@@ -386,7 +386,7 @@ class PandasExportMixin(ExportMixin):
         if not advanced:
             return super().create_export(export_format)
 
-        # Retrieve entities where user is back-office
+        # Retrieve entities associated to the user
         entities = AdministrativeEntity.objects.associated_to_user(self.request.user)
 
         # Take all submission except status draft
