@@ -144,7 +144,7 @@ function initMapWidget (fieldId) {
     if (selectedValues != "")
     {
       serialized.value = selectedValues;
-      buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`;
+      buttonModal.innerHTML = '<i class="fa fa-map"></i> Modifier sur la carte';
       toogleModal("none");
       updateReadOnlyMap();
       validationDiv.style.display = "none";
@@ -185,7 +185,7 @@ function initMapWidget (fieldId) {
 
   if (serialized.value) {
     setupReadOnlyMap();
-    buttonModal.innerHTML = `<i class="fa fa-map"></i> Modifier sur la carte`
+    buttonModal.innerHTML = '<i class="fa fa-map"></i> Modifier sur la carte'
   }
 
   if (options && !options.edit_geom) {

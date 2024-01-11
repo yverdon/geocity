@@ -69,7 +69,9 @@ def submission_summary(context, submission):
     geo_time_formset = SubmissionGeoTimeFormSet(
         None,
         form_kwargs={"submission": submission, "disable_fields": True},
-        queryset=submission.geo_time.filter(form=None, field=None).all(),
+        queryset=submission.geo_time.filter(
+            form__isnull=True, fields__isnull=True
+        ).all(),
     )
 
     creditor = ""

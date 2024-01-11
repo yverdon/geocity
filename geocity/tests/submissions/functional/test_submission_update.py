@@ -180,20 +180,27 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
 
         test_geometry_value = '{ "type": "GeometryCollection", "geometries": [ { "type": "MultiPoint", "coordinates": [ [ 2539123.31, 1181095.01 ] ] } ] }'
         test_map_config = '{"wfs": {"url": "https://mapnv.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ELE_tragwerk_gesco"}, "mode": {"type": "select"}, "wmts": [], "zoom": 15, "border": {"url": "", "notification": "Veuillez placer votre élément dans les limites autorisées"}, "search": {"displaySearch": true, "bboxRestiction": "", "requestWithoutCustomValue": "https://api3.geo.admin.ch/rest/services/api/SearchServer?limit=5&&type=locations&sr=2056&lang=fr&origins=address%2Cparcel"}, "cluster": {"distance": 40, "minDistance": 35}, "maxZoom": 20, "minZoom": 1, "information": {"title": "Signaler ...", "content": "", "duration": 5000}, "interaction": {"fullscreen": true, "displayZoom": true, "enableRotation": true, "displayScaleLine": false, "enableGeolocation": true, "enableCenterButton": true}, "outputFormat": "GeometryCollection", "defaultCenter": [2539057, 1181111], "inclusionArea": {"url": "", "filter": ""}, "notifications": [{"rule": {"type": "ZOOM_CONSTRAINT", "minZoom": 16, "maxElement": null, "couldBypass": null}, "type": "warning", "message": "Veuillez zoomer davantage avant de pouvoir sélectionner un emplacement."}, {"rule": {"type": "MAX_SELECTION", "minZoom": null, "maxElement": 1, "couldBypass": null}, "type": "warning", "message": "Le maximum de sélection est limité à {x}."}, {"rule": {"type": "INFORMATION", "minZoom": null, "maxElement": null, "couldBypass": null}, "type": "info", "message": "Sélectionnez un marqueur sur la carte."}], "geolocationInformation": {"displayBox": true, "currentLocation": false, "reverseLocation": true}, "selectionTargetBoxMessage": ""}'
+
+        # Define the map widget for advanced geometry
         map_widget_configuration = forms_models.MapWidgetConfiguration.objects.create(
             name="Sélection d'objets",
             configuration=test_map_config,
         )
 
+        # Create the field and assign the widget
         geom_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_GEOM, name="geom"
         )
         geom_field.map_widget_configuration = map_widget_configuration
         geom_field.save()
-        today = date.today()
+
+        # Assign new field to the form
         form = self.submission.forms.first()
         geom_field.forms.set([form])
+
+        # Fill the widget
         data = {f"fields-{form.pk}_{geom_field.pk}": test_geometry_value}
+
         self.client.post(
             reverse(
                 "submissions:submission_fields",
@@ -201,13 +208,15 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
             ),
             data=data,
         )
-        geotime_count_after = submissions_models.SubmissionGeoTime.objects.all().count()
+
         # Check that the field value is saved into SubmissionGeoTime model
+        geotime_count_after = submissions_models.SubmissionGeoTime.objects.all().count()
         self.assertEqual(
             geotime_count_after,
             1,
         )
-        # Check geometry is saved correctly
+
+        # Check that geometry is saved correctly
         item = submissions_models.SubmissionGeoTime.objects.first()
         self.assertEqual(
             test_geometry_value,

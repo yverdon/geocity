@@ -116,7 +116,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Resetting database...")
         reset_db()
-        # setup_media(images_folder)
+        setup_media(images_folder)
         self.stdout.write("")
         self.stdout.write("░██████╗███████╗███████╗██████╗░")
         self.stdout.write("██╔════╝██╔════╝██╔════╝██╔══██╗")
