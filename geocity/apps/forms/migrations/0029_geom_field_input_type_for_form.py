@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0027_remove_field_is_public_when_permitrequest_is_public_and_more"),
+        ("forms", "0028_form_disable_validation_by_validators"),
     ]
 
     operations = [

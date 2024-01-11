@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0028_geom_field_input_type_for_form"),
+        ("forms", "0028_form_disable_validation_by_validators"),
         ("submissions", "0023_historicalsubmission_featured_agenda_and_more"),
     ]
 
