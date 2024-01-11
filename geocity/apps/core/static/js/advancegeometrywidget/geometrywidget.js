@@ -171,12 +171,12 @@ function initMapWidget (fieldId) {
     const geomFieldValue = document.getElementById(fieldId).value;
     if (parentDjangoFieldDiv) {
     // Widget is used on detail step
-      if (geomFieldValue == "" && parentDjangoFieldDiv && parentDjangoFieldDiv.classList.contains("required")) {
+      if (geomFieldValue === "" && parentDjangoFieldDiv && parentDjangoFieldDiv.classList.contains("required")) {
         validationDiv.style.display = "block";
         }
     } else {
     // Widget is used on geotime step
-      if (geomFieldValue == "") {
+      if (geomFieldValue === "") {
         validationDiv.style.display = "block";
       }
     }
