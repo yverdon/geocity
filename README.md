@@ -21,7 +21,7 @@ docker-compose run web scripts/migrate.sh
 
 **Load demo data**
 
-Edit file `geocity/apps/submissions/management/commands/fixturize_data/fixturize.py`
+Edit file `geocity/apps/submissions/management/commands/fixturize_data/generic_example.py`
 There is some examples in same folder and you can create new ones
 
 ```bash
