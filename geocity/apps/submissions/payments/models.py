@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import SuspiciousOperation
@@ -248,12 +250,13 @@ class ServicesFees(models.Model):
     )
     time_spent_on_task = models.DurationField(
         default=0,
+        null=True,  # For fixed price service fees
         verbose_name=_("Durée [m]"),
         help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
     )
     hourly_rate = MoneyField(
         default=settings.DEFAULT_SERVICES_FEES_RATE,
-        # null=True, # For fixed price service fees, this field has to be null
+        null=True,  # For fixed price service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
         default_currency="CHF",
@@ -281,12 +284,19 @@ class ServicesFees(models.Model):
 
     # Methods
     def save(self, *args, **kwargs):
-        self.hourly_rate = (
-            self.services_fees_type.administrative_entity.services_fees_hourly_rate
-        )
-        if self.hourly_rate:
+        # For hourly service fees
+        if isinstance(self.time_spent_on_task, timedelta):
+            # Get service fee hourly rate from the services_fees_type model
+            self.hourly_rate = (
+                self.services_fees_type.administrative_entity.services_fees_hourly_rate
+            )
+            # Compute the corresponding monetary amount
             self.monetary_amount = (
                 self.hourly_rate * self.time_spent_on_task.total_seconds() / 3600
             )
+        # For fixed price service fees
+        else:
+            self.hourly_rate = None
+            self.time_spent_on_task = None
 
         super(ServicesFees, self).save(*args, **kwargs)

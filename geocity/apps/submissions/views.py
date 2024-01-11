@@ -4,7 +4,7 @@ import logging
 import mimetypes
 import os
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import django_tables2 as tableslib
 from constance import config
@@ -2248,12 +2248,35 @@ def to_service_fees_page(submission_id=None):
     return f"{target}?{query_string}"
 
 
+def initialize_service_fee_form_instance(**kwargs):
+    submission = kwargs.pop("submission", None)
+    initial = kwargs.pop("initial", None)
+    data = kwargs.pop("data", None)
+    time_spent_on_task = kwargs.pop("time_spent_on_task", None)
+    user = kwargs.pop("user", None)
+    mode = kwargs.pop("mode", None)
+
+    return forms.ServicesFeesForm(
+        submission=submission,
+        initial=initial,
+        data=data,
+        time_spent_on_task=time_spent_on_task,
+        user=user,
+        mode=mode,
+    )
+
+
 @redirect_bad_status_to_detail
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def create_submission_service_fees(request, submission_id, data=None):
+def create_submission_service_fees(request, submission_id, data=None, mode=None):
     """Docstring"""
+    if mode not in ("hourly_rate", "fix_price"):
+        raise ValueError(
+            _("The 'mode' parameter can only be 'fix_price' or 'hourly_rate'.")
+        )
+
     submission = get_submission_service_fee(
         request.user,
         submission_id,
@@ -2265,19 +2288,22 @@ def create_submission_service_fees(request, submission_id, data=None):
     #     administrative_entity=submission.administrative_entity,
     # )
     # print(f"dpts: {(dpts)}")
+
     if permissions.has_permission_to_create_service_fees(request.user, submission):
         if request.method == "GET":
             initial = {
                 "provided_by": request.user,
             }
-            service_fees_form = forms.ServicesFeesForm(
+            service_fees_form = initialize_service_fee_form_instance(
                 submission=submission,
                 initial=initial,
                 user=request.user,
+                mode=mode,
             )
             context = {
                 "service_fees_form": service_fees_form,
                 "submission": submission,
+                "mode": mode,
             }
 
             return render(
@@ -2286,7 +2312,7 @@ def create_submission_service_fees(request, submission_id, data=None):
                 context,
             )
 
-        elif request.method in ("POST"):
+        elif request.method == "POST":
             if "cancel" in request.POST:
                 messages.success(
                     request,
@@ -2297,11 +2323,11 @@ def create_submission_service_fees(request, submission_id, data=None):
                 return redirect(to_service_fees_page(submission_id))
 
             data = request.POST
-            service_fees_form = forms.ServicesFeesForm(
+            service_fees_form = initialize_service_fee_form_instance(
                 submission=submission,
-                # initial=initial,
-                data=data,
                 user=request.user,
+                data=data,
+                mode=mode,
             )
             context = {
                 "service_fees_form": service_fees_form,
@@ -2322,17 +2348,23 @@ def create_submission_service_fees(request, submission_id, data=None):
                     return redirect(
                         "submissions:create_submission_service_fees",
                         submission_id=submission.pk,
+                        mode=mode,
                     )
                 elif "save" in request.POST:
                     return redirect(to_service_fees_page(submission_id))
                 else:
                     raise HttpResponse(status=404)
             else:
-                logger.error(
-                    _(
-                        "Le formulaire n'est pas valide. Impossible de traiter les données."
-                    )
+                msg = (
+                    "Le formulaire n'est pas valide. Impossible de traiter les données."
                 )
+                if service_fees_form.is_bound:
+                    msg += f"\nform.errors: {service_fees_form.errors}"
+                else:
+                    msg += f"\nform is unbound."
+
+                logger.error(msg)
+
                 return render(
                     request,
                     "submissions/submission_service_fees_create.html",
@@ -2346,7 +2378,9 @@ def create_submission_service_fees(request, submission_id, data=None):
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def update_submission_service_fees(request, submission_id, service_fee_id, data=None):
+def update_submission_service_fees(
+    request, submission_id, service_fee_id, data=None, mode=None
+):
     """Docstring"""
     submission = get_submission_service_fee(
         request.user,
@@ -2362,12 +2396,14 @@ def update_submission_service_fees(request, submission_id, service_fee_id, data=
 
     # Trick: transform the time_spent_on_task variable otherwise it doesn't
     # appear in the form:
-    time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
+    time_spent_on_task = None
+    if isinstance(time_spent_on_task, timedelta):
+        time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
 
-    service_fees_form = forms.ServicesFeesForm(
+    service_fees_form = initialize_service_fee_form_instance(
         submission=submission,
         instance=service_fee,
-        # Trick: follow-up
+        # Trick follow-up:
         time_spent_on_task=time_spent_on_task,
         user=request.user,
     )
@@ -2441,7 +2477,10 @@ def delete_submission_service_fees(request, submission_id, service_fee_id, data=
     )
     # Trick: transform the time_spent_on_task variable otherwise it doesn't
     # appear in the form:
-    time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
+    time_spent_on_task = None
+    if isinstance(time_spent_on_task, timedelta):
+        time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
+
     service_fees_form = forms.ServicesFeesForm(
         submission=submission,
         instance=service_fee,

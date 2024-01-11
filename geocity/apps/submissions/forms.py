@@ -1294,21 +1294,22 @@ class ServicesFeesForm(forms.ModelForm):
     # )
 
     def __init__(self, *args, delete=None, **kwargs):
+        self.mode = kwargs.pop("mode", None)
         self.submission = kwargs.pop("submission", None)
         current_user = kwargs.pop("user", None)
         time_spent_on_task = kwargs.pop("time_spent_on_task", None)
-        kwargs["initial"] = {
-            **kwargs.get("initial", {}),
-            # prefer initializing the 'provided_by' entry in the view as the
-            # editor may not be equal to the creator:
-            # "provided_by": current_user,
-            "time_spent_on_task": time_spent_on_task,
-        }
+        if "initial" in kwargs and kwargs["initial"]:
+            kwargs["initial"] = {
+                **kwargs.get("initial", {}),
+                # prefer initializing the 'provided_by' entry in the view as the
+                # editor may not be equal to the creator:
+                # "provided_by": current_user,
+                "time_spent_on_task": time_spent_on_task,
+            }
+
         # This is mandatory because the "provided_by" field is disabled for
         # validators here after:
-        print(kwargs.keys())
-        if "data" in kwargs:
-            print(f"COUCOU DATA: {kwargs['data']}")
+        if "data" in kwargs and kwargs["data"]:
             data = kwargs["data"].copy()
             data["provided_by"] = (
                 current_user if "provided_by" not in data else data["provided_by"]
@@ -1316,6 +1317,19 @@ class ServicesFeesForm(forms.ModelForm):
             kwargs["data"] = data
 
         super().__init__(*args, **kwargs)
+
+        if self.mode == "hourly_rate":
+            # Remove "monetary_amount" field
+            self.fields.pop("monetary_amount")
+        elif self.mode == "fix_price":
+            # Remove "time_spent_on_task" field
+            self.fields.pop("time_spent_on_task")
+        else:
+            raise ValueError(
+                _(
+                    "Bad value for 'mode', it must be either 'hourly_rate' or 'fix_price'."
+                )
+            )
 
         #  Used in delete_submission_service_fees() view:
         if delete:
@@ -1406,7 +1420,7 @@ class ServicesFeesForm(forms.ModelForm):
             "provided_by",
             "provided_at",
             "time_spent_on_task",
-            # "monetary_amount",
+            "monetary_amount",
         ]
 
         widgets = {

@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 
 from . import views
 
@@ -50,18 +50,18 @@ existing_submission_urlpatterns = [
         views.submission_prolongation,
         name="submission_prolongation",
     ),
-    path(
-        "service_fee/create",
+    re_path(
+        r"^service_fee/create/(?P<mode>\w+)/$",
         views.create_submission_service_fees,
         name="create_submission_service_fees",
     ),
     path(
-        "service_fee/<int:service_fee_id>/update",
+        "service_fee/<int:service_fee_id>/update/",
         views.update_submission_service_fees,
         name="update_submission_service_fees",
     ),
     path(
-        "service_fee/<int:service_fee_id>/delete",
+        "service_fee/<int:service_fee_id>/delete/",
         views.delete_submission_service_fees,
         name="delete_submission_service_fees",
     ),

@@ -440,12 +440,24 @@
               {% endif %}
 
               <div class="text-right">
+                <p class="bold">
+                  {% translate "Ajouter une nouvelle prestation selon un modèle d'émolument" %}:
+                </p>
                 <a class="btn btn-primary"
                   name="action"
-                  href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}"x
+                  href="{% url 'submissions:create_submission_service_fees' mode='hourly_rate' submission_id=submission.pk %}"
+                  title="{% translate 'Enregistrer la prestation et revenir à la l\'onglet général des prestations.' %}"
                   >
                     <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
-                    {% translate "Ajouter une nouvelle prestation" %}
+                    {% translate "Horaire" %}
+                </a>
+                <a class="btn btn-primary"
+                  name="action"
+                  href="{% url 'submissions:create_submission_service_fees' mode='fix_price' submission_id=submission.pk %}"
+                  title="{% translate 'Enregistrer la prestation et revenir à la l\'onglet général des prestations.' %}"
+                  >
+                    <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
+                    {% translate "Forfaitaire" %}
                 </a>
               </div>
             </div>
