@@ -627,6 +627,16 @@ class Submission(models.Model):
         return self.status == self.STATUS_ARCHIVED
 
     @property
+    def validation_by_validators_is_disabled(self):
+        # Return true only if all forms have validation by validators disabled
+        if any(self.forms.all()):
+            return not any(
+                not form.disable_validation_by_validators for form in self.forms.all()
+            )
+        else:
+            return False
+
+    @property
     def complementary_documents(self):
         return SubmissionComplementaryDocument.objects.filter(submission=self).all()
 

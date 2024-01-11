@@ -666,6 +666,50 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
+    def test_submitted_submission_is_in_correct_status(self):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+        )
+        form = factories.FormWithoutGeometryFactory(
+            needs_date=False,
+        )
+        submission.forms.set([form])
+        self.client.post(
+            reverse(
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        submission.refresh_from_db()
+
+        self.assertEqual(
+            submission.status,
+            submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
+        )
+
+    def test_submitted_submission_is_in_correct_status_when_validation_is_disabled(
+        self,
+    ):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+        )
+        form = factories.FormWithoutGeometryFactory(
+            needs_date=False, disable_validation_by_validators=True
+        )
+        submission.forms.set([form])
+        self.client.post(
+            reverse(
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        submission.refresh_from_db()
+
+        self.assertEqual(
+            submission.status,
+            submissions_models.Submission.STATUS_PROCESSING,
+        )
+
     def test_secretary_email_is_sent_when_user_treated_requested_complements(self):
         secretary_group = factories.GroupFactory(name="Secrétariat")
         department = factories.PermitDepartmentFactory(
