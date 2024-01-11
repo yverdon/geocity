@@ -462,7 +462,7 @@ class FieldAdminForm(forms.ModelForm):
             "public_if_submission_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
-            "map_widget_configuration",  # TODO show/hide in form
+            "map_widget_configuration",
             "allowed_file_types",
             "integrator",
             "form_list",
