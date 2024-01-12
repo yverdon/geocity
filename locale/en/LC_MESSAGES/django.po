@@ -4288,7 +4288,7 @@ msgstr ""
 
 #: geocity/apps/submissions/views.py:2298
 msgid ""
-"Aucune prestation n'a été créée en raison de l'annulation de l'utilisateur."
+"Aucune prestation n'a été créée en raison de l'annulation de cette action."
 msgstr "No service fee was created due to user cancellation."
 
 #: geocity/apps/submissions/views.py:2315
