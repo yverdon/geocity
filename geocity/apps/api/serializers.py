@@ -49,7 +49,7 @@ def get_form_fields(
     """
     obj = value.all()
     form_fields = obj.values(
-        "field_values__field__name",
+        "field_values__field__content",
         "field_values__field__api_name",
         "field_values__field_id",
         "field_values__field__input_type",
@@ -127,7 +127,7 @@ def get_form_fields(
                         # Properties of form
                         property.append(
                             {
-                                "key": field["field_values__field__name"],
+                                "key": field["field_values__field__content"],
                                 "value": file.url,
                                 "type": field["field_values__field__input_type"],
                             }
@@ -144,7 +144,7 @@ def get_form_fields(
                     # Properties of form
                     property.append(
                         {
-                            "key": field["field_values__field__name"],
+                            "key": field["field_values__field__content"],
                             "value": field["field_values__value__val"],
                             "type": field["field_values__field__input_type"],
                         }
@@ -168,19 +168,19 @@ def get_form_fields(
                     },
                     "fields": {
                         field["field_values__field__api_name"]: {
-                            "name": field["field_values__field__name"],
+                            "name": field["field_values__field__content"],
                             "value": get_field_value_based_on_field(field).url,
                         }
                         # Check this is a file and the file exist
                         if field["field_values__field__input_type"] == "file"
                         and get_field_value_based_on_field(field)
                         else {
-                            "name": field["field_values__field__name"],
+                            "name": field["field_values__field__content"],
                             "value": field["field_values__value__val"],
                         }
                         for field in form_fields
                         if field["form_id"] == field["form_id"]
-                        and field["field_values__field__name"]
+                        and field["field_values__field__content"]
                     },
                 }
     return fields_dict
@@ -771,7 +771,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
     obj = value.get_selected_forms().all()
     form_fields = obj.values(
         "submission__featured_agenda",
-        "field_values__field__name",
+        "field_values__field__content",
         "field_values__field__api_name",
         "field_values__value__val",
         "form__amend_fields__amend_field_value__value",
@@ -807,7 +807,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     # Label name for the properties
                     result["properties"]["categories"][
                         field["field_values__field__api_name"]
-                    ] = {"label": field["field_values__field__name"]}
+                    ] = {"label": field["field_values__field__content"]}
 
                     # Retrieving the list of categories
                     # When there's only 1 of len, it means the for loop, looped on 1 element, so we use field_values__value__val
