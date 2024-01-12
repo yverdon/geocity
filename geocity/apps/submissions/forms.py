@@ -1293,19 +1293,21 @@ class ServicesFeesForm(forms.ModelForm):
     #     ),
     # )
 
-    def __init__(self, *args, delete=None, **kwargs):
-        self.mode = kwargs.pop("mode", None)
+    def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
         current_user = kwargs.pop("user", None)
-        time_spent_on_task = kwargs.pop("time_spent_on_task", None)
-        if "initial" in kwargs and kwargs["initial"]:
-            kwargs["initial"] = {
-                **kwargs.get("initial", {}),
-                # prefer initializing the 'provided_by' entry in the view as the
-                # editor may not be equal to the creator:
-                # "provided_by": current_user,
-                "time_spent_on_task": time_spent_on_task,
-            }
+        service_fee = kwargs.get("instance", None)
+        self.mode = kwargs.pop("mode", None)
+        # Trick: transform the time_spent_on_task variable otherwise it doesn't
+        # appear in the form:
+        if hasattr(service_fee, "time_spent_on_task"):
+            if isinstance(service_fee.time_spent_on_task, timedelta):
+                service_fee.time_spent_on_task = int(
+                    service_fee.time_spent_on_task.total_seconds() / 60
+                )
+                self.mode = "hourly_rate"
+            else:
+                self.mode = "fix_price"
 
         # This is mandatory because the "provided_by" field is disabled for
         # validators here after:
@@ -1324,18 +1326,13 @@ class ServicesFeesForm(forms.ModelForm):
         elif self.mode == "fix_price":
             # Remove "time_spent_on_task" field
             self.fields.pop("time_spent_on_task")
-        else:
+        elif self.mode not in ("hourly_rate", "fix_price", None):
+            # self.mode is None when reaching the /delete route:
             raise ValueError(
                 _(
                     "Bad value for 'mode', it must be either 'hourly_rate' or 'fix_price'."
                 )
             )
-
-        #  Used in delete_submission_service_fees() view:
-        if delete:
-            for field_name in self.fields:
-                self.fields[field_name].widget.attrs["readonly"] = True
-                self.fields[field_name].widget.attrs["disabled"] = True
 
         logger.debug(
             f"Current user get_all_permissions: {(current_user.get_all_permissions())}"
@@ -1433,7 +1430,9 @@ class ServicesFeesForm(forms.ModelForm):
                     "useCurrent": False,
                 }
             ),
-            "time_spent_on_task": forms.NumberInput(),
+            "time_spent_on_task": forms.NumberInput(
+                attrs={"min": 0, "step": 1},
+            ),
         }
 
     def clean_time_spent_on_task(self):

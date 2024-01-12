@@ -4,7 +4,7 @@ import logging
 import mimetypes
 import os
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import django_tables2 as tableslib
 from constance import config
@@ -151,12 +151,10 @@ def get_submission_service_fee(user, submission_id):
 
 def get_service_fee(user, service_fee_id):
     allowed_statuses = models.Submission.SERVICE_FEES_STATUSES
-    service_fee = get_service_fee_for_user_or_404(
+    return get_service_fee_for_user_or_404(
         user,
         service_fee_id,
     )
-
-    return service_fee
 
 
 def redirect_bad_status_to_detail(func):
@@ -2251,16 +2249,16 @@ def to_service_fees_page(submission_id=None):
 def initialize_service_fee_form_instance(**kwargs):
     submission = kwargs.pop("submission", None)
     initial = kwargs.pop("initial", None)
+    instance = kwargs.pop("instance", None)
     data = kwargs.pop("data", None)
-    time_spent_on_task = kwargs.pop("time_spent_on_task", None)
     user = kwargs.pop("user", None)
     mode = kwargs.pop("mode", None)
 
     return forms.ServicesFeesForm(
         submission=submission,
         initial=initial,
+        instance=instance,
         data=data,
-        time_spent_on_task=time_spent_on_task,
         user=user,
         mode=mode,
     )
@@ -2281,9 +2279,12 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
         request.user,
         submission_id,
     )
-    logger.debug(f"submission admin entites: {submission.administrative_entity}")
-    departments = get_departments(request.user)
-    department = departments.first()
+    service_fee_id = None
+    service_fee = get_service_fee(
+        request.user,
+        service_fee_id,
+    )
+    department = get_departments(request.user).first()
     # dpts = PermitDepartment.objects.filter(
     #     administrative_entity=submission.administrative_entity,
     # )
@@ -2317,7 +2318,7 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
                 messages.success(
                     request,
                     _(
-                        "Aucune prestation n'a été créée en raison de l'annulation de l'utilisateur."
+                        "Aucune prestation n'a été créée en raison de l'annulation de cette action."
                     ),
                 )
                 return redirect(to_service_fees_page(submission_id))
@@ -2355,15 +2356,15 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
                 else:
                     raise HttpResponse(status=404)
             else:
-                msg = (
+                error_message = _(
                     "Le formulaire n'est pas valide. Impossible de traiter les données."
                 )
                 if service_fees_form.is_bound:
-                    msg += f"\nform.errors: {service_fees_form.errors}"
+                    error_message += f"\nform.errors: {service_fees_form.errors}"
                 else:
-                    msg += f"\nform is unbound."
+                    error_message += f"\nform is unbound."
 
-                logger.error(msg)
+                logger.error(error_message)
 
                 return render(
                     request,
@@ -2378,9 +2379,7 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def update_submission_service_fees(
-    request, submission_id, service_fee_id, data=None, mode=None
-):
+def update_submission_service_fees(request, submission_id, service_fee_id):
     """Docstring"""
     submission = get_submission_service_fee(
         request.user,
@@ -2390,26 +2389,19 @@ def update_submission_service_fees(
         request.user,
         service_fee_id,
     )
-    departments = PermitDepartment.objects.filter(
-        group__in=request.user.groups.all()
-    ).first()
+    department = get_departments(request.user).first()
 
-    # Trick: transform the time_spent_on_task variable otherwise it doesn't
-    # appear in the form:
-    time_spent_on_task = None
-    if isinstance(time_spent_on_task, timedelta):
-        time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
-
-    service_fees_form = initialize_service_fee_form_instance(
-        submission=submission,
-        instance=service_fee,
-        # Trick follow-up:
-        time_spent_on_task=time_spent_on_task,
-        user=request.user,
-    )
-    context = {"service_fees_form": service_fees_form}
     if permissions.has_permission_to_update_service_fees(request.user, submission):
         if request.method == "GET":
+            service_fees_form = initialize_service_fee_form_instance(
+                submission=submission,
+                initial={},
+                instance=service_fee,
+                user=request.user,
+            )
+            context = {
+                "service_fees_form": service_fees_form,
+            }
             return render(
                 request,
                 "submissions/submission_service_fees_update.html",
@@ -2421,13 +2413,13 @@ def update_submission_service_fees(
                 messages.success(
                     request,
                     _(
-                        "La prestation n'a pas été modifiée en raison de l'annulation de l'utilisateur."
+                        "La prestation n'a pas été modifiée en raison de l'annulation de cette action."
                     ),
                 )
                 return redirect(to_service_fees_page(submission_id))
 
             data = request.POST
-            service_fees_form = forms.ServicesFeesForm(
+            service_fees_form = initialize_service_fee_form_instance(
                 submission=submission,
                 instance=service_fee,
                 data=data,
@@ -2437,9 +2429,8 @@ def update_submission_service_fees(
                 logger.info(_("Le formulaire est valide. Traitement des données."))
                 obj = service_fees_form.save(commit=False)
                 obj.submission = submission
-                # obj.created_by = request.user
                 obj.updated_by = request.user
-                obj.permit_department = departments
+                obj.permit_department = department
                 obj.save()
                 success_message = _("La prestation a été mise à jour avec succès.")
                 messages.success(request, success_message)
@@ -2449,11 +2440,16 @@ def update_submission_service_fees(
                 else:
                     raise HttpResponse(status=404)
             else:
-                logger.error(
-                    _(
-                        "Le formulaire n'est pas valide. Impossible de traiter les données."
-                    )
+                error_message = _(
+                    "Le formulaire n'est pas valide. Impossible de traiter les données."
                 )
+                if service_fees_form.is_bound:
+                    error_message += f"\nform.errors: {service_fees_form.errors}"
+                else:
+                    error_message += f"\nform is unbound."
+
+                logger.error(error_message)
+
                 return render(
                     request,
                     "submissions/submission_service_fees_update.html",
@@ -2465,7 +2461,7 @@ def update_submission_service_fees(
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def delete_submission_service_fees(request, submission_id, service_fee_id, data=None):
+def delete_submission_service_fees(request, submission_id, service_fee_id):
     """Docstring"""
     service_fee = get_service_fee(
         request.user,
@@ -2475,28 +2471,25 @@ def delete_submission_service_fees(request, submission_id, service_fee_id, data=
         request.user,
         submission_id,
     )
-    # Trick: transform the time_spent_on_task variable otherwise it doesn't
-    # appear in the form:
-    time_spent_on_task = None
-    if isinstance(time_spent_on_task, timedelta):
-        time_spent_on_task = int(service_fee.time_spent_on_task.total_seconds() / 60)
 
-    service_fees_form = forms.ServicesFeesForm(
-        submission=submission,
-        instance=service_fee,
-        # Trick: follow-up
-        time_spent_on_task=time_spent_on_task,
-        user=request.user,
-        delete=True,
-    )
-    context = {
-        "service_fees_form": service_fees_form,
-        "service_fee": service_fee,
-    }
     if permissions.has_permission_to_delete_service_fees(request.user, submission):
         if request.method == "GET":
+            service_fees_form = initialize_service_fee_form_instance(
+                submission=submission,
+                initial={},
+                instance=service_fee,
+                user=request.user,
+            )
+            forms.disable_form(
+                service_fees_form,
+            )
+            context = {
+                "service_fees_form": service_fees_form,
+            }
             return render(
-                request, "submissions/submission_service_fees_delete.html", context
+                request,
+                "submissions/submission_service_fees_delete.html",
+                context,
             )
         elif request.method == "POST":
             if "confirm" in request.POST:
@@ -2508,7 +2501,7 @@ def delete_submission_service_fees(request, submission_id, service_fee_id, data=
                 messages.success(
                     request,
                     _(
-                        "La prestation n'a pas été supprimée en raison de l'annulation de l'utilisateur."
+                        "La prestation n'a pas été supprimée en raison de l'annulation de cette action."
                     ),
                 )
 
