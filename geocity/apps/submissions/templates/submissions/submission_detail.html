@@ -178,7 +178,9 @@
             <div class="col-md-6" style="padding-top:5px;">
               {% if has_permission_to_edit_submission_validations %}
                 <div class="text-right">
-                  <a href="{% url 'submissions:submission_validations_edit' submission_id=submission.pk %}" class="btn btn-primary">{% translate "Modifier les validations" %}&nbsp;<i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                  <a href="{% url 'submissions:submission_validations_edit' submission_id=submission.pk %}" class="btn btn-primary">
+                    {% translate "Modifier les validations" %}&nbsp;<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                  </a>
                 </div>
               {% endif %}
             </div>
@@ -275,9 +277,13 @@
       <div class="col">
         <p class="mt-4">
           {% if submission.is_archived %}
-            <a href="{% url 'submissions:archived_submission_list' %}">{% translate "Retour à la liste des demandes archivées" %}</a>
+            <a href="{% url 'submissions:archived_submission_list' %}">
+              {% translate "Retour à la liste des demandes archivées" %}
+            </a>
           {% else %}
-            <a href="{% url 'submissions:submissions_list' %}">{% translate "Retour à la liste des demandes" %}</a>
+            <a href="{% url 'submissions:submissions_list' %}">
+              {% translate "Retour à la liste des demandes" %}
+            </a>
           {% endif %}
         </p>
       </div>
