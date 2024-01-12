@@ -65,6 +65,11 @@ existing_submission_urlpatterns = [
         views.delete_submission_service_fees,
         name="delete_submission_service_fees",
     ),
+    path(
+        "service_fee/<int:service_fee_id>/",
+        views.get_submission_service_fees,
+        name="get_submission_service_fees",
+    ),
 ]
 
 urlpatterns = [
