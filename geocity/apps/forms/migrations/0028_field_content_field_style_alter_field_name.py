@@ -19,6 +19,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
+            model_name="form",
+            name="disable_validation_by_validators",
+            field=models.BooleanField(
+                default=False, verbose_name="Désactiver la validation par les services"
+            ),
+        ),
+        migrations.AddField(
             model_name="field",
             name="content",
             field=models.TextField(
