@@ -91,6 +91,10 @@ def submit_submission(submission, request):
     if submission.status == models.Submission.STATUS_SUBMITTED_FOR_VALIDATION:
         submission.sent_date = timezone.now()
 
+    # If the validation by validators is disabled, bypass the validation step
+    if submission.validation_by_validators_is_disabled:
+        submission.status = models.Submission.STATUS_PROCESSING
+
     submission.save()
 
 
