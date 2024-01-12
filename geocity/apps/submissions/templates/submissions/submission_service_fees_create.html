@@ -4,15 +4,16 @@
 {% load bootstrap4 %}
 
 {% block content %}
-<h3>
-  {% translate "Ajouter une nouvelle prestation de type " %}
-  {% if mode == "hourly_rate" %}
-    {% translate "horaire" %}
-  {% elif mode == "fix_price" %}
-    {% translate "forfaitaire" %}
-  {% endif %}
-</h3>
+  <h3 class="mt-2">
+    {% translate "Ajouter une nouvelle prestation de type " %}
+    {% if service_fees_form.mode == "hourly_rate" %}
+      {% translate "horaire" %}
+    {% elif service_fees_form.mode == "fix_price" %}
+      {% translate "forfaitaire" %}
+    {% endif %}
+  </h3>
   <hr>
+
   <form method="POST">
     {% csrf_token %}
     {{ service_fees_form.media }}
@@ -38,4 +39,5 @@
       </button>
     </div>
   </form>
+
 {% endblock %}

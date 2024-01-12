@@ -4,8 +4,16 @@
 {% load bootstrap4 %}
 
 {% block content %}
-<h3>{% translate "Modifier une prestation" %}</h3>
+  <h3>
+    {% translate "Modifier une prestation de type " %}
+    {% if service_fees_form.mode == "hourly_rate" %}
+      {% translate "horaire" %}
+    {% elif service_fees_form.mode == "fix_price" %}
+      {% translate "forfaitaire" %}
+    {% endif %}
+  </h3>
   <hr>
+
   <form method="POST">
     {% csrf_token %}
     {{ service_fees_form.media }}

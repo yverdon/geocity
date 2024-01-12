@@ -4,11 +4,19 @@
 {% load bootstrap4 %}
 
 {% block content %}
-  <h3 class="mt-2">{% translate "Supprimer la prestation ?" %}</h3>
+  <h3 class="mt-2">
+    {% translate "Supprimer une prestation de type " %}
+    {% if service_fees_form.mode == "hourly_rate" %}
+      {% translate "horaire" %}
+    {% elif service_fees_form.mode == "fix_price" %}
+      {% translate "forfaitaire" %}
+    {% endif %}
+  </h3>
   <hr>
   <p>
     {% translate "Êtes-vous certain de vouloir supprimer la prestation suivante: " %}
   </p>
+
   <form method="GET">
     {% csrf_token %}
     {% bootstrap_form service_fees_form layout='horizontal' %}
