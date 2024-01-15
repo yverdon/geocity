@@ -346,7 +346,6 @@ class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "name",
         "administrative_entity",
         "is_visible_by_validator",
-        "is_fixed_price",
         "integrator",
     ]
     search_fields = [
