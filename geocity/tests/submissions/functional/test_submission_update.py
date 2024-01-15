@@ -165,7 +165,7 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
 
-        field_val = self.submission.get_fields_values().get(field__name="datum")
+        field_val = self.submission.get_fields_values().get(field__content="datum")
         self.assertEqual(
             field_val.value,
             {"val": today.isoformat()},

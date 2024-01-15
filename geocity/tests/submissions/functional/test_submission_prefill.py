@@ -95,10 +95,10 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
         selected_form = self.submission.get_selected_forms().first()
 
         field_1 = factories.FormFieldFactory(
-            order=10, field__name=str(uuid.uuid4()), form=selected_form.form
+            order=10, field__content=str(uuid.uuid4()), form=selected_form.form
         )
         field_2 = factories.FormFieldFactory(
-            order=2, field__name=str(uuid.uuid4()), form=selected_form.form
+            order=2, field__content=str(uuid.uuid4()), form=selected_form.form
         )
 
         response = self.client.get(

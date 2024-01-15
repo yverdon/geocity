@@ -190,7 +190,7 @@ def get_amend_properties(value):
     # `value` here is QuerySet[SelectedForm]
     obj = value.all()
     amend_fields = obj.values(
-        "amend_fields__field__name",
+        "amend_fields__field__content",
         "amend_fields__field__api_name",
         "amend_fields__value",
         "form_id",
@@ -212,12 +212,12 @@ def get_amend_properties(value):
             },
             "fields": {
                 field["amend_fields__field__api_name"]: {
-                    "name": field["amend_fields__field__name"],
+                    "name": field["amend_fields__field__content"],
                     "value": field["amend_fields__value"],
                 }
                 for field in amend_fields
                 if field["form_id"] == field["form_id"]
-                and field["amend_fields__field__name"]
+                and field["amend_fields__field__content"]
             },
         }
 
