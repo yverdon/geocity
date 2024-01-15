@@ -836,7 +836,7 @@ class SubmissionAPITestCase(TestCase):
         ]
         get_fields_values = self.approved_submission_1.get_fields_values()
         approved_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         approved_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -857,7 +857,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.inquiry_in_progress_submission_1.get_fields_values()
         inquiry_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         inquiry_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -926,7 +926,7 @@ class SubmissionAPITestCase(TestCase):
         ]
         get_fields_values = self.approved_submission_1.get_fields_values()
         approved_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         approved_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -947,7 +947,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.inquiry_in_progress_submission_1.get_fields_values()
         inquiry_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         inquiry_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -968,7 +968,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.approved_submission_2.get_fields_values()
         own_approved_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         own_approved_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -1052,7 +1052,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.submission_admin_user.get_fields_values()
         admin_approved_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         admin_approved_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -1073,7 +1073,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.approved_submission_1.get_fields_values()
         public_approved_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         public_approved_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -1094,7 +1094,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.approved_submission_2.get_fields_values()
         private_approved_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         private_approved_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -1115,7 +1115,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.inquiry_in_progress_submission_1.get_fields_values()
         public_inquiry_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         public_inquiry_field_value_values = list(
             get_fields_values.values_list("value", flat=True)
@@ -1136,7 +1136,7 @@ class SubmissionAPITestCase(TestCase):
         )[0]
         get_fields_values = self.inquiry_in_progress_submission_2.get_fields_values()
         private_inquiry_field_value_keys = list(
-            get_fields_values.values_list("field__content", flat=True)
+            get_fields_values.values_list("field__name", flat=True)
         )
         private_inquiry_field_value_values = list(
             get_fields_values.values_list("value", flat=True)

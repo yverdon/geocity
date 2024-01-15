@@ -270,7 +270,7 @@ def search_fields(search_str, submissions_qs, limit=None):
             "selected_form__submission__created_at",
             "selected_form__submission__sent_date",
             "author_full_name",
-            "field__content",
+            "field__name",
             "txt_value",
             "score",
         )
@@ -291,7 +291,7 @@ def search_fields(search_str, submissions_qs, limit=None):
             submission_created_at=result["selected_form__submission__created_at"],
             submission_sent_date=result["selected_form__submission__sent_date"],
             author_name=result["author_full_name"],
-            field_label=result["field__content"],
+            field_label=result["field__name"],
             field_value=result["txt_value"],
             score=result["score"],
             match_type=MatchType.FIELD,
