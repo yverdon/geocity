@@ -17,6 +17,7 @@ from knox.models import AuthToken
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
+from geocity.apps.submissions.payments.models import ServicesFeesType
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
@@ -756,6 +757,13 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
     verbose_name_plural = _("Flux (complet par défaut)")
 
 
+class ServicesFeesInline(IntegratorFilterMixin, admin.TabularInline):
+    model = ServicesFeesType
+    extra = 1
+    verbose_name = _("Type de prestation")
+    verbose_name_plural = _("Types de prestation")
+
+
 @admin.register(models.AdministrativeEntityForAdminSite)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     fieldsets = (
@@ -845,6 +853,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = AdministrativeEntityAdminForm
     inlines = [
         SubmissionWorkflowStatusInline,
+        ServicesFeesInline,
     ]
     list_filter = [
         "name",
