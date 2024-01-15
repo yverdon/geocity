@@ -1631,7 +1631,7 @@ def submission_geo_time(request, submission_id):
         request.POST if request.method == "POST" else None,
         form_kwargs={"submission": submission},
         queryset=submission.geo_time.filter(
-            comes_from_automatic_geocoding=False, form__isnull=True, field__isnull=True
+            comes_from_automatic_geocoding=False, form=None, field=None
         ).all(),
     )
 

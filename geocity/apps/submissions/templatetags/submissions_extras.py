@@ -70,7 +70,7 @@ def submission_summary(context, submission):
         None,
         form_kwargs={"submission": submission, "disable_fields": True},
         queryset=submission.geo_time.filter(
-            form__isnull=True, fields__isnull=True
+            form=None, field=None
         ).all(),
     )
 
