@@ -6,13 +6,14 @@
 {% block content %}
   <h3 class="mt-2">
     {% if action == "update" %}
-      {% translate "Modifier" %}
+      {% translate "Modifier une prestation de type " %}
     {% elif action == "delete" %}
-      {% translate "Supprimer" %}
+      {% translate "Supprimer une prestation de type " %}
+    {% elif action == "create" %}
+      {% translate "Ajouter une nouvelle prestation de type " %}
     {% else %}
-      {% translate "Consulter" %}
+      {% translate "Consulter une prestation de type " %}
     {% endif %}
-    {% translate "une prestation de type " %}
     {% if service_fees_form.mode == "hourly_rate" %}
       {% translate "horaire" %}
     {% elif service_fees_form.mode == "fix_price" %}
@@ -24,7 +25,7 @@
     <p>
       {% translate "Êtes-vous certain de vouloir supprimer la prestation suivante: " %}
     </p>
-  {% elif not action or action not in "update,delete" %}
+  {% elif not action or action not in "create,update,delete" %}
     <p>
       {% translate "Vous êtes en mode consultation. Aucune action n'est possible ici." %}
     </p>
@@ -75,7 +76,7 @@
     </div>
   {% endif %}
 
-  {% if not action or action not in "update,delete" %}
+  {% if not action or action not in "create,update,delete" %}
     <form method="GET">
       {% csrf_token %}
       {% bootstrap_form service_fees_form layout='horizontal' %}
