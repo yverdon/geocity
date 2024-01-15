@@ -152,8 +152,7 @@ class ServicesFeesType(models.Model):
         max_length=255,
         null=False,
     )
-    is_fixed_price = models.IntegerField(
-        null=True,
+    is_fixed_price = models.BooleanField(
         default=False,
         verbose_name=_("Forfait"),
         help_text=_("Cette prestation est forfaitaire."),
@@ -279,11 +278,6 @@ class ServicesFees(models.Model):
             Calulé automatiquement en fonction du tarif horaire.
             Est fixe si la prestation est forfaitaire."""
         ),
-    )
-    is_fixed_price = models.BooleanField(
-        default=False,
-        verbose_name=_("Prestation forfaitaire"),
-        help_text=_("La prestation est forfaitaire."),
     )
 
     # Methods
