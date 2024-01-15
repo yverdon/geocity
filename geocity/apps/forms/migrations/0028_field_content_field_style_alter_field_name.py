@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             name="content",
             field=models.TextField(
                 blank=True,
-                help_text="Contenu afficher lors de la saisie du formulaire",
+                help_text="Contenu visible lors de la saisie du formulaire",
                 verbose_name="contenu",
             ),
         ),
@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
             model_name="field",
             name="content",
             field=models.TextField(
-                help_text="Contenu afficher lors de la saisie du formulaire",
+                help_text="Contenu visible lors de la saisie du formulaire",
                 verbose_name="contenu",
             ),
         ),

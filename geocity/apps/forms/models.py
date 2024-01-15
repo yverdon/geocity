@@ -846,7 +846,7 @@ class Field(models.Model):
         help_text=_("Nom visible que dans l'interface d'administration"),
     )
     content = models.TextField(
-        _("contenu"), help_text=_("Contenu afficher lors de la saisie du formulaire")
+        _("contenu"), help_text=_("Contenu visible lors de la saisie du formulaire")
     )
     api_name = models.CharField(
         _("Nom dans l'API"),
