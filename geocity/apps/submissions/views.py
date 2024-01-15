@@ -2273,7 +2273,7 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         if action in ("create", "update")
         else None
     )
-    if permissions.has_permission_to_create_service_fees(request.user, submission):
+    if permissions.has_permission_to_manage_service_fees(request.user, submission):
         if request.method == "GET":
             initial = (
                 {
@@ -2309,13 +2309,34 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
             )
         elif request.method == "POST":
             data = request.POST
-            service_fees_form = forms.ServicesFeesForm(
-                submission=submission,
-                instance=service_fee,
-                data=data,
-                user=request.user,
-            )
-            if action == "update":
+            if action == "create":
+                service_fees_form = forms.ServicesFeesForm(
+                    submission=submission,
+                    instance=service_fee,
+                    data=data,
+                    user=request.user,
+                    mode=mode,
+                )
+            elif action == "update":
+                service_fees_form = forms.ServicesFeesForm(
+                    submission=submission,
+                    instance=service_fee,
+                    data=data,
+                    user=request.user,
+                )
+            if action in ("create", "update"):
+                context = {
+                    "service_fees_form": service_fees_form,
+                    "action": action,
+                    "mode": mode,
+                }
+
+            if action == "create":
+                cancel_message = _(
+                    """Aucune prestation n'a été créée en raison de l'annulation de cette action."""
+                )
+                success_message = _("La prestation a bien été renseignée.")
+            elif action == "update":
                 cancel_message = _(
                     """La prestation n'a pas été modifiée en raison de l'annulation de cette action."""
                 )
@@ -2341,12 +2362,22 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
             if service_fees_form.is_valid():
                 logger.info(_("Le formulaire est valide. Traitement des données."))
                 obj = service_fees_form.save(commit=False)
+                if action == "create":
+                    obj.created_by = request.user
+
                 obj.submission = submission
                 obj.updated_by = request.user
                 obj.permit_department = department
                 obj.save()
                 messages.success(request, success_message)
-                if "save" in request.POST:
+
+                if action == "create" and "save_continue" in request.POST:
+                    return render(
+                        request,
+                        "submissions/submission_service_fees.html",
+                        context,
+                    )
+                elif "save" in request.POST:
                     return redirect(to_service_fees_page(submission_id))
                 else:
                     raise HttpResponse(status=404)
@@ -2366,141 +2397,15 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
                     "submissions/submission_service_fees.html",
                     context,
                 )
-
-
-@redirect_bad_status_to_detail
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
-def create_submission_service_fees(request, submission_id, data=None, mode=None):
-    """Docstring"""
-    if mode not in ("hourly_rate", "fix_price"):
-        raise ValueError(
-            _("The 'mode' parameter can only be 'fix_price' or 'hourly_rate'.")
-        )
-
-    submission = get_submission_service_fee(
-        request.user,
-        submission_id,
-    )
-    service_fee_id = None
-    service_fee = get_service_fee(
-        request.user,
-        service_fee_id,
-    )
-    department = get_departments(request.user).first()
-    # dpts = PermitDepartment.objects.filter(
-    #     administrative_entity=submission.administrative_entity,
-    # )
-    # print(f"dpts: {(dpts)}")
-
-    if permissions.has_permission_to_create_service_fees(request.user, submission):
-        if request.method == "GET":
-            initial = {
-                "provided_by": request.user,
-            }
-            service_fees_form = forms.ServicesFeesForm(
-                submission=submission,
-                initial=initial,
-                user=request.user,
-                mode=mode,
-            )
-            context = {
-                "service_fees_form": service_fees_form,
-                "submission": submission,
-                "mode": mode,
-            }
-
-            return render(
-                request,
-                "submissions/submission_service_fees_create.html",
-                context,
-            )
-
-        elif request.method == "POST":
-            if "cancel" in request.POST:
-                messages.success(
-                    request,
-                    _(
-                        "Aucune prestation n'a été créée en raison de l'annulation de cette action."
-                    ),
-                )
-                return redirect(to_service_fees_page(submission_id))
-
-            data = request.POST
-            service_fees_form = forms.ServicesFeesForm(
-                submission=submission,
-                initial=initial,
-                data=data,
-                user=request.user,
-                mode=mode,
-            )
-            context = {
-                "service_fees_form": service_fees_form,
-            }
-
-            if service_fees_form.is_valid():
-                logger.info(_("Le formulaire est valide. Traitement des données."))
-                obj = service_fees_form.save(commit=False)
-                obj.submission = submission
-                obj.created_by = request.user
-                obj.updated_by = request.user
-                obj.permit_department = department
-                obj.save()
-                success_message = _("La prestation a bien été renseignée.")
-                messages.success(request, success_message)
-
-                if "save_continue" in request.POST:
-                    return redirect(
-                        "submissions:create_submission_service_fees",
-                        submission_id=submission.pk,
-                        mode=mode,
-                    )
-                elif "save" in request.POST:
-                    return redirect(to_service_fees_page(submission_id))
-                else:
-                    raise HttpResponse(status=404)
-            else:
-                error_message = _(
-                    "Le formulaire n'est pas valide. Impossible de traiter les données."
-                )
-                if service_fees_form.is_bound:
-                    error_message += f"\nform.errors: {service_fees_form.errors}"
-                else:
-                    error_message += f"\nform is unbound."
-
-                logger.error(error_message)
-
-                return render(
-                    request,
-                    "submissions/submission_service_fees_create.html",
-                    context,
-                )
         else:
             raise HttpResponse(status=400)
-
-
-@method_decorator(login_required, name="dispatch")
-@method_decorator(check_mandatory_2FA, name="dispatch")
-class EditServiceFee(View):
-    """Docstring"""
-
-    permission_error_message = _(
-        "Vous n'avez pas les permissions nécessaires pour modifier cette prestation."
-    )
-    not_exist_error_message = _("")
-
-    def get(self, request, *args, **kwargs):
-        try:
-            service_fee_id = kwargs.get("service_fee_id")
-        except PermissionDenied:
-            error_message = self.permission_error_message
-        except ObjectDoesNotExist:
-            error_message = self.not_exist_error_message
-
-        messages.error(request, error_message)
-
-        return redirect("submissions:create_submission_service_fees")
+    else:
+        raise PermissionError(
+            _(
+                "Vous n'avez pas les permissions nécessaires pour afficher cette page.\n"
+                "Veuillez prendre contact avec votre administrateur."
+            )
+        )
 
 
 @method_decorator(login_required, name="dispatch")
