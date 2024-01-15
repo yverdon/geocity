@@ -2274,6 +2274,8 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         else None
     )
     if permissions.has_permission_to_manage_service_fees(request.user, submission):
+        # GET method is used for form creation, update and delete.
+        # Different conditions apply, hence the checks.
         if request.method == "GET":
             initial = (
                 {
@@ -2308,6 +2310,8 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
                 context,
             )
         elif request.method == "POST":
+            # POST method is used for form creation, update and delete.
+            # Different conditions apply, hence the checks.
             data = request.POST
             if action == "create":
                 service_fees_form = forms.ServicesFeesForm(
