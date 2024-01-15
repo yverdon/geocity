@@ -334,9 +334,10 @@ class Submission(models.Model):
             ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
-            ("create_service_fee", _("Créer une prestation")),
-            ("update_service_fee", _("Modifier une prestation")),
-            ("delete_service_fee", _("Supprimer une prestation")),
+            ("can_manage_service_fee", _("Gérer une prestation")),
+            # ("create_service_fee", _("Créer une prestation")),
+            # ("update_service_fee", _("Modifier une prestation")),
+            # ("delete_service_fee", _("Supprimer une prestation")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -1116,9 +1117,10 @@ class Submission(models.Model):
                 Submission.STATUS_PROCESSING,
             ],
             "manage_cfc2_amount": list(Submission.SERVICE_FEES_STATUSES),
-            "create_service_fee": list(Submission.SERVICE_FEES_STATUSES),
-            "update_service_fee": list(Submission.SERVICE_FEES_STATUSES),
-            "delete_service_fee": list(Submission.SERVICE_FEES_STATUSES),
+            "can_manage_service_fee": list(Submission.SERVICE_FEES_STATUSES),
+            # "create_service_fee": list(Submission.SERVICE_FEES_STATUSES),
+            # "update_service_fee": list(Submission.SERVICE_FEES_STATUSES),
+            # "delete_service_fee": list(Submission.SERVICE_FEES_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (
