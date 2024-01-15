@@ -751,12 +751,15 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                 field.input_type == models.Field.INPUT_TYPE_GEOM
                 and self.cleaned_data[self.get_field_name(form, field)]
             ):
-                models.SubmissionGeoTime.objects.create(
+
+                models.SubmissionGeoTime.objects.update_or_create(
                     submission=self.instance,
                     comes_from_automatic_geocoding=False,
                     form=form,
                     field=field,
-                    geom=self.cleaned_data[self.get_field_name(form, field)],
+                    defaults={
+                        "geom": self.cleaned_data[self.get_field_name(form, field)]
+                    },
                 )
             if (
                 field.input_type == models.Field.INPUT_TYPE_ADDRESS
