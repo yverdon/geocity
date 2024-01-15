@@ -445,16 +445,18 @@
                 </p>
                 <a class="btn btn-primary"
                   name="action"
-                  href="{% url 'submissions:create_submission_service_fees' mode='hourly_rate' submission_id=submission.pk %}"
-                  title="{% translate 'Enregistrer la prestation et revenir à la l\'onglet général des prestations.' %}"
+                  mode="hourly_rate"
+                  href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}?action=create&mode=hourly_rate"
+                  title="{% translate 'Ajouter une prestation de type horaire.' %}"
                   >
                     <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
                     {% translate "Horaire" %}
                 </a>
                 <a class="btn btn-primary"
                   name="action"
-                  href="{% url 'submissions:create_submission_service_fees' mode='fix_price' submission_id=submission.pk %}"
-                  title="{% translate 'Enregistrer la prestation et revenir à la l\'onglet général des prestations.' %}"
+                  mode="fix_price"
+                  href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}?action=create&mode=fix_price"
+                  title="{% translate 'Ajouter une prestation de type forfaitaire.' %}"
                   >
                     <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
                     {% translate "Forfaitaire" %}
