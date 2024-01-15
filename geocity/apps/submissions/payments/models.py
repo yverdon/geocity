@@ -170,6 +170,10 @@ class ServicesFeesType(models.Model):
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
+    class Meta:
+        verbose_name = _("2.4 Type de prestation")
+        verbose_name_plural = _("2.4 Types de prestation")
+
     # Methods
     def __str__(self):
         return f"{self.name}"

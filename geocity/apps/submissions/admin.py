@@ -358,4 +358,4 @@ class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("name")
+    sortable_str.short_description = _("2.4 Types de prestation")
