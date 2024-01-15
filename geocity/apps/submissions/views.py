@@ -2246,35 +2246,19 @@ def to_service_fees_page(submission_id=None):
     return f"{target}?{query_string}"
 
 
-def initialize_service_fee_form_instance(**kwargs):
-    submission = kwargs.pop("submission", None)
-    initial = kwargs.pop("initial", None)
-    instance = kwargs.pop("instance", None)
-    data = kwargs.pop("data", None)
-    user = kwargs.pop("user", None)
-    mode = kwargs.pop("mode", None)
-
-    return forms.ServicesFeesForm(
-        submission=submission,
-        initial=initial,
-        instance=instance,
-        data=data,
-        user=user,
-        mode=mode,
-    )
-
-
 @redirect_bad_status_to_detail
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def get_submission_service_fees(request, submission_id, service_fee_id):
+def submission_service_fees(request, submission_id, service_fee_id=None):
     """Docstring"""
     CRUD_ACTIONS = [
+        "create",
         "update",
         "delete",
     ]
     action = request.GET.get("action")
+    mode = request.GET.get("mode")
     submission = get_submission_service_fee(
         request.user,
         submission_id,
@@ -2283,18 +2267,32 @@ def get_submission_service_fees(request, submission_id, service_fee_id):
         request.user,
         service_fee_id,
     )
-    department = get_departments(request.user).first() if action == "update" else None
+    # Department is only needed for create and update
+    department = (
+        get_departments(request.user).first()
+        if action in ("create", "update")
+        else None
+    )
     if permissions.has_permission_to_create_service_fees(request.user, submission):
         if request.method == "GET":
-            service_fees_form = initialize_service_fee_form_instance(
+            initial = (
+                {
+                    "provided_by": request.user,
+                }
+                if action == "create"
+                else {}
+            )
+            service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
-                initial={},
+                initial=initial,
                 instance=service_fee,
                 user=request.user,
+                mode=mode,
             )
             context = {
                 "service_fees_form": service_fees_form,
                 "action": action,
+                "mode": mode,
             }
             # Disable form instance for all available action values but "update"
             if not request.GET or action == "delete" or action not in CRUD_ACTIONS:
@@ -2311,7 +2309,7 @@ def get_submission_service_fees(request, submission_id, service_fee_id):
             )
         elif request.method == "POST":
             data = request.POST
-            service_fees_form = initialize_service_fee_form_instance(
+            service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
                 instance=service_fee,
                 data=data,
@@ -2401,7 +2399,7 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
             initial = {
                 "provided_by": request.user,
             }
-            service_fees_form = initialize_service_fee_form_instance(
+            service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
                 initial=initial,
                 user=request.user,
@@ -2430,10 +2428,11 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
                 return redirect(to_service_fees_page(submission_id))
 
             data = request.POST
-            service_fees_form = initialize_service_fee_form_instance(
+            service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
-                user=request.user,
+                initial=initial,
                 data=data,
+                user=request.user,
                 mode=mode,
             )
             context = {
@@ -2479,139 +2478,6 @@ def create_submission_service_fees(request, submission_id, data=None, mode=None)
                 )
         else:
             raise HttpResponse(status=400)
-
-
-@redirect_bad_status_to_detail
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
-def update_submission_service_fees(request, submission_id, service_fee_id):
-    """Docstring"""
-    submission = get_submission_service_fee(
-        request.user,
-        submission_id,
-    )
-    service_fee = get_service_fee(
-        request.user,
-        service_fee_id,
-    )
-    department = get_departments(request.user).first()
-
-    if permissions.has_permission_to_update_service_fees(request.user, submission):
-        if request.method == "GET":
-            service_fees_form = initialize_service_fee_form_instance(
-                submission=submission,
-                initial={},
-                instance=service_fee,
-                user=request.user,
-            )
-            context = {
-                "service_fees_form": service_fees_form,
-            }
-            return render(
-                request,
-                "submissions/submission_service_fees_update.html",
-                context,
-            )
-
-        elif request.method == "POST":
-            if "cancel" in request.POST:
-                messages.success(
-                    request,
-                    _(
-                        "La prestation n'a pas été modifiée en raison de l'annulation de cette action."
-                    ),
-                )
-                return redirect(to_service_fees_page(submission_id))
-
-            data = request.POST
-            service_fees_form = initialize_service_fee_form_instance(
-                submission=submission,
-                instance=service_fee,
-                data=data,
-                user=request.user,
-            )
-            if service_fees_form.is_valid():
-                logger.info(_("Le formulaire est valide. Traitement des données."))
-                obj = service_fees_form.save(commit=False)
-                obj.submission = submission
-                obj.updated_by = request.user
-                obj.permit_department = department
-                obj.save()
-                success_message = _("La prestation a été mise à jour avec succès.")
-                messages.success(request, success_message)
-
-                if "save" in request.POST:
-                    return redirect(to_service_fees_page(submission_id))
-                else:
-                    raise HttpResponse(status=404)
-            else:
-                error_message = _(
-                    "Le formulaire n'est pas valide. Impossible de traiter les données."
-                )
-                if service_fees_form.is_bound:
-                    error_message += f"\nform.errors: {service_fees_form.errors}"
-                else:
-                    error_message += f"\nform is unbound."
-
-                logger.error(error_message)
-
-                return render(
-                    request,
-                    "submissions/submission_service_fees_update.html",
-                    context,
-                )
-
-
-@redirect_bad_status_to_detail
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
-def delete_submission_service_fees(request, submission_id, service_fee_id):
-    """Docstring"""
-    service_fee = get_service_fee(
-        request.user,
-        service_fee_id,
-    )
-    submission = get_submission_service_fee(
-        request.user,
-        submission_id,
-    )
-
-    if permissions.has_permission_to_delete_service_fees(request.user, submission):
-        if request.method == "GET":
-            service_fees_form = initialize_service_fee_form_instance(
-                submission=submission,
-                initial={},
-                instance=service_fee,
-                user=request.user,
-            )
-            forms.disable_form(
-                service_fees_form,
-            )
-            context = {
-                "service_fees_form": service_fees_form,
-            }
-            return render(
-                request,
-                "submissions/submission_service_fees_delete.html",
-                context,
-            )
-        elif request.method == "POST":
-            if "confirm" in request.POST:
-                service_fee.delete()
-                messages.success(
-                    request, _("La prestation a été supprimée avec succès.")
-                )
-            elif "cancel" in request.POST:
-                messages.success(
-                    request,
-                    _(
-                        "La prestation n'a pas été supprimée en raison de l'annulation de cette action."
-                    ),
-                )
-
-        return redirect(to_service_fees_page(submission_id))
 
 
 @method_decorator(login_required, name="dispatch")
