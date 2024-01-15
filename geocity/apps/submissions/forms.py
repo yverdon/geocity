@@ -1277,22 +1277,6 @@ class CFC2Form(forms.ModelForm):
 class ServicesFeesForm(forms.ModelForm):
     """Docstring"""
 
-    # provided_at = forms.DateField(
-    #     label=_("Date de saisie"),
-    #     initial=timezone.now(),
-    #     input_formats=settings.DATE_INPUT_FORMATS,
-    #     widget=DatePickerInput(
-    #         options={
-    #             "format": "DD-MM-YYYY",
-    #             "locale": settings.LANGUAGE_CODE,
-    #             "useCurrent": False,
-    #         }
-    #     ),
-    #     help_text=_(
-    #         "The service fee was provided on this date."
-    #     ),
-    # )
-
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
         current_user = kwargs.pop("user", None)
@@ -1334,34 +1318,7 @@ class ServicesFeesForm(forms.ModelForm):
                 )
             )
 
-        logger.debug(
-            f"Current user get_all_permissions: {(current_user.get_all_permissions())}"
-        )
-        logger.debug(
-            f"Current user get_group_permissions: {(current_user.get_group_permissions())}"
-        )
-        logger.debug(
-            f"Current user get_user_permissions: {(current_user.get_user_permissions())}"
-        )
-
-        submission_departments = PermitDepartment.objects.filter(
-            administrative_entity=self.submission.administrative_entity,
-        )
-
-        # users_to_display = User.objects.filter(
-        #    groups__permit_department__administrative_entity=self.submission.administrative_entity
-        # )
-
-        # Set user link
-        # TODO: Set the following code retrieving the user group at the level of
-        # the UserProfile model?
         current_user_groups_pk = current_user.groups.all().values_list("pk", flat=True)
-
-        # TODO: get administrative entities for user:
-        user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
-            current_user
-        ).values_list("pk", flat=True)
-
         current_administrative_entity = self.submission.administrative_entity
 
         backoffice_groups_of_the_current_user = Group.objects.filter(
