@@ -21,7 +21,7 @@ from geocity.apps.accounts.models import AdministrativeEntity
 from ..api.serializers import SubmissionPrintSerializer
 from . import models
 from .payments.models import Transaction
-from .permissions import has_permission_to_amend_submission
+from .permissions import is_backoffice_of_entity
 
 ATTRIBUTES = {
     "th": {
@@ -395,10 +395,12 @@ class PandasExportMixin(ExportMixin):
             ~Q(status=models.Submission.STATUS_DRAFT),
         )
 
-        if not has_permission_to_amend_submission(
-            self.request.user, submissions_qs.first()
-        ):
-            return super().create_export(export_format)
+        # Doesn't export all datas, if there's any submission of an entity where user isn't backoffice
+        for submission in submissions_qs:
+            if not is_backoffice_of_entity(
+                self.request.user, submission.administrative_entity
+            ):
+                return super().create_export(export_format)
 
         records = {}
 
