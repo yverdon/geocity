@@ -20,6 +20,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
     "submissions": [
         "submissionamendfield",
         "submissionworkflowstatus",
+        "servicesfeestype",
     ],
     "reports": [
         "report",
@@ -63,9 +64,10 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "can_generate_pdf",
     "can_refund_transactions",
     "can_revert_refund_transactions",
-    "create_service_fee",
-    "update_service_fee",
-    "delete_service_fee",
+    "can_manage_service_fee",
+    # "create_service_fee",
+    # "update_service_fee",
+    # "delete_service_fee",
 ]
 
 DEFAULT_PILOT_PERMISSION_CODENAMES = [
@@ -73,15 +75,17 @@ DEFAULT_PILOT_PERMISSION_CODENAMES = [
     "amend_submission",
     "classify_submission",
     "can_generate_pdf",
-    "create_service_fee",
-    "update_service_fee",
-    "delete_service_fee",
+    "can_manage_service_fee",
+    # "create_service_fee",
+    # "update_service_fee",
+    # "delete_service_fee",
 ]
 
 DEFAULT_VALIDATOR_PERMISSION_CODENAMES = [
     "read_submission",
     "validate_submission",
-    "create_service_fee",
-    "update_service_fee",
-    "delete_service_fee",
+    "can_manage_service_fee",
+    # "create_service_fee",
+    # "update_service_fee",
+    # "delete_service_fee",
 ]
