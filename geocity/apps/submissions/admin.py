@@ -370,6 +370,7 @@ class ServicesFeesTypeAdminForm(forms.ModelForm):
         fields = [
             "administrative_entity",
             "name",
+            "fix_price",
             "is_visible_by_validator",
             "integrator",
         ]
@@ -386,16 +387,19 @@ class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     list_display = [
         "name",
+        "fix_price",
         "administrative_entity",
         "is_visible_by_validator",
         "integrator",
     ]
     search_fields = [
         "name",
+        "fix_price",
         "administrative_entity",
     ]
     list_filter = [
         "name",
+        "fix_price",
         "administrative_entity",
         "is_visible_by_validator",
         "integrator",
