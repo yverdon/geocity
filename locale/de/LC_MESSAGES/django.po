@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-16 09:09+0000\n"
+"POT-Creation-Date: 2024-01-16 12:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -652,7 +652,7 @@ msgstr ""
 
 #: geocity/apps/accounts/templates/account/lockout.html:31
 #: geocity/apps/core/templates/base_generic.html:215
-#: geocity/apps/submissions/admin.py:136
+#: geocity/apps/submissions/admin.py:137
 #: geocity/apps/submissions/models.py:1398
 #: geocity/apps/submissions/search.py:83
 msgid "Contact"
@@ -1268,7 +1268,7 @@ msgstr ""
 msgid "Form(s)"
 msgstr ""
 
-#: geocity/apps/forms/admin.py:663 geocity/apps/submissions/admin.py:71
+#: geocity/apps/forms/admin.py:663 geocity/apps/submissions/admin.py:72
 msgid "API"
 msgstr ""
 
@@ -1872,8 +1872,8 @@ msgstr ""
 msgid "Catégorie de document"
 msgstr ""
 
-#: geocity/apps/reports/admin.py:179 geocity/apps/submissions/admin.py:225
-#: geocity/apps/submissions/admin.py:303
+#: geocity/apps/reports/admin.py:179 geocity/apps/submissions/admin.py:226
+#: geocity/apps/submissions/admin.py:304
 msgid "Type de document"
 msgstr ""
 
@@ -2403,11 +2403,11 @@ msgid ""
 "Défini la taille de l'image en %. Choisir un nombre compris entre 0 et 100"
 msgstr ""
 
-#: geocity/apps/submissions/admin.py:112
+#: geocity/apps/submissions/admin.py:113
 msgid "Types"
 msgstr ""
 
-#: geocity/apps/submissions/admin.py:203
+#: geocity/apps/submissions/admin.py:204
 msgid ""
 "Ce type de document est utilisé comme confirmation de paiement dans une "
 "configuration de paiement, via un modèle d'impression. Vous devez dé-lier le "
@@ -2415,7 +2415,7 @@ msgid ""
 "ce champ."
 msgstr ""
 
-#: geocity/apps/submissions/admin.py:212
+#: geocity/apps/submissions/admin.py:213
 msgid ""
 "Ce type de document est utilisé comme remboursement dans une configuration "
 "de paiement, via un modèle d'impression. Vous devez dé-lier le modèle "
@@ -2423,16 +2423,16 @@ msgid ""
 "champ."
 msgstr ""
 
-#: geocity/apps/submissions/admin.py:226
+#: geocity/apps/submissions/admin.py:227
 msgid "Type de documents"
 msgstr ""
 
-#: geocity/apps/submissions/admin.py:340
+#: geocity/apps/submissions/admin.py:341
 #: geocity/apps/submissions/models.py:1674
 msgid "2.3 Enquêtes publiques"
 msgstr ""
 
-#: geocity/apps/submissions/admin.py:360
+#: geocity/apps/submissions/admin.py:417
 #: geocity/apps/submissions/payments/models.py:174
 msgid "2.4 Types de prestation"
 msgstr ""
@@ -3608,7 +3608,7 @@ msgid "Tableau listant les prestation déjà enregistrées."
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:444
-msgid "Ajouter une nouvelle prestation selon un modèle d'émolument"
+msgid "Ajouter une nouvelle prestation selon un modèle "
 msgstr ""
 
 #: geocity/apps/submissions/templates/submissions/_submission_actions.html:450
