@@ -598,7 +598,21 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             entity = AdministrativeEntity.objects.filter(
                 tags__name=domain
             ).first()  # get can return an error
-            submissions = submissions.filter(administrative_entity=entity)
+
+            # To validate a request and show it in agenda, an user need to be pilot of his own entity and validator for other entities.
+            # Retrieve pilots of entity
+            pilot_of_entity = User.objects.filter(
+                groups__permit_department__administrative_entity=entity,
+                groups__permit_department__is_backoffice=True,
+            ).values("id")
+
+            # Check agenda submissions is validated by any user on the pilot group of it's own entity
+            submissions = submissions.filter(
+                Q(administrative_entity=entity)
+                | Q(validations__validated_by__in=pilot_of_entity)
+            )
+
+        print(submissions)
 
         if "starts_at" in query_params:
             starts_at = datetime.datetime.strptime(
@@ -631,16 +645,15 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         if len(query_params) > len(available_filters) + 5:
             return submissions
 
+        print(submissions)
         # Do the required actions fo every query_param
         for field_name in query_params:
-
             # Check if the given query_param is used to filter (is it a category ?)
             field_name_is_api_filter = any(
                 field_name in api_filter
                 for api_filter in available_filters.values_list("api_name")
             )
             if field_name_is_api_filter:
-
                 # Prepare queryset to filter by categories
                 conditions = Q()
 
