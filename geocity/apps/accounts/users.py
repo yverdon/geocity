@@ -114,6 +114,7 @@ def get_users_list_for_integrator_admin(user, remove_anonymous=False):
         ):
             anonymous_users.append(user.pk)
     qs = qs.exclude(pk__in=anonymous_users)
+
     return qs
 
 

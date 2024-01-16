@@ -852,8 +852,8 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     change_form_template = "accounts/admin/administrative_entity_change.html"
     form = AdministrativeEntityAdminForm
     inlines = [
+        # ServicesFeesInline, # not working
         SubmissionWorkflowStatusInline,
-        ServicesFeesInline,
     ]
     list_filter = [
         "name",
