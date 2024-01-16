@@ -605,14 +605,14 @@ th.actions {
     font-size: 1.3rem;
   }
 
-  #map-custom-modal {
+  .map-custom-modal {
     top: 5vh;
     left: 10vw;
     width: 80vw;
     height: 80vh;
   }
 
-  #web-component-advanced {
+  .web-component-advanced {
     width: calc(100% - 40px);
     height: calc(var(--window-modal-size) * 0.8 - 96px);
   }
@@ -673,14 +673,14 @@ th.actions {
     line-height: 15px;
   }
 
-  #map-custom-modal {
+  .map-custom-modal {
     top: 0vh;
     left: 0vw;
     width: 100vw;
     height: 100vh;
   }
 
-  #web-component-advanced {
+  .web-component-advanced {
     width: 100%;
     height: calc(var(--window-modal-size) - 96px);
   }

@@ -931,9 +931,14 @@ def get_available_filters_for_agenda_as_qs(domain):
     if not domain:
         return None
 
-    entity = AdministrativeEntity.objects.filter(
-        tags__name=domain
-    ).first()  # get can return an error
+    entity = (
+        AdministrativeEntity.objects.filter(
+            tags__name=domain,
+            forms__agenda_visible=True,
+        )
+        .distinct()
+        .first()
+    )  # get can return an error
 
     available_filters = Field.objects.filter(forms__administrative_entities=entity)
 

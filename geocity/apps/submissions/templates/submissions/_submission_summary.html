@@ -16,7 +16,15 @@
             {% for field in fields %}
               {% if field.label %}
                 <dt> {{ field.label }} </dt>
-                <dd> {{ field.value|human_field_value|linebreaksbr }} </dd>
+                {% if field.widget_type == 'geometrywidgetadvanced' and field.value %}
+                <dd>
+                  <span class="disable-map-modal-button">
+                    {{ field }}
+                  </span>
+                </dd>
+                {% else %}
+                  <dd> {{ field.value|human_field_value|linebreaksbr }} </dd>
+                {% endif %}
               {% else %}
                 <div class="w-100">{{ field.repr|safe }}</div>
               {% endif %}
