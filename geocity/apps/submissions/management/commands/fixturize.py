@@ -15,6 +15,7 @@ from django.db import connection, transaction
 from geocity import settings
 from geocity.apps.accounts.models import *
 from geocity.apps.accounts.users import get_integrator_permissions
+from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *

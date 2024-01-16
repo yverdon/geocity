@@ -40,7 +40,6 @@ from django.views.decorators.http import require_POST
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from django_filters.views import FilterView
-from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin
 
 from geocity.apps.accounts.decorators import (
@@ -74,6 +73,7 @@ from .steps import (
 )
 from .tables import (
     CustomFieldValueAccessibleSubmission,
+    PandasExportMixin,
     TransactionsTable,
     get_custom_dynamic_table,
 )
@@ -1687,7 +1687,7 @@ def submission_media_download(request, property_value_id):
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 @method_decorator(permanent_user_required, name="dispatch")
-class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
+class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "submissions/submissions_list.html"
 
@@ -1728,6 +1728,9 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
             ]
         else:
             return self.object_list
+
+    def get_pandas_table_data(self):
+        return self.object_list
 
     def is_department_user(self):
         return self.request.user.groups.filter(permit_department__isnull=False).exists()
@@ -1804,7 +1807,13 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
         params = {key: value[0] for key, value in dict(self.request.GET).items()}
         context["display_clear_filters"] = bool(params)
         params.update({"_export": "xlsx"})
-        context["export_csv_url_params"] = urllib.parse.urlencode(params)
+        context["export_csv_url_params_simple"] = urllib.parse.urlencode(params)
+        params.update({"_advanced": True})
+        context["export_csv_url_params_advanced"] = urllib.parse.urlencode(params)
+        context["user_is_backoffice_or_integrator"] = self.request.user.groups.filter(
+            Q(permit_department__is_backoffice=True)
+            | Q(permit_department__is_integrator_admin=True),
+        ).exists()
         return context
 
 

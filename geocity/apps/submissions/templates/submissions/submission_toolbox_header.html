@@ -30,11 +30,19 @@
     {% endif %}
 
     <div class="p-2 permits-action-btns">
-        <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}?{{ export_csv_url_params }}" role="button">
+        <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}?{{ export_csv_url_params_simple }}" role="button">
           <i class="fa fa-file"></i>
-          {% translate "Exporter" %}
+          {% translate "Export simple" %}
         </a>
     </div>
+    {% if user_is_backoffice_or_integrator %}
+    <div class="p-2 permits-action-btns">
+      <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}?{{ export_csv_url_params_advanced }}" role="button">
+        <i class="fa fa-file"></i>
+        {% translate "Export complet" %}
+      </a>
+    </div>
+    {% endif %}
     {% can_archive as can_archive %}
     {% if can_archive %}
       <div class="p-2 permits-action-btns">

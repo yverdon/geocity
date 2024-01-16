@@ -1,14 +1,27 @@
+import collections
+import json
 from datetime import datetime
+from io import BytesIO as IO
 
 import django_tables2 as tables
+import pandas
 from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
+from django.db.models import Q
+from django.http import FileResponse
 from django.template.defaultfilters import floatformat
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from django_tables2.export.views import ExportMixin
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
+from geocity.apps.accounts.models import AdministrativeEntity
+
+from ..api.serializers import SubmissionPrintSerializer
 from . import models
 from .payments.models import Transaction
+from .permissions import is_backoffice_of_entity
 
 ATTRIBUTES = {
     "th": {
@@ -361,3 +374,82 @@ class TransactionsTable(tables.Table):
             "status",
         )
         template_name = "django_tables2/bootstrap.html"
+
+
+class PandasExportMixin(ExportMixin):
+    def create_export(self, export_format):
+        advanced = self.request.GET.get("_advanced", False)
+
+        if not export_format in ["xlsx"]:
+            raise NotImplementedError
+
+        if not advanced:
+            return super().create_export(export_format)
+
+        # Retrieve entities associated to the user
+        entities = AdministrativeEntity.objects.associated_to_user(self.request.user)
+
+        # Take all submission except status draft
+        submissions_qs = self.get_pandas_table_data().filter(
+            Q(administrative_entity__in=entities),
+            ~Q(status=models.Submission.STATUS_DRAFT),
+        )
+
+        # Doesn't export all datas, if there's any submission of an entity where user isn't backoffice
+        for submission in submissions_qs:
+            if not is_backoffice_of_entity(
+                self.request.user, submission.administrative_entity
+            ):
+                return super().create_export(export_format)
+
+        records = {}
+
+        # Make sure there will be no bypass
+        submissions_list = submissions_qs.values_list("id", flat=True)
+        visible_submissions_for_user = models.Submission.objects.filter_for_user(
+            self.request.user,
+        ).values_list("id", flat=True)
+
+        if not all(item in visible_submissions_for_user for item in submissions_list):
+            raise SuspiciousOperation
+
+        for submission in submissions_qs:
+            list_selected_forms = list(
+                submission.selected_forms.values_list("form_id", flat=True)
+            )
+            sheet_name = "_".join(map(str, list_selected_forms))
+            ordered_dict = SubmissionPrintSerializer(submission).data
+            ordered_dict.move_to_end("geometry")
+            data_dict = dict(ordered_dict)
+            data_str = json.dumps(data_dict)
+            record = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
+
+            if sheet_name not in records.keys():
+                records[sheet_name] = []
+            records[sheet_name].append(record)
+
+        now = timezone.now()
+
+        if export_format == "xlsx":
+            excel_file = IO()
+            excel_writer = pandas.ExcelWriter(excel_file)
+
+            for key in records:
+                data_frame = pandas.json_normalize(records[key])
+                data_frame.to_excel(excel_writer, sheet_name=key)
+
+            excel_writer.close()
+            excel_file.seek(0)
+            filename = f"geocity_export_{now:%Y-%m-%d}.xlsx"
+
+            content_type = "content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+
+        response = FileResponse(
+            excel_file,
+            filename=filename,
+            as_attachment=False,
+        )
+        response["Content-Type"] = content_type
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        return response
