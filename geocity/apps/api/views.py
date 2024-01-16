@@ -612,8 +612,6 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
                 | Q(validations__validated_by__in=pilot_of_entity)
             )
 
-        print(submissions)
-
         if "starts_at" in query_params:
             starts_at = datetime.datetime.strptime(
                 query_params["starts_at"], "%Y-%m-%d"
@@ -645,7 +643,6 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         if len(query_params) > len(available_filters) + 5:
             return submissions
 
-        print(submissions)
         # Do the required actions fo every query_param
         for field_name in query_params:
             # Check if the given query_param is used to filter (is it a category ?)
