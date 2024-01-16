@@ -1344,8 +1344,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "geom",
             "starts_at",
             "ends_at",
-            "comment",
-            "external_link",
         ]
         help_texts = {
             "starts_at": "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
@@ -1393,16 +1391,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-        if (
-            not config.ENABLE_GEOCALENDAR
-            or self.instance.comes_from_automatic_geocoding
-            or (
-                (models.GeoTimeInfo.GEOMETRY and models.GeoTimeInfo.DATE)
-                not in required_info
-            )
-        ):
-            del self.fields["comment"]
-            del self.fields["external_link"]
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True

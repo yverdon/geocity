@@ -1512,8 +1512,12 @@ class SubmissionGeoTime(models.Model):
     )
     starts_at = models.DateTimeField(_("Date de début"), blank=True, null=True)
     ends_at = models.DateTimeField(_("Date de fin"), blank=True, null=True)
-    comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
-    external_link = models.URLField(_("Lien externe"), blank=True)
+    comment = models.CharField(
+        _("Commentaire"), max_length=1024, blank=True
+    )  # TODO: remove in v4 and adapt front component
+    external_link = models.URLField(
+        _("Lien externe"), blank=True
+    )  # TODO: remove in v4 and adapt front component
     comes_from_automatic_geocoding = models.BooleanField(
         _("Géométrie obtenue par géocodage d'adresse"), default=False
     )
