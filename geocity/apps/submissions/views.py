@@ -154,6 +154,7 @@ def get_service_fee(user, service_fee_id):
     return get_service_fee_for_user_or_404(
         user,
         service_fee_id,
+        statuses=allowed_statuses,
     )
 
 
