@@ -152,10 +152,14 @@ class ServicesFeesType(models.Model):
         max_length=255,
         null=False,
     )
-    is_fixed_price = models.BooleanField(
-        default=False,
-        verbose_name=_("Forfait"),
-        help_text=_("Cette prestation est forfaitaire."),
+    fix_price = MoneyField(
+        default=None,
+        null=True,  # For hourly service fees, this field has to be null
+        decimal_places=2,
+        max_digits=12,
+        default_currency=settings.DEFAULT_CURRENCY,
+        verbose_name=_("Tarif forfaitaire [CHF]."),
+        help_text=_("Le tarif forfaitaire de cette prestation."),
     )
     is_visible_by_validator = models.BooleanField(
         verbose_name=_("Visible par le validateur"),
@@ -262,16 +266,16 @@ class ServicesFees(models.Model):
         null=True,  # For fixed price service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
-        default_currency="CHF",
+        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Tarif horaire [CHF]"),
         help_text=_("Le tarif horaire de la prestation. Choisi par l'intégrateur."),
     )
     # The "monetary_amount" field must only be exposed for fixed price service fees
     monetary_amount = MoneyField(
+        default=0.0,
         decimal_places=2,
         max_digits=12,
-        default_currency="CHF",
-        default=0.0,
+        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Montant [CHF]"),
         help_text=_(
             """Le montant de la prestation.

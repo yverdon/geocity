@@ -750,5 +750,10 @@ PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
 DEFAULT_SERVICES_FEES_RATE = 0.00
 
 ## djmoney currencies: https://django-money.readthedocs.io/en/latest/#adding-a-new-currency
-CURRENCIES = ("USD", "EUR", "CHF")
+CURRENCIES = (
+    "CHF",
+    "USD",
+    "EUR",
+)
 CURRENCY_CHOICES = [("USD", "USD $"), ("EUR", "EUR €"), ("CHF", "CHF .-")]
+DEFAULT_CURRENCY = CURRENCIES[0]
