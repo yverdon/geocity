@@ -313,6 +313,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "document_enabled",
                     "publication_enabled",
                     "permanent_publication_enabled",
+                    "agenda_visible",
                 )
             },
         ),
@@ -326,10 +327,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
-        (
-            _("Agenda"),
-            {"fields": ("agenda_visible",)},
-        ),
     )
     jazzmin_section_order = (
         None,
@@ -340,7 +337,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         _("Champs"),
         _("Paiements"),
         _("Tarifs"),
-        _("Agenda"),
     )
 
     def sortable_str(self, obj):

@@ -1766,7 +1766,9 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
                 extra_column_names = tuple()
 
             if config.ENABLE_GEOCALENDAR:
-                extra_column_names += tuple(["shortname", "is_public"])
+                extra_column_names += tuple(
+                    ["shortname", "is_public", "is_public_agenda"]
+                )
 
             table_class = (
                 tables.DepartmentSubmissionsExportTable
