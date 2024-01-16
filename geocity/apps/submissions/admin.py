@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
+from geocity.apps.accounts.users import get_departments
 from geocity.apps.forms.admin import get_forms_field
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions.payments.models import ServicesFeesType
@@ -340,8 +341,49 @@ class SubmissionInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("2.3 Enquêtes publiques")
 
 
+class ServicesFeesTypeAdminForm(forms.ModelForm):
+    """Form for managing types of services fees in the admin."""
+
+    def __init__(self, *args, **kwargs):
+        print("Initializing ServicesFeesTypeAdminForm...")
+
+        current_user = self.current_user
+
+        # print(f"XXX current_user : {(self.current_user)}")
+        # print(f"XXX department : {(self.department)}")
+        # print(f"dir self: {dir(self)}")
+
+        super().__init__(*args, **kwargs)
+
+        integrator_administrative_entities_list = (
+            models.AdministrativeEntity.objects.associated_to_user(current_user)
+        )
+        self.fields[
+            "administrative_entity"
+        ].queryset = integrator_administrative_entities_list
+        self.initial["administrative_entity"] = integrator_administrative_entities_list[
+            0
+        ]
+
+    class Meta:
+        model = ServicesFeesType
+        fields = [
+            "administrative_entity",
+            "name",
+            "is_visible_by_validator",
+            "integrator",
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        return cleaned_data
+
+
 @admin.register(ServicesFeesType)
 class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    """Docstring"""
+
     list_display = [
         "name",
         "administrative_entity",
@@ -352,6 +394,21 @@ class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "name",
         "administrative_entity",
     ]
+    list_filter = [
+        "name",
+        "administrative_entity",
+        "is_visible_by_validator",
+        "integrator",
+    ]
+
+    form = ServicesFeesTypeAdminForm
+
+    def get_form(self, request, *args, **kwargs):
+        form = super(ServicesFeesTypeAdmin, self).get_form(request, *args, **kwargs)
+        form.current_user = request.user
+        form.department = get_departments(request.user)
+
+        return form
 
     def sortable_str(self, obj):
         return obj.__str__()
