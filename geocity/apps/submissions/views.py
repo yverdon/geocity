@@ -23,6 +23,7 @@ from django.core.exceptions import (
     SuspiciousOperation,
 )
 from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import F, Prefetch, Q, Sum
 from django.forms import formset_factory, modelformset_factory
@@ -2292,8 +2293,22 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
                 user=request.user,
                 mode=mode,
             )
+
+            services_fees_form_data_qs = service_fees_form.fields[
+                "services_fees_type"
+            ].queryset.values(
+                "name",
+                "fix_price",
+            )
+            data = json.dumps(
+                [item for item in services_fees_form_data_qs],
+                cls=DjangoJSONEncoder,
+                ensure_ascii=False,
+            )
+
             context = {
                 "service_fees_form": service_fees_form,
+                "data": data,
                 "action": action,
                 "mode": mode,
             }
