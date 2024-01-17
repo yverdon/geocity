@@ -1,5 +1,8 @@
+import importlib
+import os
 import re
 import shutil
+import sys
 import unicodedata
 from io import StringIO
 
@@ -19,9 +22,6 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
-
-# import fixturize file
-from ..fixturize_data.generic_example import *
 
 
 def strip_accents(text):
@@ -114,10 +114,56 @@ def setup_media(images_folder):
 
 
 class Command(BaseCommand):
+    help = "Create default datas using fixtures for dev, pre-prod or demo environment."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--file", type=str, help="Define the fixture file to run")
+        parser.add_argument(
+            "--list", action="store_true", help="List available fixture files"
+        )
+
     def handle(self, *args, **options):
+        directory_path = "geocity/apps/submissions/management/fixturize_data"
+        available_fixtures = [
+            os.path.splitext(f)[0]
+            for f in os.listdir(directory_path)
+            if os.path.isfile(os.path.join(directory_path, f))
+        ]
+
+        if options["list"]:
+            self.stdout.write(self.style.SUCCESS("Liste des fichiers disponibles"))
+            self.stdout.write("- " + "\n- ".join(available_fixtures))
+            sys.exit()
+        elif options["file"]:
+            file_name = options["file"]
+            self.stdout.write((f"Fichier spécifié : {file_name}"))
+
+            if file_name in available_fixtures:
+                module = importlib.import_module(
+                    f"..fixturize_data.{file_name}", package=__package__
+                )
+            else:
+                self.stdout.write(self.style.ERROR("Ce fichier n'existe pas"))
+                sys.exit()
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "Aucune option spécifiée. Utilisez --show-help pour afficher les commandes disponibles."
+                )
+            )
+            user_input = input(
+                "Voulez-vous executer les fixtures par défaut ? [Y/n] : "
+            )
+            if user_input.lower() not in {"y", "yes", ""}:
+                sys.exit()
+
+            module = importlib.import_module(
+                f"..fixturize_data.generic_example", package=__package__
+            )
+
         self.stdout.write("Resetting database...")
         reset_db()
-        setup_media(images_folder)
+        setup_media(module.images_folder)
         self.stdout.write("")
         self.stdout.write("░██████╗███████╗███████╗██████╗░")
         self.stdout.write("██╔════╝██╔════╝██╔════╝██╔══██╗")
@@ -130,17 +176,17 @@ class Command(BaseCommand):
         with transaction.atomic():
             self.stdout.write("Creating default site...")
             self.setup_necessary_default_site()
-            for idx, (domain, entity) in enumerate(entities.items()):
+            for idx, (domain, entity) in enumerate(module.entities.items()):
                 self.stdout.write(f"Entity : {entity}")
                 self.stdout.write(" • Creating site...")
                 self.setup_site(entity)
                 self.stdout.write(" • Creating administrative entity...")
                 administrative_entity = self.create_administrative_entity(
-                    entity, ofs_ids[idx], geoms[idx]
+                    entity, module.ofs_ids[idx], module.geoms[idx]
                 )
                 self.stdout.write(" • Creating users...")
                 integrator_group = self.create_users(
-                    iterations, entity, domain, administrative_entity
+                    module.iterations, entity, domain, administrative_entity
                 )
                 self.stdout.write(" • Setting administrative_entity integrator...")
                 self.setup_administrative_entity_integrator(
@@ -152,24 +198,24 @@ class Command(BaseCommand):
                     " • Setting form, form categories and complementary document type..."
                 )
                 self.setup_form_and_form_categories(
-                    form_categories,
+                    module.form_categories,
                     integrator_group,
-                    form_additional_information,
+                    module.form_additional_information,
                     administrative_entity,
                 )
                 self.stdout.write(" • Creating submissions...")
                 self.setup_submission(
                     entity,
-                    iterations.get("user_iterations"),
+                    module.iterations.get("user_iterations"),
                     administrative_entity,
-                    small_text,
+                    module.small_text,
                 )
                 self.stdout.write(" • Creating default report...")
                 Report.create_default_report(administrative_entity.id)
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
             self.stdout.write("Setup template customizations...")
-            self.setup_homepage(entities, iterations)
+            self.setup_homepage(module.entities, module.iterations)
             self.stdout.write("Fixturize succeed ✔")
 
     def setup_necessary_default_site(self):
