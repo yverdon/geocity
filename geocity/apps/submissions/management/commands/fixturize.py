@@ -124,7 +124,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if settings.ENV != "DEV":
+        if settings.ENV.upper() != "DEV":
             self.stdout.write(
                 self.style.ERROR("Les fixtures ne peuvent être exécutés qu'en DEV")
             )
