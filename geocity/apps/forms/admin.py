@@ -313,6 +313,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "document_enabled",
                     "publication_enabled",
                     "permanent_publication_enabled",
+                    "agenda_visible",
                 )
             },
         ),
@@ -326,10 +327,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
-        (
-            _("Agenda"),
-            {"fields": ("agenda_visible",)},
-        ),
     )
     jazzmin_section_order = (
         None,
@@ -340,7 +337,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         _("Champs"),
         _("Paiements"),
         _("Tarifs"),
-        _("Agenda"),
     )
 
     def sortable_str(self, obj):
@@ -464,6 +460,7 @@ class FieldAdminForm(forms.ModelForm):
             "public_if_submission_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
+            "map_widget_configuration",
             "allowed_file_types",
             "integrator",
             "form_list",
@@ -655,6 +652,7 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "is_mandatory",
                     "additional_searchtext_for_address_field",
                     "store_geometry_for_address_field",
+                    "map_widget_configuration",
                     "allowed_file_types",
                     "integrator",
                     "form_list",
@@ -704,6 +702,14 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 return Form(*args, **kwargs)
 
         return RequestForm
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name in ["map_widget_configuration"]:
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.MapWidgetConfiguration.objects.all()
+            )
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class FormCategoryAdminForm(forms.ModelForm):
