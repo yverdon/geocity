@@ -1,6 +1,7 @@
 import collections
 import uuid
 
+from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -848,8 +849,9 @@ class Field(models.Model):
         max_length=255,
         help_text=_("Nom visible que dans l'interface d'administration"),
     )
-    content = models.TextField(
-        _("contenu"), help_text=_("Contenu visible lors de la saisie du formulaire")
+    content = RichTextField(
+        _("Contenu"),
+        help_text=(_("Contenu visible lors de la saisie du formulaire")),
     )
     api_name = models.CharField(
         _("Nom dans l'API"),
