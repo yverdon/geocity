@@ -53,6 +53,7 @@ input_type_mapping = {
     models.Field.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
     models.Field.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
     models.Field.INPUT_TYPE_REGEX: forms.CharField,
+    models.Field.INPUT_TYPE_GEOM: geoforms.fields.GeometryCollectionField,
 }
 
 
@@ -420,8 +421,10 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         disable_fields = kwargs.pop("disable_fields", False)
 
         # Compute initial values for fields
+        # Geom type field values need to be initiated separately as data are stored in SubmissionGeotime Model
         initial = {}
         prop_values = self.get_values()
+
         for prop_value in prop_values:
             initial[
                 self.get_field_name(
@@ -429,6 +432,20 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                     prop_value.field,
                 )
             ] = prop_value.get_value()
+
+        # Get geom field values from SubmissionGeotime Model
+        forms = instance.selected_forms.all().values_list("form__pk")
+        geom_field_values = models.SubmissionGeoTime.objects.filter(
+            form__in=forms, submission=instance
+        )
+        for geom_field_value in geom_field_values:
+            if geom_field_value.form and geom_field_value.field:
+                initial[
+                    self.get_field_name(
+                        geom_field_value.form,
+                        geom_field_value.field,
+                    )
+                ] = geom_field_value.geom
 
         kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
 
@@ -553,6 +570,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             models.Field.INPUT_TYPE_REGEX: self.get_regex_field_kwargs,
             models.Field.INPUT_TYPE_LIST_SINGLE: self.get_list_single_field_kwargs,
             models.Field.INPUT_TYPE_LIST_MULTIPLE: self.get_list_multiple_field_kwargs,
+            models.Field.INPUT_TYPE_GEOM: self.get_geom_field_kwargs,
         }
 
         try:
@@ -703,14 +721,45 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             else forms.CheckboxSelectMultiple(),
         }
 
+    def get_geom_field_kwargs(self, field, default_kwargs):
+
+        options = {
+            "map_widget_configuration": [field.map_widget_configuration.configuration],
+        }
+
+        widget = GeometryWidgetAdvanced(attrs={"options": options})
+        widget.attrs["options"]["edit_geom"] = True
+
+        return {
+            **default_kwargs,
+            "widget": widget,
+        }
+
     def save(self):
         to_geocode_addresses = []
         for form, field in self.get_fields():
-            if field.is_value_field():
+            if (
+                field.is_value_field()
+                and not field.input_type == models.Field.INPUT_TYPE_GEOM
+            ):
                 self.instance.set_field_value(
                     form=form,
                     field=field,
                     value=self.cleaned_data[self.get_field_name(form, field)],
+                )
+            if (
+                field.input_type == models.Field.INPUT_TYPE_GEOM
+                and self.cleaned_data[self.get_field_name(form, field)]
+            ):
+
+                models.SubmissionGeoTime.objects.update_or_create(
+                    submission=self.instance,
+                    comes_from_automatic_geocoding=False,
+                    form=form,
+                    field=field,
+                    defaults={
+                        "geom": self.cleaned_data[self.get_field_name(form, field)]
+                    },
                 )
             if (
                 field.input_type == models.Field.INPUT_TYPE_ADDRESS
@@ -1295,8 +1344,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             "geom",
             "starts_at",
             "ends_at",
-            "comment",
-            "external_link",
         ]
         help_texts = {
             "starts_at": "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
@@ -1344,16 +1391,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-        if (
-            not config.ENABLE_GEOCALENDAR
-            or self.instance.comes_from_automatic_geocoding
-            or (
-                (models.GeoTimeInfo.GEOMETRY and models.GeoTimeInfo.DATE)
-                not in required_info
-            )
-        ):
-            del self.fields["comment"]
-            del self.fields["external_link"]
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True

@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const choicesLabelElement = choicesRowElement.querySelector('label');
     const isChoicesVisible = inputType === 'list_single' || inputType === 'list_multiple';
 
+    const mapWidgetConfigurationElement = document.getElementById('id_map_widget_configuration');
+    const mapWidgetConfigurationRowElement = mapWidgetConfigurationElement.closest('.form-group');
+    const mapWidgetConfigurationLabelElement = mapWidgetConfigurationRowElement.querySelector('label');
+    const isMapWidgetConfigurationVisible = inputType === 'geom';
+
     const filterForApiElement = document.getElementById('id_filter_for_api');
     const filterForApiRowElement = filterForApiElement.closest('.form-group');
 
@@ -79,6 +84,10 @@ document.addEventListener('DOMContentLoaded', function() {
     choicesRowElement.classList.add(hiddenClass);
     choicesLabelElement.classList.remove(requiredClass);
 
+    mapWidgetConfigurationElement.removeAttribute('required');
+    mapWidgetConfigurationRowElement.classList.add(hiddenClass);
+    mapWidgetConfigurationLabelElement.classList.remove(requiredClass);
+
     filterForApiRowElement.classList.add(hiddenClass);
 
     regexElement.removeAttribute('required');
@@ -112,6 +121,11 @@ document.addEventListener('DOMContentLoaded', function() {
       choicesLabelElement.classList.add(requiredClass);
 
       filterForApiRowElement.classList.remove(hiddenClass);
+    }
+    else if (isMapWidgetConfigurationVisible) {
+      mapWidgetConfigurationElement.setAttribute('required', '');
+      mapWidgetConfigurationRowElement.classList.remove(hiddenClass);
+      mapWidgetConfigurationLabelElement.classList.add(requiredClass);
     }
     else if (isAllowedFileVisible) {
       allowedFileElement.setAttribute('required', '');
