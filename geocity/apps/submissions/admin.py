@@ -345,13 +345,7 @@ class ServicesFeesTypeAdminForm(forms.ModelForm):
     """Form for managing types of services fees in the admin."""
 
     def __init__(self, *args, **kwargs):
-        print("Initializing ServicesFeesTypeAdminForm...")
-
         current_user = self.current_user
-
-        # print(f"XXX current_user : {(self.current_user)}")
-        # print(f"XXX department : {(self.department)}")
-        # print(f"dir self: {dir(self)}")
 
         super().__init__(*args, **kwargs)
 
