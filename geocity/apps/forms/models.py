@@ -545,6 +545,9 @@ class Form(models.Model):
             Le pilote peut alors contrôler la publication dans l'agenda dans l'onglet traitement"""
         ),
     )
+    disable_validation_by_validators = models.BooleanField(
+        _("Désactiver la validation par les services"), default=False
+    )
 
     # All objects
     objects = FormQuerySet().as_manager()
@@ -612,6 +615,8 @@ class Form(models.Model):
         return has_exceeded
 
     def clean(self):
+        from geocity.apps.submissions.models import Submission
+
         if self.max_submissions is not None and self.max_submissions < 1:
             raise ValidationError(
                 {
@@ -747,6 +752,24 @@ class Form(models.Model):
         else:
             self.api_name = convert_string_to_api_key(self.name)
 
+        if (
+            self.disable_validation_by_validators
+            and Submission.objects.filter(
+                status__in=[
+                    Submission.STATUS_SUBMITTED_FOR_VALIDATION,
+                    Submission.STATUS_AWAITING_VALIDATION,
+                ],
+                forms__pk=self.pk,
+            ).exists()
+        ):
+            raise ValidationError(
+                {
+                    "disable_validation_by_validators": _(
+                        "Impossible de désactiver la validation tant que des demandes liées à ce formulaire sont en attente ou en cours de validation."
+                    )
+                }
+            )
+
 
 class FormField(models.Model):
     form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
@@ -777,6 +800,7 @@ INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
 INPUT_TYPE_TEXT = "text"
+INPUT_TYPE_GEOM = "geom"
 DISPLAY_TEXT = "text_output"
 DISPLAY_TITLE = "title_output"
 
@@ -792,6 +816,7 @@ class Field(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
+    INPUT_TYPE_GEOM = INPUT_TYPE_GEOM
     DISPLAY_TEXT = DISPLAY_TEXT
     DISPLAY_TITLE = DISPLAY_TITLE
 
@@ -807,6 +832,7 @@ class Field(models.Model):
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
+        (INPUT_TYPE_GEOM, _("Géométrie (points)")),
         (DISPLAY_TEXT, _("Texte à afficher")),
         (DISPLAY_TITLE, _("Titre à afficher")),
     )
@@ -888,6 +914,14 @@ class Field(models.Model):
             "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
         ),
     )
+    map_widget_configuration = models.ForeignKey(
+        MapWidgetConfiguration,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="map_widget_configuration_field",
+        verbose_name=_("Configuration de la carte avancée"),
+    )
     public_if_submission_public = models.BooleanField(
         _("Information publique"),
         default=False,
@@ -952,6 +986,7 @@ class Field(models.Model):
             Field.INPUT_TYPE_LIST_SINGLE,
             Field.INPUT_TYPE_LIST_MULTIPLE,
             Field.INPUT_TYPE_REGEX,
+            Field.INPUT_TYPE_GEOM,
         ]
 
     def clean(self):

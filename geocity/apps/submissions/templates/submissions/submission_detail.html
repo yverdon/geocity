@@ -12,7 +12,7 @@
     Demande #{{ request_id }}
   {% endblocktranslate %}
   {% if config.ENABLE_GEOCALENDAR %}
-    {% if submission.is_public %}
+    {% if submision.is_public or submission.is_public_agenda %}
       <span class="badge badge-pill badge-success">Publique</span>
     {% else %}
       <span class="badge badge-pill badge-danger">Privée</span>

@@ -1,5 +1,3 @@
-import uuid
-
 from django.test import TestCase
 from django.urls import reverse
 
@@ -94,12 +92,8 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
     def test_fields_step_order_fields_for_existing_submission(self):
         selected_form = self.submission.get_selected_forms().first()
 
-        field_1 = factories.FormFieldFactory(
-            order=10, field__name=str(uuid.uuid4()), form=selected_form.form
-        )
-        field_2 = factories.FormFieldFactory(
-            order=2, field__name=str(uuid.uuid4()), form=selected_form.form
-        )
+        field_1 = factories.FormFieldFactory(order=10, form=selected_form.form)
+        field_2 = factories.FormFieldFactory(order=2, form=selected_form.form)
 
         response = self.client.get(
             reverse(

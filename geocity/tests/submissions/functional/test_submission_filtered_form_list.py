@@ -52,11 +52,10 @@ class SubmissionFilteredFormListTestCase(LoggedInSecretariatMixin, TestCase):
                 self.submission.forms.first().id,
             )
         )
-
-        content = io.BytesIO(response.content)
+        content = io.BytesIO(response.getvalue())
 
         # Replace content in bytes with the readable one
-        response.content = tablib.import_set(content.read(), format="xlsx")
+        response = str(tablib.import_set(content.read(), format="xlsx"))
 
-        self.assertContains(response, self.field_value.value["val"])
-        self.assertContains(response, self.field_value.field)
+        self.assertIn(str(self.field_value.value["val"]), response)
+        self.assertIn(str(self.field_value.field), response)
