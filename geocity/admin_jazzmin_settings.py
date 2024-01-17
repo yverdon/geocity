@@ -104,6 +104,7 @@ JAZZMIN_SETTINGS = {
         "reports.ComplementaryDocumentTypeForAdminSite": "fas fa-copy",
         "submissions.Submission": "fas fa-search",
         "submissions.SubmissionAmendField": "fas fa-list-alt",
+        "submissions.ServicesFeesType": "fas fa-file-invoice-dollar",
         "submissions.SubmissionInquiry": "fas fa-calendar",
         "taggit.Tag": "fas fa-bookmark",
     },
