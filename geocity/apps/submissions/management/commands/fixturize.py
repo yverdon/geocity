@@ -158,7 +158,7 @@ class Command(BaseCommand):
                 sys.exit()
 
             module = importlib.import_module(
-                f"..fixturize_data.generic_example", package=__package__
+                f"..fixturize_data.generic", package=__package__
             )
 
         self.stdout.write("Resetting database...")
