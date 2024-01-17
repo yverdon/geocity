@@ -673,8 +673,6 @@ class Submission(models.Model):
         )
         is_file = field.input_type == Field.INPUT_TYPE_FILE
         is_date = field.input_type == Field.INPUT_TYPE_DATE
-        # TODO this doesn’t seem to be used? Remove?
-        is_address = field.input_type == Field.INPUT_TYPE_ADDRESS
 
         if value == "" or value is None:
             existing_value_obj.delete()

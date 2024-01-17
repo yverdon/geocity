@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0028_form_disable_validation_by_validators"),
+        ("forms", "0028_field_content_field_style_alter_field_name"),
     ]
 
     operations = [
