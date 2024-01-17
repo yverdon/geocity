@@ -7,6 +7,7 @@ import unicodedata
 from io import StringIO
 
 from constance import config
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -123,6 +124,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        if settings.ENV != "DEV":
+            self.stdout.write(
+                self.style.ERROR("Les fixtures ne peuvent être exécutés qu'en DEV")
+            )
+            sys.exit()
+
         directory_path = "geocity/apps/submissions/management/fixturize_data"
         available_fixtures = [
             os.path.splitext(f)[0]
