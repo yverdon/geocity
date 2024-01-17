@@ -21,8 +21,15 @@ docker-compose run web scripts/migrate.sh
 
 **Load demo data**
 
-Edit file `geocity/apps/submissions/management/commands/fixturize_data/fixturize.py`
+Create a file in `geocity/apps/submissions/management/commands/fixturize_data/`
 There is some examples in same folder and you can create new ones
+
+`docker-compose run web python manage.py fixturize` is interactive and can use some arguments as :
+
+- `--help` : Shows description of command and available arguments
+- `--list` : List available files to be used as fixturize
+- `--file` : Use a specific file. Example : `--file=agenda`
+- no args : Asks if you want to run default fixture file
 
 ```bash
 # Load demo data
