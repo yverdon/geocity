@@ -1,5 +1,6 @@
 {% extends "base_generic.html" %}
 
+{% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
 
@@ -121,4 +122,10 @@
     </div>
   {% endif %}
 
+  {{ data|json_script:"get-data" }}
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/submission_prestation.js' %}" defer></script>
 {% endblock %}

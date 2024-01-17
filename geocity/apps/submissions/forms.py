@@ -1350,6 +1350,23 @@ class ServicesFeesForm(forms.ModelForm):
                 administrative_entity=self.submission.administrative_entity
             )
 
+        if self.mode == "fix_price":
+            self.fields["services_fees_type"].queryset = self.fields[
+                "services_fees_type"
+            ].queryset.filter(fix_price__isnull=False)
+            self.fields["monetary_amount"].widget.attrs["readonly"] = True
+            self.monetary_amount = (
+                self.fields["services_fees_type"]
+                .queryset.filter(fix_price__isnull=False)
+                .values_list("fix_price", flat=True)
+            )
+            self.fields["monetary_amount"].queryset = self.monetary_amount
+            print(f"self.monetary_amount: {(self.monetary_amount)}")
+        elif self.mode == "hourly_rate":
+            self.fields["services_fees_type"].queryset = self.fields[
+                "services_fees_type"
+            ].queryset.filter(fix_price__isnull=True)
+
         restricted_users_to_display = User.objects.filter(
             groups__in=groups_of_the_current_user
         )
@@ -1378,7 +1395,9 @@ class ServicesFeesForm(forms.ModelForm):
         ]
 
         widgets = {
-            "services_fees_type": Select2Widget(),
+            "services_fees_type": Select2Widget(
+                {"onchange": "updateFormMonetaryAmount();"}
+            ),
             "provided_by": Select2Widget(),
             "provided_at": DatePickerInput(
                 options={
