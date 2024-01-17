@@ -157,8 +157,8 @@ class ServicesFeesType(models.Model):
         null=True,  # For hourly service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
-        verbose_name=_("Tarif forfaitaire [CHF]."),
+        default_currency="settings.DEFAULT_CURRENCY",
+        verbose_name=_("Tarif forfaitaire [CHF]"),
         help_text=_("Le tarif forfaitaire de cette prestation."),
     )
     is_visible_by_validator = models.BooleanField(
@@ -278,9 +278,9 @@ class ServicesFees(models.Model):
         default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Montant [CHF]"),
         help_text=_(
-            """Le montant de la prestation.
-            Calulé automatiquement en fonction du tarif horaire.
-            Est fixe si la prestation est forfaitaire."""
+            "Le montant de la prestation. "
+            "Calulé automatiquement en fonction du tarif horaire. "
+            "Est fixe si la prestation est forfaitaire. "
         ),
     )
 
