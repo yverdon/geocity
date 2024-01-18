@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import timedelta, timezone
 
 import factory.fuzzy
 import faker
@@ -9,11 +9,13 @@ from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Point, Pol
 from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
+from djmoney.money import Money
 
 from geocity.apps.accounts import models as accounts_models
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import models as submissions_models
+from geocity.apps.submissions.payments.models import ServicesFees, ServicesFeesType
 from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
@@ -703,3 +705,34 @@ class ArchivedSubmissionFactory(factory.django.DjangoModelFactory):
 
     submission = factory.SubFactory(SubmissionFactory)
     archivist = factory.SubFactory(UserFactory)
+
+
+class ServicesFeesTypesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServicesFeesType
+
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    name = factory.Faker("word")
+    fix_price = Money("10", "CHF")
+    is_visible_by_validator = False
+    integrator = factory.SubFactory(GroupFactory)
+
+
+class ServicesFeesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServicesFees
+
+    created_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    updated_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    created_by = factory.SubFactory("geocity.tests.factories.UserFactory")
+    updated_by = factory.SubFactory("geocity.tests.factories.UserFactory")
+    permit_department = factory.RelatedFactory(
+        PermitDepartmentFactory, is_backoffice=True
+    )
+    provided_by = factory.SubFactory("geocity.tests.factories.UserFactory")
+    provided_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    submission = factory.SubFactory(SubmissionFactory)
+    services_fees_type = factory.SubFactory(ServicesFeesTypesFactory)
+    time_spent_on_task = timedelta(hours=8)
+    hourly_rate = Money("0.01", "CHF")
+    monetary_amount = Money("0.01", "CHF")
