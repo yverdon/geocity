@@ -355,9 +355,9 @@ class ServicesFeesTypeAdminForm(forms.ModelForm):
         self.fields[
             "administrative_entity"
         ].queryset = integrator_administrative_entities_list
-        self.initial["administrative_entity"] = integrator_administrative_entities_list[
-            0
-        ]
+        self.initial[
+            "administrative_entity"
+        ] = integrator_administrative_entities_list.first()
 
     class Meta:
         model = ServicesFeesType

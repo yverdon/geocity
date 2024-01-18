@@ -141,7 +141,7 @@ class SubmissionCFC2Price(models.Model):
 class ServicesFeesType(models.Model):
     administrative_entity = models.ForeignKey(
         AdministrativeEntity,
-        null=True,
+        null=False,
         on_delete=models.CASCADE,
         verbose_name=_("Entité administrative"),
         related_name="administrative_entity",

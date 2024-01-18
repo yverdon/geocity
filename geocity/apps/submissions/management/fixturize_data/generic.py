@@ -2,10 +2,10 @@
 
 # Defines the number of each type of user to create on each entity
 iterations = {
-    "integrator_iterations": 3,
-    "pilot_iterations": 5,
-    "validator_iterations": 6,
-    "user_iterations": 8,
+    "integrator_iterations": 2,
+    "pilot_iterations": 2,
+    "validator_iterations": 2,
+    "user_iterations": 2,
 }
 
 # domain:entity
@@ -218,6 +218,30 @@ form_categories = [
         ],
     ),
 ]
+
+service_fee_type = [
+    {
+        "name": "Prestation 1 (horaire)",
+        "fix_price": {},
+        "is_visible_by_validator": False,
+    },
+    {
+        "name": "Prestation 2 (horaire)",
+        "fix_price": {},
+        "is_visible_by_validator": True,
+    },
+    {
+        "name": "Prestation 3 (Forfait)",
+        "fix_price": 100,
+        "is_visible_by_validator": False,
+    },
+    {
+        "name": "Prestation 4 (Forfait)",
+        "fix_price": 100,
+        "is_visible_by_validator": True,
+    },
+]
+
 
 form_additional_information = """
 Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.

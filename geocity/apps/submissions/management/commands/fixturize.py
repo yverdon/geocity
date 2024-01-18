@@ -15,6 +15,7 @@ from django.contrib.sites.models import Site
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
+from djmoney.money import Money
 
 from geocity import settings
 from geocity.apps.accounts.models import *
@@ -23,6 +24,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
+from geocity.apps.submissions.payments.models import ServicesFeesType
 
 
 def strip_accents(text):
@@ -218,6 +220,10 @@ class Command(BaseCommand):
                     module.small_text,
                 )
                 self.stdout.write(" • Creating default report...")
+                if module.service_fee_type:
+                    self.setup_fees(
+                        administrative_entity, integrator_group, module.service_fee_type
+                    )
                 Report.create_default_report(administrative_entity.id)
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
@@ -1238,3 +1244,14 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         selected_form=selected_form,
                         value={"val": image_path},
                     )
+
+    def setup_fees(self, administrative_entity, integrator_group, service_fee_type):
+
+        for item in service_fee_type:
+            ServicesFeesType.objects.create(
+                administrative_entity=administrative_entity,
+                name=item["name"],
+                fix_price=Money("0.01", "CHF"),
+                is_visible_by_validator=item["is_visible_by_validator"],
+                integrator=integrator_group,
+            )
