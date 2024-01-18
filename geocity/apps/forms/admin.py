@@ -284,6 +284,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "requires_validation_document",
+                    "default_validation_text",
                     "disable_validation_by_validators",
                     "max_submissions",
                     "max_submissions_message",

@@ -427,6 +427,10 @@ class Form(models.Model):
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
+    default_validation_text = models.TextField(
+        _("Texte de validation par défaut"), blank=True
+    )
+
     # TODO: sphinx documentation, to explain is used to make visible/hidden in the list of forms
     is_public = models.BooleanField(_("Formulaire public"), default=False)
     is_anonymous = models.BooleanField(
