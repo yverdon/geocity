@@ -138,18 +138,6 @@ def get_submission_for_prolongation(user, submission_id):
         raise NonProlongableSubmission(submission)
     return submission
 
-
-def get_submission_service_fee(user, submission_id):
-    allowed_statuses = models.Submission.SERVICE_FEES_STATUSES
-    submission = get_submission_for_user_or_404(
-        user,
-        submission_id,
-        statuses=allowed_statuses,
-    )
-
-    return submission
-
-
 def get_service_fee(user, service_fee_id):
     allowed_statuses = models.Submission.SERVICE_FEES_STATUSES
     return get_service_fee_for_user_or_404(
@@ -2266,18 +2254,25 @@ def to_service_fees_page(submission_id=None):
 @permanent_user_required
 @check_mandatory_2FA
 def submission_service_fees(request, submission_id, service_fee_id=None):
-    """Docstring"""
+    
+    submission = get_submission_for_user_or_404(
+        request.user,
+        submission_id,
+        statuses=models.Submission.SERVICE_FEES_STATUSES,
+    )
+    can_manage_service_fees = permissions.has_permission_to_manage_service_fees(request.user, submission)
+    if not can_manage_service_fees:
+        raise Http404
+
     CRUD_ACTIONS = [
         "create",
         "update",
         "delete",
     ]
+
     action = request.GET.get("action")
-    mode = request.GET.get("mode")
-    submission = get_submission_service_fee(
-        request.user,
-        submission_id,
-    )
+    # Hourly rate or Fixed price
+    mode = request.GET.get("mode") if request.GET.get("mode") else None
     service_fee = get_service_fee(
         request.user,
         service_fee_id,
@@ -2288,157 +2283,146 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         if action in ("create", "update")
         else None
     )
-    if permissions.has_permission_to_manage_service_fees(request.user, submission):
-        # GET method is used for form creation, update and delete.
+
+    initial = (
+        {
+            "provided_by": request.user,
+        }
+        if action == "create"
+        else {}
+    )
+    service_fees_form = forms.ServicesFeesForm(
+        submission=submission,
+        initial=initial,
+        instance=service_fee,
+        user=request.user,
+        mode=mode,
+    )
+
+    services_fees_form_data_qs = service_fees_form.fields[
+        "services_fees_type"
+    ].queryset.values(
+        "name",
+        "fix_price",
+    )
+    data = json.dumps(
+        [item for item in services_fees_form_data_qs],
+        cls=DjangoJSONEncoder,
+        ensure_ascii=False,
+    )
+
+    context = {
+        "service_fees_form": service_fees_form,
+        "data": data,
+        "action": action,
+        "mode": mode,
+    }
+    # Disable form instance for all available action values but "update"
+    if not request.GET or action == "delete" or action not in CRUD_ACTIONS:
+        forms.disable_form(
+            service_fees_form,
+        )
+        if action != "delete":
+            context.pop("action")
+    
+    if request.method == "POST":
+        # POST method is used for form creation, update and delete.
         # Different conditions apply, hence the checks.
-        if request.method == "GET":
-            initial = (
-                {
-                    "provided_by": request.user,
-                }
-                if action == "create"
-                else {}
-            )
+        data = request.POST
+        if action == "create":
             service_fees_form = forms.ServicesFeesForm(
                 submission=submission,
-                initial=initial,
                 instance=service_fee,
+                data=data,
                 user=request.user,
                 mode=mode,
             )
-
-            services_fees_form_data_qs = service_fees_form.fields[
-                "services_fees_type"
-            ].queryset.values(
-                "name",
-                "fix_price",
+        elif action == "update":
+            service_fees_form = forms.ServicesFeesForm(
+                submission=submission,
+                instance=service_fee,
+                data=data,
+                user=request.user,
             )
-            data = json.dumps(
-                [item for item in services_fees_form_data_qs],
-                cls=DjangoJSONEncoder,
-                ensure_ascii=False,
-            )
-
+        if action in ("create", "update"):
             context = {
                 "service_fees_form": service_fees_form,
-                "data": data,
                 "action": action,
                 "mode": mode,
             }
-            # Disable form instance for all available action values but "update"
-            if not request.GET or action == "delete" or action not in CRUD_ACTIONS:
-                forms.disable_form(
-                    service_fees_form,
+
+        if action == "create":
+            cancel_message = _(
+                """Aucune prestation n'a été créée en raison de l'annulation de cette action."""
+            )
+            success_message = _("La prestation a bien été renseignée.")
+        elif action == "update":
+            cancel_message = _(
+                """La prestation n'a pas été modifiée en raison de l'annulation de cette action."""
+            )
+            success_message = _("La prestation a été mise à jour avec succès.")
+        elif action == "delete":
+            cancel_message = _(
+                """La prestation n'a pas été supprimée en raison de l'annulation de cette action."""
+            )
+            success_message = _("La prestation a été supprimée avec succès.")
+        else:
+            cancel_message = _(
+                """Vous êtes de retour à la liste des prestations."""
+            )
+
+        if "confirm" in request.POST:
+            service_fee.delete()
+            messages.success(request, success_message)
+            return redirect(to_service_fees_page(submission_id))
+        elif "cancel" in request.POST:
+            messages.success(request, cancel_message)
+            return redirect(to_service_fees_page(submission_id))
+
+        if service_fees_form.is_valid():
+            logger.info(_("Le formulaire est valide. Traitement des données."))
+            obj = service_fees_form.save(commit=False)
+            if action == "create":
+                obj.created_by = request.user
+
+            obj.submission = submission
+            obj.updated_by = request.user
+            obj.permit_department = department
+            obj.save()
+            messages.success(request, success_message)
+
+            if action == "create" and "save_continue" in request.POST:
+                return render(
+                    request,
+                    "submissions/submission_service_fees.html",
+                    context,
                 )
-                if action != "delete":
-                    context.pop("action")
+            elif "save" in request.POST:
+                return redirect(to_service_fees_page(submission_id))
+            else:
+                raise HttpResponse(status=404)
+        else:
+            error_message = _(
+                "Le formulaire n'est pas valide. Impossible de traiter les données."
+            )
+            if service_fees_form.is_bound:
+                error_message += f"\nform.errors: {service_fees_form.errors}"
+            else:
+                error_message += f"\nform is unbound."
+
+            logger.error(error_message)
 
             return render(
                 request,
                 "submissions/submission_service_fees.html",
                 context,
             )
-        elif request.method == "POST":
-            # POST method is used for form creation, update and delete.
-            # Different conditions apply, hence the checks.
-            data = request.POST
-            if action == "create":
-                service_fees_form = forms.ServicesFeesForm(
-                    submission=submission,
-                    instance=service_fee,
-                    data=data,
-                    user=request.user,
-                    mode=mode,
-                )
-            elif action == "update":
-                service_fees_form = forms.ServicesFeesForm(
-                    submission=submission,
-                    instance=service_fee,
-                    data=data,
-                    user=request.user,
-                )
-            if action in ("create", "update"):
-                context = {
-                    "service_fees_form": service_fees_form,
-                    "action": action,
-                    "mode": mode,
-                }
 
-            if action == "create":
-                cancel_message = _(
-                    """Aucune prestation n'a été créée en raison de l'annulation de cette action."""
-                )
-                success_message = _("La prestation a bien été renseignée.")
-            elif action == "update":
-                cancel_message = _(
-                    """La prestation n'a pas été modifiée en raison de l'annulation de cette action."""
-                )
-                success_message = _("La prestation a été mise à jour avec succès.")
-            elif action == "delete":
-                cancel_message = _(
-                    """La prestation n'a pas été supprimée en raison de l'annulation de cette action."""
-                )
-                success_message = _("La prestation a été supprimée avec succès.")
-            else:
-                cancel_message = _(
-                    """Vous êtes de retour à la liste des prestations."""
-                )
-
-            if "confirm" in request.POST:
-                service_fee.delete()
-                messages.success(request, success_message)
-                return redirect(to_service_fees_page(submission_id))
-            elif "cancel" in request.POST:
-                messages.success(request, cancel_message)
-                return redirect(to_service_fees_page(submission_id))
-
-            if service_fees_form.is_valid():
-                logger.info(_("Le formulaire est valide. Traitement des données."))
-                obj = service_fees_form.save(commit=False)
-                if action == "create":
-                    obj.created_by = request.user
-
-                obj.submission = submission
-                obj.updated_by = request.user
-                obj.permit_department = department
-                obj.save()
-                messages.success(request, success_message)
-
-                if action == "create" and "save_continue" in request.POST:
-                    return render(
-                        request,
-                        "submissions/submission_service_fees.html",
-                        context,
-                    )
-                elif "save" in request.POST:
-                    return redirect(to_service_fees_page(submission_id))
-                else:
-                    raise HttpResponse(status=404)
-            else:
-                error_message = _(
-                    "Le formulaire n'est pas valide. Impossible de traiter les données."
-                )
-                if service_fees_form.is_bound:
-                    error_message += f"\nform.errors: {service_fees_form.errors}"
-                else:
-                    error_message += f"\nform is unbound."
-
-                logger.error(error_message)
-
-                return render(
-                    request,
-                    "submissions/submission_service_fees.html",
-                    context,
-                )
-        else:
-            raise HttpResponse(status=400)
-    else:
-        raise PermissionError(
-            _(
-                "Vous n'avez pas les permissions nécessaires pour afficher cette page.\n"
-                "Veuillez prendre contact avec votre administrateur."
-            )
-        )
+    return render(
+        request,
+        "submissions/submission_service_fees.html",
+        context,
+    )
 
 
 @method_decorator(login_required, name="dispatch")
