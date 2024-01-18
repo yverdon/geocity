@@ -90,6 +90,7 @@ class FormAdminForm(forms.ModelForm):
                 }
             ),
             "quick_access_slug": forms.TextInput(),
+            "validation_document_required_for": forms.RadioSelect(),
         }
         help_texts = {
             "wms_layers": "URL pour la ou les couches WMS utiles à la saisie de la demande pour ce type d'objet",
@@ -221,6 +222,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "requires_online_payment",
         "payment_settings",
         "requires_validation_document",
+        "validation_document",
+        "validation_document_required_for",
         "disable_validation_by_validators",
         "is_anonymous",
         "notify_services",
@@ -284,6 +287,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "requires_validation_document",
+                    "validation_document",
+                    "validation_document_required_for",
                     "default_validation_text",
                     "disable_validation_by_validators",
                     "max_submissions",

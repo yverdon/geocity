@@ -355,6 +355,18 @@ class Form(models.Model):
     Represents a Form configuration object.
     """
 
+    VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL = 1
+    VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL = 2
+    VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL = 3
+    VALIDATION_DOCUMENT_REQUIRED_FOR_CHOICES = (
+        (VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL, _("Approbation")),
+        (VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL, _("Refus")),
+        (
+            VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL,
+            _("Approbation et refus"),
+        ),
+    )
+
     integrator = models.ForeignKey(
         Group,
         null=True,
@@ -424,8 +436,15 @@ class Form(models.Model):
         verbose_name=_("Paramètres de paiement"),
     )
 
+    # TODO: Remove after migration
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
+    )
+    validation_document = models.BooleanField(_("Document de validation"), default=True)
+    validation_document_required_for = models.IntegerField(
+        _("Document de validation obligatoire pour"),
+        choices=VALIDATION_DOCUMENT_REQUIRED_FOR_CHOICES,
+        default=VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL,
     )
     default_validation_text = models.TextField(
         _("Texte de validation par défaut"), blank=True
