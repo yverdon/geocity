@@ -257,11 +257,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "administrative_entities",
                     "can_always_update",
                     "is_public",
-                    "requires_validation_document",
-                    "disable_validation_by_validators",
-                    "max_submissions",
-                    "max_submissions_message",
-                    "max_submissions_bypass_enabled",
                     "is_anonymous",
                     "integrator",
                 )
@@ -281,6 +276,18 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                      <hr>
                     {LEGAL_TEXT_EXAMPLE}
                     """
+                ),
+            },
+        ),
+        (
+            _("Validation et nombre max."),
+            {
+                "fields": (
+                    "requires_validation_document",
+                    "disable_validation_by_validators",
+                    "max_submissions",
+                    "max_submissions_message",
+                    "max_submissions_bypass_enabled",
                 ),
             },
         ),
@@ -330,6 +337,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     )
     jazzmin_section_order = (
         None,
+        _("Validation et nombre max."),
         _("Directives - Données personnelles"),
         _("Planning et localisation"),
         _("Notifications aux services"),
