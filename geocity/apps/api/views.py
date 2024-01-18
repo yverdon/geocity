@@ -560,6 +560,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         - adaptive-in
         - full-in
         - fit-in
+    - ?query to filter using trigram similarity fulltext (unnaccent) search engine
     """
 
     throttle_scope = "agenda"
@@ -586,10 +587,8 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by("-featured_agenda", "geo_time__starts_at")
             .prefetch_related("selected_forms__field_values")
         )
-
         # List params given by the request as query_params
         query_params = self.request.query_params
-
         # Filter domain (administrative_entity) to permit sites to filter on their own domain (e.g.: sports, culture)
         domain = None
 
@@ -632,6 +631,11 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
             )
             submissions = submissions.filter(geo_time__ends_at__gte=today)
 
+        if "query" in query_params:
+            query = query_params["query"]
+            submissions = submissions.filter(
+                selected_forms__field_values__value__val____unaccent__trigram_word_similar=query
+            )
         # List every available filter
         available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)
 
