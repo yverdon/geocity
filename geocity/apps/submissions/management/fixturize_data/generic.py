@@ -244,6 +244,27 @@ service_fee_types = [
     },
 ]
 
+service_fees = [
+    {
+        "time_spent_on_task": 10,
+    },
+    {
+        "time_spent_on_task": 20,
+    },
+    {
+        "time_spent_on_task": 30,
+    },
+    {
+        "time_spent_on_task": None,
+    },
+    {
+        "time_spent_on_task": None,
+    },
+    {
+        "time_spent_on_task": None,
+    },
+]
+
 
 form_additional_information = """
 Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.

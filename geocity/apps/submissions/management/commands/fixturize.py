@@ -4,6 +4,7 @@ import re
 import shutil
 import sys
 import unicodedata
+from datetime import datetime, timedelta
 from io import StringIO
 
 from constance import config
@@ -15,6 +16,7 @@ from django.contrib.sites.models import Site
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
+from django.utils.timezone import make_aware
 
 from geocity import settings
 from geocity.apps.accounts.models import *
@@ -23,7 +25,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
-from geocity.apps.submissions.payments.models import ServicesFeesType
+from geocity.apps.submissions.payments.models import ServicesFees, ServicesFeesType
 
 
 def strip_accents(text):
@@ -211,6 +213,13 @@ class Command(BaseCommand):
                     module.form_additional_information,
                     administrative_entity,
                 )
+                self.stdout.write(" • Creating services fees...")
+                if module.service_fee_types:
+                    self.setup_services_fees_types(
+                        administrative_entity,
+                        integrator_group,
+                        module.service_fee_types,
+                    )
                 self.stdout.write(" • Creating submissions...")
                 self.setup_submission(
                     entity,
@@ -218,13 +227,6 @@ class Command(BaseCommand):
                     administrative_entity,
                     module.small_text,
                 )
-                self.stdout.write(" • Creating services fees...")
-                if module.service_fee_types:
-                    self.setup_fees(
-                        administrative_entity,
-                        integrator_group,
-                        module.service_fee_types,
-                    )
                 self.stdout.write(" • Creating default report...")
                 Report.create_default_report(administrative_entity.id)
             self.stdout.write("Creating template customizations...")
@@ -646,6 +648,15 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                 another_department,
                 validation_status,
                 text,
+            )
+
+            # TODO: setup correct service fee types for the current user
+            services_fees_types = ServicesFeesType.objects.all()
+
+            self.create_submission_services_fees(
+                user,
+                submission,
+                department,
             )
 
             # Amend properties
@@ -1151,6 +1162,25 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             comment=comment,
         )
 
+    def create_submission_services_fees(
+        self,
+        user,
+        submission,
+        permit_department,
+    ):
+        services_fees_types = ServicesFeesType.objects.all()
+        for services_fees_type in services_fees_types:
+            ServicesFees.objects.get_or_create(
+                created_at=make_aware(datetime.now()),
+                created_by=user,
+                permit_department=permit_department,
+                provided_by=user,
+                provided_at=make_aware(datetime.now() + timedelta(seconds=1)),
+                submission=submission,
+                services_fees_type=services_fees_type,
+                time_spent_on_task=timedelta(minutes=10),
+            )
+
     def create_submission_amend_field(
         self,
         name,
@@ -1247,8 +1277,10 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         value={"val": image_path},
                     )
 
-    def setup_fees(self, administrative_entity, integrator_group, service_fee_types):
-
+    def setup_services_fees_types(
+        self, administrative_entity, integrator_group, service_fee_types
+    ):
+        """Create some different types of service fees."""
         for service_fee_type in service_fee_types:
             ServicesFeesType.objects.create(
                 administrative_entity=administrative_entity,
