@@ -32,7 +32,7 @@ geoms = [
 ]
 
 # Ofs_ids for the entities
-ofs_ids = [5938, 5938, 5938]
+ofs_ids = [5003, 5002, 5001]
 
 # Define the fields
 field_title = {

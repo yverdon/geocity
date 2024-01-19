@@ -33,7 +33,7 @@ geoms = [
 ]
 
 # Ofs_ids for the entities
-ofs_ids = [5938, 5938, 5586, 5890, 5938]
+ofs_ids = [5001, 5002, 5003, 5004, 5005]
 
 # Define the fields
 field_comment = {
