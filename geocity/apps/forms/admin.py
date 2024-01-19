@@ -221,7 +221,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "requires_payment",
         "requires_online_payment",
         "payment_settings",
-        "requires_validation_document",
         "validation_document",
         "validation_document_required_for",
         "disable_validation_by_validators",
@@ -286,7 +285,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             _("Validation et nombre max."),
             {
                 "fields": (
-                    "requires_validation_document",
                     "validation_document",
                     "validation_document_required_for",
                     "default_validation_text",
