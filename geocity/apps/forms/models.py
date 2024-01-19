@@ -839,7 +839,7 @@ class Field(models.Model):
     DISPLAY_TEXT = DISPLAY_TEXT
     DISPLAY_TITLE = DISPLAY_TITLE
 
-    # The choices are sorted according to their values
+    # IMPORTANT: The choices should be sorted according to their values
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
@@ -848,10 +848,10 @@ class Field(models.Model):
         (INPUT_TYPE_DATE, _("Date")),
         (INPUT_TYPE_FILE, _("Fichier")),
         (INPUT_TYPE_FILE_DOWNLOAD, _("Fichier (à télécharger)")),
+        (INPUT_TYPE_GEOM, _("Géométrie (points)")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_GEOM, _("Géométrie (points)")),
         (DISPLAY_TEXT, _("Texte à afficher")),
         (DISPLAY_TITLE, _("Titre à afficher")),
     )
