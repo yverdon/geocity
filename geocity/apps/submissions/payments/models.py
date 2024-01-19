@@ -130,10 +130,11 @@ class SubmissionCFC2Price(models.Model):
         help_text=_("Demande"),
     )
     cfc2_price = MoneyField(
-        default=0.0,
+        default=None,
+        default_currency=None,
+        null=True,
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Montant CFC 2"),
     )
 
@@ -154,10 +155,10 @@ class ServicesFeesType(models.Model):
     )
     fix_price = MoneyField(
         default=None,
+        default_currency=None,
         null=True,  # For hourly service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Tarif forfaitaire [CHF]"),
         help_text=_("Le tarif forfaitaire de cette prestation."),
     )
@@ -263,19 +264,19 @@ class ServicesFees(models.Model):
     )
     hourly_rate = MoneyField(
         default=settings.DEFAULT_SERVICES_FEES_RATE,
+        default_currency=settings.DEFAULT_CURRENCY,
         null=True,  # For fixed price service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Tarif horaire [CHF]"),
         help_text=_("Le tarif horaire de la prestation. Choisi par l'intégrateur."),
     )
     # The "monetary_amount" field must only be exposed for fixed price service fees
     monetary_amount = MoneyField(
-        default=0.0,
+        default=None,
+        default_currency=None,
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Montant [CHF]"),
         help_text=_(
             "Le montant de la prestation. "

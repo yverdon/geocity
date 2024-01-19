@@ -1410,7 +1410,6 @@ class ServicesFeesForm(forms.ModelForm):
                 .values_list("fix_price", flat=True)
             )
             self.fields["monetary_amount"].queryset = self.monetary_amount
-            print(f"self.monetary_amount: {(self.monetary_amount)}")
         elif self.mode == "hourly_rate":
             self.fields["services_fees_type"].queryset = self.fields[
                 "services_fees_type"

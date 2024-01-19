@@ -1,3 +1,5 @@
+from djmoney.money import Money
+
 # Variables to change the result of the fixturize
 
 # Defines the number of each type of user to create on each entity
@@ -219,25 +221,25 @@ form_categories = [
     ),
 ]
 
-service_fee_type = [
+service_fee_types = [
     {
-        "name": "Prestation 1 (horaire)",
-        "fix_price": {},
+        "name": "Prestation horaire 1",
+        "fix_price": None,
         "is_visible_by_validator": False,
     },
     {
-        "name": "Prestation 2 (horaire)",
-        "fix_price": {},
+        "name": "Prestation horaire 2",
+        "fix_price": None,
         "is_visible_by_validator": True,
     },
     {
-        "name": "Prestation 3 (Forfait)",
-        "fix_price": 100,
+        "name": "Prestation forfaitaire 2",
+        "fix_price": Money(250, "CHF"),
         "is_visible_by_validator": False,
     },
     {
-        "name": "Prestation 4 (Forfait)",
-        "fix_price": 100,
+        "name": "Prestation forfaitaire 1",
+        "fix_price": Money(300, "CHF"),
         "is_visible_by_validator": True,
     },
 ]

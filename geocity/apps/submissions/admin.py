@@ -349,6 +349,8 @@ class ServicesFeesTypeAdminForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+        self.fields["fix_price"].required = False
+
         integrator_administrative_entities_list = (
             models.AdministrativeEntity.objects.associated_to_user(current_user)
         ).distinct()
@@ -361,6 +363,7 @@ class ServicesFeesTypeAdminForm(forms.ModelForm):
 
     class Meta:
         model = ServicesFeesType
+        localized_fields = "__all__"
         fields = [
             "administrative_entity",
             "name",

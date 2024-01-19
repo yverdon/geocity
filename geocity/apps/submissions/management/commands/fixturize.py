@@ -15,7 +15,6 @@ from django.contrib.sites.models import Site
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
-from djmoney.money import Money
 
 from geocity import settings
 from geocity.apps.accounts.models import *
@@ -219,11 +218,14 @@ class Command(BaseCommand):
                     administrative_entity,
                     module.small_text,
                 )
-                self.stdout.write(" • Creating default report...")
-                if module.service_fee_type:
+                self.stdout.write(" • Creating services fees...")
+                if module.service_fee_types:
                     self.setup_fees(
-                        administrative_entity, integrator_group, module.service_fee_type
+                        administrative_entity,
+                        integrator_group,
+                        module.service_fee_types,
                     )
+                self.stdout.write(" • Creating default report...")
                 Report.create_default_report(administrative_entity.id)
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
@@ -1245,13 +1247,13 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         value={"val": image_path},
                     )
 
-    def setup_fees(self, administrative_entity, integrator_group, service_fee_type):
+    def setup_fees(self, administrative_entity, integrator_group, service_fee_types):
 
-        for item in service_fee_type:
+        for service_fee_type in service_fee_types:
             ServicesFeesType.objects.create(
                 administrative_entity=administrative_entity,
-                name=item["name"],
-                fix_price=Money("0.01", "CHF"),
-                is_visible_by_validator=item["is_visible_by_validator"],
+                name=service_fee_type["name"],
+                fix_price=service_fee_type["fix_price"],
+                is_visible_by_validator=service_fee_type["is_visible_by_validator"],
                 integrator=integrator_group,
             )
