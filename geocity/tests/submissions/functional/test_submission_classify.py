@@ -455,3 +455,14 @@ class ApprovedSubmissionClassifyTestCase(TestCase):
         self.validation.submission.forms.set([form1, form2])
         response = self._get_approval()
         self.assertContains(response, "validation_pdf")
+
+    def test_classify_approve_submission_with_default_validation_text_shows_text(
+        self,
+    ):
+        default_validation_text = "Mon texte de validation par défaut"
+        form = factories.FormFactory(
+            default_validation_text=default_validation_text,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_approval()
+        self.assertContains(response, default_validation_text)
