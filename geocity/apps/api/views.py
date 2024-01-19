@@ -558,7 +558,7 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     - ?width
     - ?height
     - ?format (jpg, jpeg, png, webp, etc...)
-    - ?query to filter using trigram similarity fulltext (unnaccent) search engine
+    - ?query to filter on values containing the query
     - ?fit to chose the way the image will fit the size. Can be used for all the following arguments https://thumbor.readthedocs.io/en/latest/usage.html
     - --- adaptive-in
     - --- full-in
