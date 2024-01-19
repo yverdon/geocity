@@ -159,7 +159,7 @@ class Command(BaseCommand):
                 )
             )
             user_input = input(
-                "Voulez-vous executer les fixtures par défaut ? [Y/n] : "
+                "Voulez-vous exécuter les fixtures par défaut ? [Y/n] : "
             )
             if user_input.lower() not in {"y", "yes", ""}:
                 sys.exit()
