@@ -436,10 +436,6 @@ class Form(models.Model):
         verbose_name=_("Paramètres de paiement"),
     )
 
-    # TODO: Remove after migration
-    requires_validation_document = models.BooleanField(
-        _("Document de validation obligatoire"), default=True
-    )
     validation_document = models.BooleanField(_("Document de validation"), default=True)
     validation_document_required_for = models.IntegerField(
         _("Document de validation obligatoire pour"),

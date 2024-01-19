@@ -4,6 +4,12 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    def use_new_validation_document_fields(apps, schema_editor):
+        Form = apps.get_model("forms", "Form")
+
+        for row in Form.objects.filter(requires_validation_document=False):
+            row.validation_document = False
+            row.save(update_fields=["validation_document"])
 
     dependencies = [
         ("forms", "0030_form_default_validation_text"),
@@ -25,5 +31,10 @@ class Migration(migrations.Migration):
                 default=1,
                 verbose_name="Document de validation obligatoire pour",
             ),
+        ),
+        migrations.RunPython(use_new_validation_document_fields),
+        migrations.RemoveField(
+            model_name="form",
+            name="requires_validation_document",
         ),
     ]
