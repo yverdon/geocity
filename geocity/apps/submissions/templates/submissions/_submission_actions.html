@@ -81,7 +81,7 @@
               </li>
           {% endif %}
 
-          {% if service_fees_table %}
+          {% if has_permission_to_manage_service_fees and service_fees_table %}
             <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link {% if active_form == 'services_fees' %}active{% endif %}"
                 id="services-fees-tab"
