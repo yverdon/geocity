@@ -351,7 +351,7 @@ class ServicesFeesTypeAdminForm(forms.ModelForm):
 
         integrator_administrative_entities_list = (
             models.AdministrativeEntity.objects.associated_to_user(current_user)
-        )
+        ).distinct()
         self.fields[
             "administrative_entity"
         ].queryset = integrator_administrative_entities_list
