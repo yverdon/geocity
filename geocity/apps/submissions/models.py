@@ -1153,6 +1153,15 @@ class Submission(models.Model):
     def is_validation_document_required(self):
         return self.forms.filter(requires_validation_document=True).exists()
 
+    def has_default_validation_texts(self):
+        return self.forms.exclude(default_validation_text="").exists()
+
+    def get_default_validation_texts(self):
+        return [
+            form.default_validation_text
+            for form in self.forms.exclude(default_validation_text="")
+        ]
+
     def can_have_multiple_ranges(self):
         return any(form.can_have_multiple_ranges for form in self.forms.all())
 

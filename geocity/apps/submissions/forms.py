@@ -1876,8 +1876,13 @@ class SubmissionClassifyForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         if not self.instance.is_validation_document_required():
             del self.fields["validation_pdf"]
+
+        if self.instance.has_default_validation_texts():
+            texts = "\n\n".join(self.instance.get_default_validation_texts())
+            self.initial["additional_decision_information"] = texts
 
     def save(self, commit=True):
         submission = super().save(commit=False)
