@@ -1124,7 +1124,22 @@ class Submission(models.Model):
         return distinct_available_actions
 
     def is_validation_document_required(self):
-        return self.forms.filter(requires_validation_document=True).exists()
+        return self.forms.filter(
+            validation_document=True,
+            validation_document_required_for=Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL,
+        ).exists()
+
+    def is_validation_document_required_only_for_approval(self):
+        return self.forms.filter(
+            validation_document=True,
+            validation_document_required_for=Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL,
+        ).exists()
+
+    def is_validation_document_required_only_for_refusal(self):
+        return self.forms.filter(
+            validation_document=True,
+            validation_document_required_for=Form.VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL,
+        ).exists()
 
     def has_default_validation_texts(self):
         return self.forms.exclude(default_validation_text="").exists()

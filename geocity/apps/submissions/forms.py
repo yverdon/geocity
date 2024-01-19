@@ -1678,7 +1678,18 @@ class SubmissionClassifyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if not self.instance.is_validation_document_required():
+        approve = self.initial.get("approve")
+        document_required = self.instance.is_validation_document_required()
+        approval_document_required = (
+            self.instance.is_validation_document_required_only_for_approval()
+        )
+        refusal_document_required = (
+            self.instance.is_validation_document_required_only_for_refusal()
+        )
+
+        if not (approve and (document_required or approval_document_required)) and not (
+            not approve and (document_required or refusal_document_required)
+        ):
             del self.fields["validation_pdf"]
 
         if self.instance.has_default_validation_texts():
