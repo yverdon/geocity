@@ -553,14 +553,16 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
     Images are provided through thumbor https://thumbor.readthedocs.io/en/latest/imaging.html
     Arguments that can be supplied in the url :
     - ?domain can be given through the component in html, it corresponds to the entity tags (mots-clés)
+    - ?starts_at
+    - ?ends_at
     - ?width
     - ?height
     - ?format (jpg, jpeg, png, webp, etc...)
-    - ?fit to chose the way the image will fit the size. Can be used for all the following arguments https://thumbor.readthedocs.io/en/latest/usage.html
-        - adaptive-in
-        - full-in
-        - fit-in
     - ?query to filter using trigram similarity fulltext (unnaccent) search engine
+    - ?fit to chose the way the image will fit the size. Can be used for all the following arguments https://thumbor.readthedocs.io/en/latest/usage.html
+    - --- adaptive-in
+    - --- full-in
+    - --- fit-in
     """
 
     throttle_scope = "agenda"
@@ -634,7 +636,8 @@ class AgendaViewSet(viewsets.ReadOnlyModelViewSet):
         if "query" in query_params:
             query = query_params["query"]
             submissions = submissions.filter(
-                selected_forms__field_values__value__val____unaccent__trigram_word_similar=query
+                Q(selected_forms__field_values__value__val__contains=query)
+                | Q(selected_forms__field_values__value__val__icontains=query)
             )
         # List every available filter
         available_filters = serializers.get_available_filters_for_agenda_as_qs(domain)
