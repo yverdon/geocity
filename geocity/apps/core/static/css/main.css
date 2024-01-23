@@ -456,11 +456,11 @@ th.actions {
 
 .status0 {
   /* STATUS_DRAFT */
-  color: #DADBDF;
+  color: #dadbdf;
 }
 .status1 {
   /* STATUS_SUBMITTED_FOR_VALIDATION */
-  color: #F88C52;
+  color: #f88c52;
 }
 .status2 {
   /* STATUS_APPROVED */
@@ -472,19 +472,19 @@ th.actions {
 }
 .status4 {
   /* STATUS_AWAITING_SUPPLEMENT */
-  color: #BD5947;
+  color: #bd5947;
 }
 .status5 {
   /* STATUS_AWAITING_VALIDATION */
-  color: #4285B0;
+  color: #4285b0;
 }
 .status6 {
   /* STATUS_REJECTED */
-  color: #DB5033;
+  color: #db5033;
 }
 .status7 {
   /* STATUS_RECEIVED */
-  color: #A0B46F;
+  color: #a0b46f;
 }
 
 /* TRANSACTION STATUSES */
