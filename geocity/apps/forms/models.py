@@ -957,6 +957,18 @@ class Field(models.Model):
             Actuellement ne fonctionne que pour les champs à choix simple ou multiples dans agenda."""
         ),
     )
+    minimum_date = models.DateField(
+        _("Date minimale"),
+        null=True,
+        blank=True,
+        help_text=_("Format: YYYY-MM-JJ"),
+    )
+    maximum_date = models.DateField(
+        _("Date maximale"),
+        null=True,
+        blank=True,
+        help_text=_("Format: YYYY-MM-JJ"),
+    )
 
     class Meta(object):
         verbose_name = _("1.3 Champ")
