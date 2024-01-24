@@ -1413,11 +1413,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         if self.fields.get("starts_at"):
             # starts_at >= min_start_date
             self.fields["starts_at"].widget.config["options"].update(
-                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+                {"minDate": min_start_date.strftime("%Y-%m-%d")}
             )
             # ends_at >= starts_at
             self.fields["ends_at"].widget.config["options"].update(
-                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+                {"minDate": min_start_date.strftime("%Y-%m-%d")}
             )
 
     def get_widget_options(self, submission):
@@ -1629,7 +1629,7 @@ class SubmissionProlongationForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-                "minDate": (datetime.today()).strftime("%Y/%m/%d"),
+                "minDate": (datetime.today()).strftime("%Y-%m-%d"),
             }
         ).start_of("event days"),
         help_text="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
