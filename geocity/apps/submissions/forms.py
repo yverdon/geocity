@@ -2,7 +2,7 @@ import io
 import mimetypes
 import string
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from itertools import groupby
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
@@ -630,6 +630,20 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_date_field_kwargs(self, field, default_kwargs):
+        default_min_date = "1900-01-01"
+        default_max_date = "2100-12-31"
+
+        min_date = (
+            field.minimum_date.strftime("%Y-%m-%d")
+            if field.minimum_date and isinstance(field.minimum_date, date)
+            else default_min_date
+        )
+        max_date = (
+            field.maximum_date.strftime("%Y-%m-%d")
+            if field.maximum_date and isinstance(field.maximum_date, date)
+            else default_max_date
+        )
+
         return {
             **default_kwargs,
             "input_formats": [settings.DATE_INPUT_FORMAT],
@@ -638,8 +652,8 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                     "format": "DD.MM.YYYY",
                     "locale": "fr-CH",
                     "useCurrent": False,
-                    "minDate": "1900/01/01",
-                    "maxDate": "2100/12/31",
+                    "minDate": min_date,
+                    "maxDate": max_date,
                 },
                 attrs={
                     "placeholder": ("ex: " + field.placeholder)
