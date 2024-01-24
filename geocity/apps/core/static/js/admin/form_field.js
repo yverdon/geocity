@@ -49,6 +49,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const regexLabelElement = regexRowElement.querySelector('label');
     const isRegexPatternVisible = inputType === 'regex';
 
+    const minimumDateElement = document.getElementById('id_minimum_date');
+    const minimumDateRowElement = minimumDateElement.closest('.form-group');
+    const minimumDateLabelElement = minimumDateRowElement.querySelector('label');
+    const isMinimumDateVisible = inputType === 'date';
+    const maximumDateElement = document.getElementById('id_maximum_date');
+    const maximumDateRowElement = maximumDateElement.closest('.form-group');
+    const maximumDateLabelElement = maximumDateRowElement.querySelector('label');
+    const isMaximumDateVisible = inputType === 'date';
+
     const lineNumberForTextareaElement = document.getElementById('id_line_number_for_textarea');
     const lineNumberForTextareaRowElement = lineNumberForTextareaElement.closest('.form-group');
     const lineNumberForTextareaLabelElement = lineNumberForTextareaRowElement.querySelector('label');
@@ -94,6 +103,13 @@ document.addEventListener('DOMContentLoaded', function() {
     regexRowElement.classList.add(hiddenClass);
     regexLabelElement.classList.remove(requiredClass);
 
+    minimumDateElement.removeAttribute('required');
+    minimumDateRowElement.classList.add(hiddenClass);
+    minimumDateLabelElement.classList.remove(requiredClass);
+    maximumDateElement.removeAttribute('required');
+    maximumDateRowElement.classList.add(hiddenClass);
+    maximumDateLabelElement.classList.remove(requiredClass);
+
     lineNumberForTextareaElement.removeAttribute('required');
     lineNumberForTextareaRowElement.classList.add(hiddenClass);
     lineNumberForTextareaLabelElement.classList.remove(requiredClass);
@@ -136,6 +152,14 @@ document.addEventListener('DOMContentLoaded', function() {
       regexElement.setAttribute('required', '');
       regexRowElement.classList.remove(hiddenClass);
       regexLabelElement.classList.add(requiredClass);
+    }
+    else if (isMinimumDateVisible || isMaximumDateVisible) {
+      minimumDateElement.setAttribute('required', '');
+      minimumDateRowElement.classList.remove(hiddenClass);
+      minimumDateLabelElement.classList.add(requiredClass);
+      maximumDateElement.setAttribute('required', '');
+      maximumDateRowElement.classList.remove(hiddenClass);
+      maximumDateLabelElement.classList.add(requiredClass);
     }
     else if (isLineNumberForTextareaVisible) {
       lineNumberForTextareaElement.setAttribute('required', '');

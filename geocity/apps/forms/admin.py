@@ -538,6 +538,18 @@ class FieldAdminForm(forms.ModelForm):
 
         return self.cleaned_data["allowed_file_types"]
 
+    def clean_maximum_date(self):
+        minimum_date = self.cleaned_data.get("minimum_date")
+        maximum_date = self.cleaned_data.get("maximum_date")
+
+        if minimum_date is not None and maximum_date is not None:
+            if minimum_date >= maximum_date:
+                raise forms.ValidationError(
+                    _("La date maximale doit être ultérieure à la date minimale.")
+                )
+
+        return maximum_date
+
     class Media:
         js = ("js/admin/form_field.js",)
 
@@ -663,6 +675,8 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "store_geometry_for_address_field",
                     "map_widget_configuration",
                     "allowed_file_types",
+                    "minimum_date",
+                    "maximum_date",
                     "integrator",
                     "form_list",
                 )
