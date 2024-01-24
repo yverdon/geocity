@@ -360,20 +360,27 @@ class FormsPriceSelectForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        form_for_payment = self.instance.get_form_for_payment()
+        prices = form_for_payment.prices.order_by("formprice")
+
         initial = {}
         if self.instance.submission_price is not None:
             initial = {
                 "selected_price": self.instance.submission_price.original_price.pk
             }
+        elif prices.count() == 1:
+            # Select the only available price
+            initial = {"selected_price": prices.first().pk}
+
         super(FormsPriceSelectForm, self).__init__(
             *args, **{**kwargs, "initial": initial}
         )
+
         if self.instance.status != self.instance.STATUS_DRAFT:
             self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
-        form_for_payment = self.instance.get_form_for_payment()
 
         choices = []
-        for price in form_for_payment.prices.order_by("formprice"):
+        for price in prices:
             choices.append((price.pk, price.str_for_choice()))
         self.fields["selected_price"].choices = choices
 
