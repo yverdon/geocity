@@ -234,6 +234,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "document_enabled",
         "publication_enabled",
         "permanent_publication_enabled",
+        "fees_module_enabled",
         "max_submissions_nb_submissions",
         "get_max_submissions_message",
         "agenda_visible",
@@ -257,11 +258,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "administrative_entities",
                     "can_always_update",
                     "is_public",
-                    "requires_validation_document",
-                    "disable_validation_by_validators",
-                    "max_submissions",
-                    "max_submissions_message",
-                    "max_submissions_bypass_enabled",
                     "is_anonymous",
                     "integrator",
                 )
@@ -281,6 +277,19 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                      <hr>
                     {LEGAL_TEXT_EXAMPLE}
                     """
+                ),
+            },
+        ),
+        (
+            _("Validation et nombre max."),
+            {
+                "fields": (
+                    "requires_validation_document",
+                    "default_validation_text",
+                    "disable_validation_by_validators",
+                    "max_submissions",
+                    "max_submissions_message",
+                    "max_submissions_bypass_enabled",
                 ),
             },
         ),
@@ -314,6 +323,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "publication_enabled",
                     "permanent_publication_enabled",
                     "agenda_visible",
+                    "fees_module_enabled",
                 )
             },
         ),
@@ -330,6 +340,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     )
     jazzmin_section_order = (
         None,
+        _("Validation et nombre max."),
         _("Directives - Données personnelles"),
         _("Planning et localisation"),
         _("Notifications aux services"),
@@ -529,6 +540,18 @@ class FieldAdminForm(forms.ModelForm):
 
         return self.cleaned_data["allowed_file_types"]
 
+    def clean_maximum_date(self):
+        minimum_date = self.cleaned_data.get("minimum_date")
+        maximum_date = self.cleaned_data.get("maximum_date")
+
+        if minimum_date is not None and maximum_date is not None:
+            if minimum_date >= maximum_date:
+                raise forms.ValidationError(
+                    _("La date maximale doit être ultérieure à la date minimale.")
+                )
+
+        return maximum_date
+
     class Media:
         js = ("js/admin/form_field.js",)
 
@@ -654,6 +677,8 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "store_geometry_for_address_field",
                     "map_widget_configuration",
                     "allowed_file_types",
+                    "minimum_date",
+                    "maximum_date",
                     "integrator",
                     "form_list",
                 )

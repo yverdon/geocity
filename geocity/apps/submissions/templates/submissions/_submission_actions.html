@@ -69,7 +69,7 @@
           {% if formsets.complementary_documents and document_enabled %}
               <li class="nav-item">
                 <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                    {% translate "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
+                    {% translate "Documents et impressions" %}
                 </a>
               </li>
           {% endif %}
@@ -81,7 +81,7 @@
               </li>
           {% endif %}
 
-          {% if service_fees_table %}
+          {% if has_permission_to_manage_service_fees and service_fees_table %}
             <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link {% if active_form == 'services_fees' %}active{% endif %}"
                 id="services-fees-tab"
@@ -91,7 +91,7 @@
                 aria-controls="services-fees"
                 aria-selected="{% if active_form == 'services_fees' %}true{% else %}false{% endif %}"
                 >
-                  {% translate "Prestations" %} <span class="badge badge-beta badge-success">Beta</span>
+                  {% translate "Prestations" %}
               </a>
             </li>
           {% endif %}
@@ -370,38 +370,14 @@
             </div>
         {% endif %}
 
-        {% if service_fees_table %}
+        {% if has_permission_to_manage_service_fees and service_fees_table %}
             <div class="tab-pane{% if active_form == 'services_fees' %}show active{% endif %}"
               id="services-fees"
               role="tabpanel"
               aria-labelledby="services-fees-tab"
               >
-              <h4>{% translate "Montant CFC 2." %}</h4>
-              <div class="form-text text-muted mb-3">
-                <form method="POST">
-                  {% csrf_token %}
-                  {{ forms.manage_cfc2_amount.media }}
-                  {% bootstrap_form forms.manage_cfc2_amount layout='horizontal' %}
 
-                  <div class="text-right">
-                    <input name="action" type="hidden" value="manage_cfc2_amount">
-                    <button class="btn btn-primary" name="save" type="submit" value="Save">
-                      <i class="fa fa-save" aria-hidden="true"></i>&nbsp;
-                      {% translate "Enregistrer" %}
-                    </button>
-                    <button class="btn btn-primary" name="delete" value="delete_cfc2_amount">
-                      <i class="fa fa-trash fa-trash-white" aria-hidden="true"></i>&nbsp;
-                      {% translate "Supprimer" %}
-                    </button>
-                  </div>
-                </form>
-              </div>
-              <hr>
-
-              <h4>{% translate "Liste des prestations saisies." %}</h4>
-              <div class="form-text text-muted mb-3">
-                <p>{% translate "Tableau listant les prestation déjà enregistrées." %}</p>
-              </div>
+              <h4>{% translate "Liste des prestations saisies" %}</h4>
 
               {% if service_fees_table.data %}
                 <div>
@@ -415,7 +391,7 @@
 
               <div class="text-right">
                 <p class="bold">
-                  {% translate "Ajouter une nouvelle prestation selon un modèle " %}:
+                  {% translate "Ajouter une nouvelle prestation" %}:
                 </p>
                 <a class="btn btn-primary"
                   name="action"

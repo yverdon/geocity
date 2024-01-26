@@ -20,7 +20,7 @@ from geocity.apps.accounts.models import AdministrativeEntity
 
 from ..api.serializers import SubmissionPrintSerializer
 from . import models
-from .payments.models import ServicesFees, Transaction
+from .payments.models import ServiceFee, Transaction
 from .permissions import is_backoffice_of_entity
 
 ATTRIBUTES = {
@@ -376,24 +376,18 @@ class TransactionsTable(tables.Table):
         template_name = "django_tables2/bootstrap.html"
 
 
-class ServicesFeesTable(tables.Table):
-    """Docstring"""
+class MonetaryAmountColumn(tables.Column):
+    total_monetary_amount = 0
 
-    # def __init__(self, *args, **kwargs):
-    #     self.submission = kwargs.pop("submission", None)
-    #     disable_fields = kwargs.pop("disable_fields", False)
-    #     current_user = kwargs.pop("user", None)
+    def render(self, value, bound_column, record):
+        self.total_monetary_amount += value
+        return value
 
-    #     kwargs["initial"] = {
-    #         **kwargs.get("initial", {}),
-    #         "provided_by": current_user,
-    #     }
+    def render_footer(self, bound_column, table):
+        return self.total_monetary_amount
 
-    #     super().__init__(*args,every **kwargs)
 
-    # TODO: set permissions: pilots can see all service fees.
-    # validators can only see validators' service fees.
-    # TODO: do a second summary table (based on the classify)
+class ServiceFeeTable(tables.Table):
     class MoneteryAmountColumn(tables.Column):
         total_monetary_amount = 0
 
@@ -416,51 +410,49 @@ class ServicesFeesTable(tables.Table):
 
     permit_department = tables.Column(
         verbose_name=_("Service"),
-        orderable=True,
-        footer=_("Totaux :"),
+        orderable=False,
+        footer=_("Total CHF"),
     )
-    services_fees_type = tables.Column(
+    service_fee_type = tables.Column(
         verbose_name=_("Prestation"),
-        orderable=True,
+        orderable=False,
     )
     provided_by = tables.Column(
         verbose_name=_("Saisie par"),
-        orderable=True,
+        orderable=False,
     )
     provided_at = tables.Column(
         verbose_name=_("Date de création"),
-        orderable=True,
+        orderable=False,
     )
     time_spent_on_task = TimeSpentOnTaskAmountColumn(
         verbose_name=_("Durée [hh:mm:ss]"),
-        orderable=True,
+        orderable=False,
     )
     hourly_rate = tables.Column(
         verbose_name=_("Tarif horaire [CHF]"),
-        orderable=True,
+        orderable=False,
     )
-    monetary_amount = MoneteryAmountColumn(
+    monetary_amount = MonetaryAmountColumn(
         verbose_name=_("Montant [CHF]"),
-        orderable=True,
+        orderable=False,
     )
     actions = tables.TemplateColumn(
-        # template_name="tables/_submission_actions.html",
         template_name="tables/_submission_service_fees_table_actions.html",
         verbose_name=_("Actions"),
         orderable=False,
     )
 
     class Meta:
-        model = ServicesFees
+        model = ServiceFee
         fields = (
             "permit_department",
-            "services_fees_type",
+            "service_fee_type",
             "provided_by",
             "provided_at",
             "time_spent_on_task",
             "hourly_rate",
             "monetary_amount",
-            # "actions",
         )
         empty_text = _("Le tableau des prestations est actuellement vide.")
         template_name = "django_tables2/bootstrap.html"

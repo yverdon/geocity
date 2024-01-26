@@ -15,7 +15,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from djmoney.models.fields import MoneyField
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -345,20 +344,9 @@ class AdministrativeEntity(models.Model):
     signature_sheet_description = models.TextField(
         _("Texte explicatif relatif au volet de transmission"), blank=True
     )
-    min_cfc2_price = MoneyField(
+    services_fees_hourly_rate = models.DecimalField(
         decimal_places=2,
         max_digits=12,
-        default_currency="CHF",
-        default=4e6,
-        verbose_name=_("Montant CFC 2 minimal"),
-        help_text=_(
-            "Montant CFC 2 minimal pour les demandes faites à l'entité administrative courante"
-        ),
-    )
-    services_fees_hourly_rate = MoneyField(
-        decimal_places=2,
-        max_digits=12,
-        default_currency="CHF",
         default=settings.DEFAULT_SERVICES_FEES_RATE,
         verbose_name=_("Tarif horaire"),
         help_text=_("Tarif horaire des prestations de l'entité administrative"),

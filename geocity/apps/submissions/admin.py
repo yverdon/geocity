@@ -5,10 +5,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
-from geocity.apps.accounts.users import get_departments
 from geocity.apps.forms.admin import get_forms_field
 from geocity.apps.forms.models import Form
-from geocity.apps.submissions.payments.models import ServicesFeesType
 
 from . import models
 
@@ -339,77 +337,3 @@ class SubmissionInquiryAdmin(admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("2.3 Enquêtes publiques")
-
-
-class ServicesFeesTypeAdminForm(forms.ModelForm):
-    """Form for managing types of services fees in the admin."""
-
-    def __init__(self, *args, **kwargs):
-        current_user = self.current_user
-
-        super().__init__(*args, **kwargs)
-
-        integrator_administrative_entities_list = (
-            models.AdministrativeEntity.objects.associated_to_user(current_user)
-        )
-        self.fields[
-            "administrative_entity"
-        ].queryset = integrator_administrative_entities_list
-        self.initial["administrative_entity"] = integrator_administrative_entities_list[
-            0
-        ]
-
-    class Meta:
-        model = ServicesFeesType
-        fields = [
-            "administrative_entity",
-            "name",
-            "fix_price",
-            "is_visible_by_validator",
-            "integrator",
-        ]
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        return cleaned_data
-
-
-@admin.register(ServicesFeesType)
-class ServicesFeesTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    """Docstring"""
-
-    list_display = [
-        "name",
-        "fix_price",
-        "administrative_entity",
-        "is_visible_by_validator",
-        "integrator",
-    ]
-    search_fields = [
-        "name",
-        "fix_price",
-        "administrative_entity",
-    ]
-    list_filter = [
-        "name",
-        "fix_price",
-        "administrative_entity",
-        "is_visible_by_validator",
-        "integrator",
-    ]
-
-    form = ServicesFeesTypeAdminForm
-
-    def get_form(self, request, *args, **kwargs):
-        form = super(ServicesFeesTypeAdmin, self).get_form(request, *args, **kwargs)
-        form.current_user = request.user
-        form.department = get_departments(request.user)
-
-        return form
-
-    def sortable_str(self, obj):
-        return obj.__str__()
-
-    sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("2.4 Types de prestation")

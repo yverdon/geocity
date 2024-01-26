@@ -1,12 +1,11 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from djmoney.models.fields import MoneyField
 from simple_history.models import HistoricalRecords
 
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
@@ -66,6 +65,10 @@ class Transaction(models.Model):
         abstract = True
         ordering = ("-creation_date",)
 
+    @property
+    def can_have_status_changed(self):
+        return self.amount > 0
+
     def set_refunded(self):
         self.status = self.STATUS_REFUNDED
         self.save()
@@ -121,27 +124,10 @@ class Transaction(models.Model):
         return f"refund_{self.transaction_id}.pdf", output
 
 
-class SubmissionCFC2Price(models.Model):
-    submission = models.OneToOneField(
-        "Submission",
-        on_delete=models.CASCADE,
-        verbose_name=_("Demande"),
-        related_name="submissioncfc2price",
-        help_text=_("Demande"),
-    )
-    cfc2_price = MoneyField(
-        default=0.0,
-        decimal_places=2,
-        max_digits=12,
-        default_currency="CHF",
-        verbose_name=_("Montant CFC 2"),
-    )
-
-
-class ServicesFeesType(models.Model):
+class ServiceFeeType(models.Model):
     administrative_entity = models.ForeignKey(
         AdministrativeEntity,
-        null=True,
+        null=False,
         on_delete=models.CASCADE,
         verbose_name=_("Entité administrative"),
         related_name="administrative_entity",
@@ -152,38 +138,37 @@ class ServicesFeesType(models.Model):
         max_length=255,
         null=False,
     )
-    fix_price = MoneyField(
+    fix_price = models.DecimalField(
         default=None,
-        null=True,  # For hourly service fees, this field has to be null
+        null=True,  # For hourly service fees, this field has to be null,
+        blank=True,
         decimal_places=2,
         max_digits=12,
-        default_currency="settings.DEFAULT_CURRENCY",
         verbose_name=_("Tarif forfaitaire [CHF]"),
         help_text=_("Le tarif forfaitaire de cette prestation."),
+    )
+    fix_price_editable = models.BooleanField(
+        verbose_name=_("Montant à saisir manuelllement"),
+        help_text=_(
+            "Exemple: montant demandant un calcul spécifique à réaliser en dehors de l'application"
+        ),
+        default=False,
     )
     is_visible_by_validator = models.BooleanField(
         verbose_name=_("Visible par le validateur"),
         help_text=_("Est visible par le validateur"),
-    )
-    integrator = models.ForeignKey(
-        Group,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name=_("Groupe des administrateurs"),
-        limit_choices_to={"permit_department__is_integrator_admin": True},
+        default=False,
     )
 
     class Meta:
         verbose_name = _("2.4 Type de prestation")
         verbose_name_plural = _("2.4 Types de prestation")
 
-    # Methods
     def __str__(self):
         return f"{self.name}"
 
 
-class ServicesFees(models.Model):
-    """Docstring"""
+class ServiceFee(models.Model):
 
     # Hidden yet mandatory fields
     # created_* and updated_* fields to keep tracks of the user that has
@@ -245,14 +230,14 @@ class ServicesFees(models.Model):
         "Submission",
         on_delete=models.CASCADE,
         verbose_name=_("Demande"),
-        related_name="submission",
+        related_name="service_fee",
         help_text=_("Demande"),
     )
-    services_fees_type = models.ForeignKey(
-        "ServicesFeesType",
+    service_fee_type = models.ForeignKey(
+        "ServiceFeeType",
         on_delete=models.CASCADE,
         verbose_name=_("Type de prestation"),
-        related_name="services_fees_type",
+        related_name="service_fee_type",
         help_text=_("Choix de la prestation ; à effectuer dans une liste prédéfinie."),
     )
     time_spent_on_task = models.DurationField(
@@ -261,26 +246,25 @@ class ServicesFees(models.Model):
         verbose_name=_("Durée [m]"),
         help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
     )
-    hourly_rate = MoneyField(
+    hourly_rate = models.DecimalField(
         default=settings.DEFAULT_SERVICES_FEES_RATE,
         null=True,  # For fixed price service fees, this field has to be null
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Tarif horaire [CHF]"),
         help_text=_("Le tarif horaire de la prestation. Choisi par l'intégrateur."),
     )
     # The "monetary_amount" field must only be exposed for fixed price service fees
-    monetary_amount = MoneyField(
+    monetary_amount = models.DecimalField(
         default=0.0,
         decimal_places=2,
         max_digits=12,
-        default_currency=settings.DEFAULT_CURRENCY,
         verbose_name=_("Montant [CHF]"),
         help_text=_(
             "Le montant de la prestation. "
             "Calulé automatiquement en fonction du tarif horaire. "
             "Est fixe si la prestation est forfaitaire. "
+            "Certains montants fixes peuvent être modifiables lorsque le type de prestation exige un calcul spécifique. "
         ),
     )
 
@@ -288,17 +272,17 @@ class ServicesFees(models.Model):
     def save(self, *args, **kwargs):
         # For hourly service fees
         if isinstance(self.time_spent_on_task, timedelta):
-            # Get service fee hourly rate from the services_fees_type model
+            # Get service fee hourly rate from the service_fee_type model
             self.hourly_rate = (
-                self.services_fees_type.administrative_entity.services_fees_hourly_rate
+                self.service_fee_type.administrative_entity.services_fees_hourly_rate
             )
             # Compute the corresponding monetary amount
             self.monetary_amount = (
-                self.hourly_rate * self.time_spent_on_task.total_seconds() / 3600
+                float(self.hourly_rate) * self.time_spent_on_task.total_seconds() / 3600
             )
         # For fixed price service fees
         else:
             self.hourly_rate = None
             self.time_spent_on_task = None
 
-        super(ServicesFees, self).save(*args, **kwargs)
+        super(ServiceFee, self).save(*args, **kwargs)

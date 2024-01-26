@@ -58,7 +58,7 @@ existing_submission_urlpatterns = [
     path(
         "service_fee/<int:service_fee_id>/",
         views.submission_service_fees,
-        name="get_submission_service_fees",
+        name="submission_service_fees",
     ),
 ]
 

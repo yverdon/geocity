@@ -427,6 +427,10 @@ class Form(models.Model):
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
+    default_validation_text = models.TextField(
+        _("Texte de validation par défaut"), blank=True
+    )
+
     # TODO: sphinx documentation, to explain is used to make visible/hidden in the list of forms
     is_public = models.BooleanField(_("Formulaire public"), default=False)
     is_anonymous = models.BooleanField(
@@ -462,6 +466,9 @@ class Form(models.Model):
     )
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
+    fees_module_enabled = models.BooleanField(
+        _("Activer le module de gestion des émoluments"), default=False
     )
     shortname = models.CharField(
         _("nom court"),
@@ -820,7 +827,7 @@ class Field(models.Model):
     DISPLAY_TEXT = DISPLAY_TEXT
     DISPLAY_TITLE = DISPLAY_TITLE
 
-    # The choices are sorted according to their values
+    # IMPORTANT: The choices should be sorted according to their values
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
@@ -829,10 +836,10 @@ class Field(models.Model):
         (INPUT_TYPE_DATE, _("Date")),
         (INPUT_TYPE_FILE, _("Fichier")),
         (INPUT_TYPE_FILE_DOWNLOAD, _("Fichier (à télécharger)")),
+        (INPUT_TYPE_GEOM, _("Géométrie (points)")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_GEOM, _("Géométrie (points)")),
         (DISPLAY_TEXT, _("Texte à afficher")),
         (DISPLAY_TITLE, _("Titre à afficher")),
     )
@@ -952,6 +959,18 @@ class Field(models.Model):
             """Lorsque cette case est cochée, ce champ peut être utilisé pour filtrer <b>si la demande est rendue publique par le pilote</b>.<br>
             Actuellement ne fonctionne que pour les champs à choix simple ou multiples dans agenda."""
         ),
+    )
+    minimum_date = models.DateField(
+        _("Date minimale"),
+        null=True,
+        blank=True,
+        help_text=_("Format: YYYY-MM-JJ"),
+    )
+    maximum_date = models.DateField(
+        _("Date maximale"),
+        null=True,
+        blank=True,
+        help_text=_("Format: YYYY-MM-JJ"),
     )
 
     class Meta(object):

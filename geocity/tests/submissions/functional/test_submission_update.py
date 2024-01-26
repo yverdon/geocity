@@ -153,7 +153,7 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
         date_field.forms.set([form])
         data = {
             f"fields-{form.pk}_{date_field.pk}": today.strftime(
-                settings.DATE_INPUT_FORMATS[0]
+                settings.DATE_INPUT_FORMAT
             )
         }
         self.client.post(

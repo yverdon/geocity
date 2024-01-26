@@ -8,6 +8,21 @@ from . import models
 from .models import ComplementaryDocumentType, Submission
 
 
+def is_validator_of_entity(user, entity):
+    """Check user is_validator for an entity"""
+    # Find the department of this submission and filter by backoffice
+    departments = PermitDepartment.objects.filter(
+        administrative_entity=entity, is_validator=True
+    )
+    # Tuple of groups related to the user and to this submission department
+    user_groups = set(user.groups.all().values_list("id", flat=True))
+
+    department_groups = set(departments.values_list("group", flat=True))
+
+    # Check user is in any group related of the permit department groups
+    return any(user_groups.intersection(department_groups))
+
+
 def is_backoffice_of_entity(user, entity):
     """Check user is_backoffice for an entity"""
     # Find the department of this submission and filter by backoffice
@@ -32,16 +47,20 @@ def has_permission_to_amend_submission(user, submission):
         user.has_perm("submissions.amend_submission")
         and submission.administrative_entity
         in AdministrativeEntity.objects.associated_to_user(user)
-        and is_backoffice_of_submission(user, submission)
+        and (is_backoffice_of_submission(user, submission))
     )
 
 
 def has_permission_to_manage_service_fees(user, submission):
+
     return (
         user.has_perm("submissions.can_manage_service_fee")
         and submission.administrative_entity
         in AdministrativeEntity.objects.associated_to_user(user)
-        # and is_backoffice_of_submission(user, submission)
+        and (
+            is_backoffice_of_submission(user, submission)
+            or is_validator_of_entity(user, submission.administrative_entity)
+        )
     )
 
 

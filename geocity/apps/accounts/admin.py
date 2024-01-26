@@ -17,7 +17,7 @@ from knox.models import AuthToken
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
-from geocity.apps.submissions.payments.models import ServicesFeesType
+from geocity.apps.submissions.payments.models import ServiceFeeType
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
@@ -757,9 +757,9 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
     verbose_name_plural = _("Flux (complet par défaut)")
 
 
-class ServicesFeesInline(IntegratorFilterMixin, admin.TabularInline):
-    model = ServicesFeesType
-    extra = 1
+class ServiceFeeInline(admin.TabularInline):
+    model = ServiceFeeType
+    extra = 3
     verbose_name = _("Type de prestation")
     verbose_name_plural = _("Types de prestation")
 
@@ -827,10 +827,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         (
             _("Tarification des prestations"),
             {
-                "fields": (
-                    "services_fees_hourly_rate",
-                    "min_cfc2_price",
-                ),
+                "fields": ("services_fees_hourly_rate",),
                 "description": _(
                     "La tarification des prestations permet de saisir le tarif horaire de facturation des prestations pour l'entité administrative courante."
                 ),
@@ -852,7 +849,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     change_form_template = "accounts/admin/administrative_entity_change.html"
     form = AdministrativeEntityAdminForm
     inlines = [
-        # ServicesFeesInline, # not working
+        ServiceFeeInline,
         SubmissionWorkflowStatusInline,
     ]
     list_filter = [

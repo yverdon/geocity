@@ -14,6 +14,7 @@ from geocity.apps.accounts import models as accounts_models
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import models as submissions_models
+from geocity.apps.submissions.payments.models import ServiceFee, ServiceFeeType
 from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
@@ -193,7 +194,11 @@ class SecretariatGroupFactory(GroupFactory):
             )
             extracted = list(
                 Permission.objects.filter(
-                    codename__in=["amend_submission", "classify_submission"],
+                    codename__in=[
+                        "amend_submission",
+                        "classify_submission",
+                        "can_manage_service_fee",
+                    ],
                     content_type=submission_ct,
                 )
             )
@@ -228,7 +233,9 @@ class ReadonlyGroupFactory(GroupFactory):
 
 
 class ValidatorGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
+    department = factory.RelatedFactory(
+        PermitDepartmentFactory, "group", is_validator=True
+    )
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
@@ -239,10 +246,15 @@ class ValidatorGroupFactory(GroupFactory):
             submission_ct = ContentType.objects.get_for_model(
                 submissions_models.Submission
             )
-            validate_permission = Permission.objects.get(
-                codename="validate_submission", content_type=submission_ct
+            extracted = list(
+                Permission.objects.filter(
+                    codename__in=[
+                        "validate_submission",
+                        "can_manage_service_fee",
+                    ],
+                    content_type=submission_ct,
+                )
             )
-            extracted = [validate_permission]
 
         for permission in extracted:
             self.permissions.add(permission)
@@ -703,3 +715,33 @@ class ArchivedSubmissionFactory(factory.django.DjangoModelFactory):
 
     submission = factory.SubFactory(SubmissionFactory)
     archivist = factory.SubFactory(UserFactory)
+
+
+class ServiceFeeTypesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceFeeType
+
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    name = factory.Faker("word")
+    fix_price = 50
+    is_visible_by_validator = False
+
+
+class ServiceFeeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ServiceFee
+
+    created_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    updated_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    created_by = factory.SubFactory("geocity.tests.factories.UserFactory")
+    updated_by = factory.SubFactory("geocity.tests.factories.UserFactory")
+    permit_department = factory.RelatedFactory(
+        PermitDepartmentFactory, is_backoffice=True
+    )
+    provided_by = factory.SubFactory("geocity.tests.factories.UserFactory")
+    provided_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    submission = factory.SubFactory(SubmissionFactory)
+    service_fee_type = factory.SubFactory(ServiceFeeTypesFactory)
+    time_spent_on_task = None
+    hourly_rate = 80
+    monetary_amount = 0

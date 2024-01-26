@@ -36,18 +36,12 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.apps.accounts.users import is_backoffice_in_department
 from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import (
-    ServicesFees,
-    ServicesFeesType,
-    SubmissionCFC2Price,
-    SubmissionPrice,
-)
+from .payments.models import ServiceFee, ServiceFeeType, SubmissionPrice
 from .permissions import has_permission_to_amend_submission
 
 logger = logging.getLogger(__name__)
@@ -368,20 +362,27 @@ class FormsPriceSelectForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        form_for_payment = self.instance.get_form_for_payment()
+        prices = form_for_payment.prices.order_by("formprice")
+
         initial = {}
         if self.instance.submission_price is not None:
             initial = {
                 "selected_price": self.instance.submission_price.original_price.pk
             }
+        elif prices.count() == 1:
+            # Select the only available price
+            initial = {"selected_price": prices.first().pk}
+
         super(FormsPriceSelectForm, self).__init__(
             *args, **{**kwargs, "initial": initial}
         )
+
         if self.instance.status != self.instance.STATUS_DRAFT:
             self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
-        form_for_payment = self.instance.get_form_for_payment()
 
         choices = []
-        for price in form_for_payment.prices.order_by("formprice"):
+        for price in prices:
             choices.append((price.pk, price.str_for_choice()))
         self.fields["selected_price"].choices = choices
 
@@ -637,16 +638,30 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_date_field_kwargs(self, field, default_kwargs):
+        default_min_date = "1900-01-01"
+        default_max_date = "2100-12-31"
+
+        min_date = (
+            field.minimum_date.strftime("%Y-%m-%d")
+            if field.minimum_date and isinstance(field.minimum_date, date)
+            else default_min_date
+        )
+        max_date = (
+            field.maximum_date.strftime("%Y-%m-%d")
+            if field.maximum_date and isinstance(field.maximum_date, date)
+            else default_max_date
+        )
+
         return {
             **default_kwargs,
-            "input_formats": settings.DATE_INPUT_FORMATS,
+            "input_formats": [settings.DATE_INPUT_FORMAT],
             "widget": DatePickerInput(
                 options={
                     "format": "DD.MM.YYYY",
                     "locale": settings.LANGUAGE_CODE,
                     "useCurrent": False,
-                    "minDate": "1900/01/01",
-                    "maxDate": "2100/12/31",
+                    "minDate": min_date,
+                    "maxDate": max_date,
                 },
                 attrs={
                     "placeholder": ("ex: " + field.placeholder)
@@ -1000,6 +1015,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             "featured_agenda",
             "shortname",
             "status",
+            "service_fees_total_price",
         ]
         widgets = {
             "is_public": forms.RadioSelect(
@@ -1011,6 +1027,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             "featured_agenda": forms.RadioSelect(
                 choices=BOOLEAN_CHOICES,
             ),
+            "service_fees_total_price": forms.TextInput(),
         }
 
     def __init__(self, user, *args, **kwargs):
@@ -1105,6 +1122,15 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 == self.instance.forms.count()
             ):
                 self.fields["is_public"].widget = forms.HiddenInput()
+
+            # Show/Hide total fees prices if module id enabled in admin
+            fees_module_enabled = self.instance.forms.filter(
+                fees_module_enabled=True
+            ).exists()
+            if not fees_module_enabled:
+                self.fields["service_fees_total_price"].widget = forms.HiddenInput()
+            else:
+                self.fields["service_fees_total_price"].widget.attrs["readonly"] = True
 
             # Hide agenda fields if agenda is not activated
             if not self.instance.forms.filter(agenda_visible=True).exists():
@@ -1290,57 +1316,23 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
 
-class CFC2Form(forms.ModelForm):
-    """Docstring"""
-
-    required_css_class = "required"
-
-    def __init__(self, *args, **kwargs):
-        self.submission = kwargs.pop("submission", None)
-        current_user = kwargs.pop("user", None)
-        instance = kwargs["instance"]
-
-        kwargs["initial"] = {
-            **kwargs.get("initial", {}),
-        }
-        if instance:
-            kwargs["initial"] = {
-                **kwargs.get("initial", {}),
-                "cfc2_price": instance.cfc2_price,
-            }
-
-        super().__init__(*args, **kwargs)
-
-    class Meta:
-        model = SubmissionCFC2Price
-        fields = [
-            "cfc2_price",
-        ]
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        return cleaned_data
-
-
-class ServicesFeesForm(forms.ModelForm):
-    """Docstring"""
-
+class ServiceFeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
         current_user = kwargs.pop("user", None)
         service_fee = kwargs.get("instance", None)
         self.mode = kwargs.pop("mode", None)
-        # Trick: transform the time_spent_on_task variable otherwise it doesn't
-        # appear in the form:
-        if hasattr(service_fee, "time_spent_on_task"):
-            if isinstance(service_fee.time_spent_on_task, timedelta):
+        # Convert timedelta to minutes as the form input is of integer type
+        if service_fee:
+            self.mode = (
+                "hourly_rate"
+                if service_fee.service_fee_type.fix_price == None
+                else "fix_price"
+            )
+            if self.mode == "hourly_rate":
                 service_fee.time_spent_on_task = int(
                     service_fee.time_spent_on_task.total_seconds() / 60
                 )
-                self.mode = "hourly_rate"
-            else:
-                self.mode = "fix_price"
 
         # This is mandatory because the "provided_by" field is disabled for
         # validators here after:
@@ -1363,65 +1355,77 @@ class ServicesFeesForm(forms.ModelForm):
             # self.mode is None when reaching the /delete route:
             raise ValueError(
                 _(
-                    "Bad value for 'mode', it must be either 'hourly_rate' or 'fix_price'."
+                    "Bad value for Service Fee Type 'mode', it must be either 'hourly_rate' or 'fix_price'."
                 )
             )
 
         current_user_groups_pk = current_user.groups.all().values_list("pk", flat=True)
-        current_administrative_entity = self.submission.administrative_entity
 
-        backoffice_groups_of_the_current_user = Group.objects.filter(
-            permit_department__is_backoffice=True,
-            permit_department__administrative_entity=current_administrative_entity,
-            pk__in=current_user_groups_pk,
+        backoffice_filter = Q(permit_department__is_backoffice=True)
+        validator_filter = Q(permit_department__is_validator=True)
+        current_user_filter = Q(pk__in=current_user_groups_pk)
+        administrative_entity_filter = Q(
+            permit_department__administrative_entity=self.submission.administrative_entity,
+            permit_department__is_integrator_admin=False,
+        )
+        groups_of_the_current_administrative_entity = Group.objects.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+        backoffice_groups_of_the_current_user = (
+            groups_of_the_current_administrative_entity.filter(
+                current_user_filter & backoffice_filter
+            )
         )
 
-        # Group of the current user is not a backoffice (pilot) group
-        if not backoffice_groups_of_the_current_user:
-            groups_of_the_current_user = Group.objects.filter(
-                permit_department__is_validator=True,
-                permit_department__administrative_entity=current_administrative_entity,
-                pk__in=current_user_groups_pk,
-            )
-            if groups_of_the_current_user:
-                self.fields[
-                    "services_fees_type"
-                ].queryset = ServicesFeesType.objects.filter(
-                    administrative_entity=self.submission.administrative_entity,
-                    is_visible_by_validator=True,
-                )
-        # Group of the current user is a backoffice (pilot) group
-        else:
-            groups_of_the_current_user = backoffice_groups_of_the_current_user
+        # Get service fee types for current administrative entity
+        administrative_entity_service_fee_types = self.fields[
+            "service_fee_type"
+        ].queryset = ServiceFeeType.objects.filter(
+            administrative_entity=self.submission.administrative_entity
+        )
+        self.fields[
+            "service_fee_type"
+        ].queryset = administrative_entity_service_fee_types
+        # Filter out service fee types if the user is only in validator groups of the current administrative entity
+        if not backoffice_groups_of_the_current_user and Group.objects.filter(
+            validator_filter & administrative_entity_filter & current_user_filter
+        ):
             self.fields[
-                "services_fees_type"
-            ].queryset = ServicesFeesType.objects.filter(
-                administrative_entity=self.submission.administrative_entity
+                "service_fee_type"
+            ].queryset = administrative_entity_service_fee_types.filter(
+                is_visible_by_validator=True,
             )
 
         if self.mode == "fix_price":
-            self.fields["services_fees_type"].queryset = self.fields[
-                "services_fees_type"
+            self.fields["service_fee_type"].queryset = self.fields[
+                "service_fee_type"
             ].queryset.filter(fix_price__isnull=False)
-            self.fields["monetary_amount"].widget.attrs["readonly"] = True
             self.monetary_amount = (
-                self.fields["services_fees_type"]
+                self.fields["service_fee_type"]
                 .queryset.filter(fix_price__isnull=False)
                 .values_list("fix_price", flat=True)
             )
-            self.fields["monetary_amount"].queryset = self.monetary_amount
-            print(f"self.monetary_amount: {(self.monetary_amount)}")
+
+            # ServiceFeeType monetary_amount for fix_price can be editable or not editable, depending on fix_price_editable value
+            self.fields["monetary_amount"].widget.attrs["readonly"] = True
+            if service_fee:
+                self.fields["monetary_amount"].widget.attrs["readonly"] = (
+                    not service_fee.service_fee_type.fix_price_editable
+                    if service_fee.service_fee_type
+                    else True
+                )
+
         elif self.mode == "hourly_rate":
-            self.fields["services_fees_type"].queryset = self.fields[
-                "services_fees_type"
+            self.fields["service_fee_type"].queryset = self.fields[
+                "service_fee_type"
             ].queryset.filter(fix_price__isnull=True)
 
-        restricted_users_to_display = User.objects.filter(
-            groups__in=groups_of_the_current_user
+        restricted_users_to_display_for_pilot = User.objects.filter(
+            groups__in=groups_of_the_current_administrative_entity
         )
 
-        if is_backoffice_in_department(current_user, current_administrative_entity):
-            self.fields["provided_by"].queryset = restricted_users_to_display
+        if backoffice_groups_of_the_current_user:
+            self.fields["provided_by"].queryset = restricted_users_to_display_for_pilot
         else:
             # Get only current user in list for validators
             # Validator A should not see validator B or C, but only himself.
@@ -1433,10 +1437,10 @@ class ServicesFeesForm(forms.ModelForm):
     required_css_class = "required"
 
     class Meta:
-        model = ServicesFees
+        model = ServiceFee
         localized_fields = "__all__"
         fields = [
-            "services_fees_type",
+            "service_fee_type",
             "provided_by",
             "provided_at",
             "time_spent_on_task",
@@ -1444,7 +1448,7 @@ class ServicesFeesForm(forms.ModelForm):
         ]
 
         widgets = {
-            "services_fees_type": Select2Widget(
+            "service_fee_type": Select2Widget(
                 {"onchange": "updateFormMonetaryAmount();"}
             ),
             "provided_by": Select2Widget(),
@@ -1599,11 +1603,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         if self.fields.get("starts_at"):
             # starts_at >= min_start_date
             self.fields["starts_at"].widget.config["options"].update(
-                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+                {"minDate": min_start_date.strftime("%Y-%m-%d")}
             )
             # ends_at >= starts_at
             self.fields["ends_at"].widget.config["options"].update(
-                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+                {"minDate": min_start_date.strftime("%Y-%m-%d")}
             )
 
     def get_widget_options(self, submission):
@@ -1809,13 +1813,13 @@ class SubmissionValidationPokeForm(forms.Form):
 class SubmissionProlongationForm(forms.ModelForm):
     prolongation_date = forms.DateTimeField(
         label=_("Nouvelle date de fin demandée"),
-        input_formats=settings.DATETIME_INPUT_FORMATS,
+        input_formats=[settings.DATETIME_INPUT_FORMATS],
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
-                "minDate": (datetime.today()).strftime("%Y/%m/%d"),
+                "minDate": (datetime.today()).strftime("%Y-%m-%d"),
             }
         ).start_of("event days"),
         help_text="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
@@ -1845,7 +1849,7 @@ class SubmissionProlongationForm(forms.ModelForm):
                     _(
                         "La date de prolongation doit être postérieure à la date originale de fin (%s)."
                     )
-                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMATS[0])
+                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMAT)
                 )
 
 
@@ -1877,8 +1881,13 @@ class SubmissionClassifyForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         if not self.instance.is_validation_document_required():
             del self.fields["validation_pdf"]
+
+        if self.instance.has_default_validation_texts():
+            texts = "\n\n".join(self.instance.get_default_validation_texts())
+            self.initial["additional_decision_information"] = texts
 
     def save(self, commit=True):
         submission = super().save(commit=False)
@@ -2105,7 +2114,7 @@ class AnonymousRequestForm(forms.Form):
 class SubmissionInquiryForm(forms.ModelForm):
     start_date = forms.DateField(
         label=_("Date de début"),
-        input_formats=settings.DATE_INPUT_FORMATS,
+        input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
@@ -2116,7 +2125,7 @@ class SubmissionInquiryForm(forms.ModelForm):
     )
     end_date = forms.DateField(
         label=_("Date de fin"),
-        input_formats=settings.DATE_INPUT_FORMATS,
+        input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",

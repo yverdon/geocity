@@ -19,7 +19,17 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import Count, F, JSONField, Max, Min, ProtectedError, Q, Value
+from django.db.models import (
+    Count,
+    F,
+    JSONField,
+    Max,
+    Min,
+    ProtectedError,
+    Q,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Concat
 from django.urls import reverse
 from django.utils import timezone
@@ -32,13 +42,12 @@ from PIL import Image
 from simple_history.models import HistoricalRecords
 
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
-from geocity.apps.accounts.users import get_departments
 from geocity.apps.accounts.validators import validate_email
 from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-from .payments.models import ServicesFees, SubmissionPrice
+from .payments.models import ServiceFee, SubmissionPrice
 
 # Actions
 ACTION_AMEND = "amend"
@@ -48,8 +57,6 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
-ACTION_TRANSACTION = "transactins"  # FIXME: typo and variable not used
-ACTION_MANAGE_CFC2_AMOUNT = "manage_cfc2_amount"
 
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
@@ -61,7 +68,6 @@ ACTIONS = [
     ACTION_PROLONG,
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
-    ACTION_MANAGE_CFC2_AMOUNT,
 ]
 
 logger = logging.getLogger(__name__)
@@ -311,10 +317,14 @@ class Submission(models.Model):
         blank=True,
         help_text=_("Facultative, sera transmise au requérant"),
     )
-    service_fees_total_price = models.IntegerField(
+    service_fees_total_price = models.DecimalField(
         null=True,
-        verbose_name=_("Prix total des prestations"),
-        help_text=_("Prix total des prestations"),
+        blank=True,
+        default=0.0,
+        decimal_places=2,
+        max_digits=12,
+        verbose_name=_("Montant total des prestations [CHF]"),
+        help_text=_("Le montant total des prestations effectuées pour cette demande. "),
     )
 
     history = HistoricalRecords()
@@ -335,9 +345,6 @@ class Submission(models.Model):
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
             ("can_manage_service_fee", _("Gérer une prestation")),
-            # ("create_service_fee", _("Créer une prestation")),
-            # ("update_service_fee", _("Modifier une prestation")),
-            # ("delete_service_fee", _("Supprimer une prestation")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -1126,11 +1133,7 @@ class Submission(models.Model):
                 Submission.STATUS_AWAITING_VALIDATION,
                 Submission.STATUS_PROCESSING,
             ],
-            "manage_cfc2_amount": list(Submission.SERVICE_FEES_STATUSES),
             "can_manage_service_fee": list(Submission.SERVICE_FEES_STATUSES),
-            # "create_service_fee": list(Submission.SERVICE_FEES_STATUSES),
-            # "update_service_fee": list(Submission.SERVICE_FEES_STATUSES),
-            # "delete_service_fee": list(Submission.SERVICE_FEES_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (
@@ -1152,6 +1155,15 @@ class Submission(models.Model):
 
     def is_validation_document_required(self):
         return self.forms.filter(requires_validation_document=True).exists()
+
+    def has_default_validation_texts(self):
+        return self.forms.exclude(default_validation_text="").exists()
+
+    def get_default_validation_texts(self):
+        return [
+            form.default_validation_text
+            for form in self.forms.exclude(default_validation_text="")
+        ]
 
     def can_have_multiple_ranges(self):
         return any(form.can_have_multiple_ranges for form in self.forms.all())
@@ -1235,20 +1247,19 @@ class Submission(models.Model):
             return None
         return self.submission_price.get_transactions()
 
-    # ServiceFees
-    def get_service_fees_for_user(self, user):
-        # Standard users don't belong to a departement (None)
-        department = get_departments(user).first()
-        # Pilot users can see all services fees
-        if department and department.is_backoffice:
-            return ServicesFees.objects.filter(Q(submission=self.pk))
+    # ServiceFees for submission
+    def get_service_fees(self):
+        return ServiceFee.objects.filter(submission=self)
 
-        # Non pilot users can see only those services fees created by themselves
-        # or created on behalf of their own names
-        # if department:
-        return ServicesFees.objects.filter(
-            Q(submission=self.pk) & (Q(created_by=user) | Q(provided_by=user))
-        )
+    def update_service_fees_total_price(self):
+        """
+        Sum the monetary total of fees created for this submission
+        """
+        total = ServiceFee.objects.filter(submission=self.pk).aggregate(
+            total=Sum("monetary_amount")
+        )["total"]
+        self.service_fees_total_price = total
+        self.save()
 
     def get_history(self):
         # Transactions history

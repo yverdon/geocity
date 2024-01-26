@@ -76,33 +76,8 @@ if ENV == "DEV":
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
-DATE_INPUT_FORMATS = [
-    "%d.%m.%Y",  # '25.10.2024'
-    "%Y-%m-%d",  # '2024-10-25'
-    "%m/%d/%Y",  # '10/25/2024'
-    "%m/%d/%y",  # '10/25/24'
-    "%b %d %Y",  # 'Oct 25 2024'
-    "%b %d, %Y",  # 'Oct 25, 2024'
-    "%d %b %Y",  # '25 Oct 2024'
-    "%d %b, %Y",  # '25 Oct, 2024'
-    "%B %d %Y",  # 'October 25 2024'
-    "%B %d, %Y",  # 'October 25, 2024'
-    "%d %B %Y",  # '25 October 2024'
-    "%d %B, %Y",  # '25 October, 2024'
-]
-
-DATETIME_INPUT_FORMATS = [
-    "%d.%m.%Y %H:%M",  # '25.10.2024 14:30'
-    "%Y-%m-%d %H:%M:%S",  # '2024-10-25 14:30:59'
-    "%Y-%m-%d %H:%M:%S.%f",  # '2024-10-25 14:30:59.000200'
-    "%Y-%m-%d %H:%M",  # '2024-10-25 14:30'
-    "%m/%d/%Y %H:%M:%S",  # '10/25/2024 14:30:59'
-    "%m/%d/%Y %H:%M:%S.%f",  # '10/25/2024 14:30:59.000200'
-    "%m/%d/%Y %H:%M",  # '10/25/2024 14:30'
-    "%m/%d/%y %H:%M:%S",  # '10/25/24 14:30:59'
-    "%m/%d/%y %H:%M:%S.%f",  # '10/25/24 14:30:59.000200'
-    "%m/%d/%y %H:%M",  # '10/25/24 14:30'
-]
+DATE_INPUT_FORMAT = "%d.%m.%Y"
+DATETIME_INPUT_FORMAT = "%d.%m.%Y %H:%M"
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
@@ -210,7 +185,6 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django.contrib.sites",
     "django.contrib.postgres",
-    "djmoney",
 ]
 
 if ENABLE_2FA:
@@ -575,7 +549,6 @@ TIME_ZONE = "Europe/Zurich"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-USE_THOUSAND_SEPARATOR = True
 
 gettext = lambda x: x
 
@@ -711,6 +684,7 @@ DEBUG_TOOLBAR_CONFIG = {
     },
 }
 
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -726,7 +700,7 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "INFO",
+            "level": "ERROR" if ENV == "PROD" else "INFO",
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
@@ -748,12 +722,4 @@ PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
 # Services fees
 ## Default rate [CHF] for services fees
 DEFAULT_SERVICES_FEES_RATE = 0.00
-
-## djmoney currencies: https://django-money.readthedocs.io/en/latest/#adding-a-new-currency
-CURRENCIES = (
-    "CHF",
-    "USD",
-    "EUR",
-)
-CURRENCY_CHOICES = [("USD", "USD $"), ("EUR", "EUR €"), ("CHF", "CHF .-")]
-DEFAULT_CURRENCY = CURRENCIES[0]
+DEFAULT_CURRENCY = "CHF"

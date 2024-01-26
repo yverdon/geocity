@@ -8,8 +8,6 @@ asgiref==3.7.2
     # via
     #   django
     #   django-cors-headers
-babel==2.13.1
-    # via py-moneyed
 beautifulsoup4==4.12.2
     # via
     #   -r requirements.in
@@ -49,7 +47,6 @@ django==4.2.9
     #   django-jazzmin
     #   django-js-asset
     #   django-jsonform
-    #   django-money
     #   django-oauth-toolkit
     #   django-otp
     #   django-phonenumber-field
@@ -99,8 +96,6 @@ django-js-asset==2.2.0
 django-jsoneditor==0.2.4
     # via -r requirements.in
 django-jsonform==2.21.4
-    # via -r requirements.in
-django-money==3.4.1
     # via -r requirements.in
 django-oauth-toolkit==2.3.0
     # via -r requirements.in
@@ -191,8 +186,6 @@ postfinancecheckout==4.1.0
     # via -r requirements.in
 psycopg2-binary==2.9.9
     # via -r requirements.in
-py-moneyed==3.0
-    # via django-money
 pycparser==2.21
     # via cffi
 pyjwt[crypto]==2.8.0
@@ -240,7 +233,6 @@ tablib[xlsx]==3.5.0
 typing-extensions==4.9.0
     # via
     #   asgiref
-    #   py-moneyed
     #   qrcode
 tzdata==2023.4
     # via
