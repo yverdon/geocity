@@ -2223,14 +2223,19 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
 
     if request.method == "POST":
 
-        department = (
-            get_departments(request.user).first()
-            if action in ("create", "update")
-            else None
+        departments = (
+            get_departments(request.user) if action in ("create", "update") else None
         )
+
         is_backoffice_of_submission = permissions.is_backoffice_of_submission(
             request.user, submission
         )
+
+        # Ensure the backoffice group is selected if the user is also in validator group for the submission
+        if is_backoffice_of_submission and departments:
+            department = departments.filter(is_backoffice=True).first()
+        elif departments and not is_backoffice_of_submission:
+            department = departments.first()
 
         service_fees_form = forms.ServiceFeeForm(
             submission=submission,

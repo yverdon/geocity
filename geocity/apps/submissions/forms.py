@@ -1319,7 +1319,9 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 class ServiceFeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.submission = kwargs.pop("submission", None)
+
         current_user = kwargs.pop("user", None)
+
         service_fee = kwargs.get("instance", None)
         self.mode = kwargs.pop("mode", None)
         # Convert timedelta to minutes as the form input is of integer type
@@ -1420,9 +1422,10 @@ class ServiceFeeForm(forms.ModelForm):
                 "service_fee_type"
             ].queryset.filter(fix_price__isnull=True)
 
+        # If the user is in both pilot and validator groups, mutiple groups will cause valisation error, hence the distict()
         restricted_users_to_display_for_pilot = User.objects.filter(
             groups__in=groups_of_the_current_administrative_entity
-        )
+        ).distinct()
 
         if backoffice_groups_of_the_current_user:
             self.fields["provided_by"].queryset = restricted_users_to_display_for_pilot
