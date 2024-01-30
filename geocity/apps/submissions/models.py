@@ -1135,6 +1135,15 @@ class Submission(models.Model):
             for form in self.forms.exclude(default_validation_text="")
         ]
 
+    def has_geo_step_help_texts(self):
+        return self.forms.exclude(geo_step_help_text="").exists()
+
+    def get_geo_step_help_texts(self):
+        return [
+            form.geo_step_help_text
+            for form in self.forms.exclude(geo_step_help_text="")
+        ]
+
     def can_have_multiple_ranges(self):
         return any(form.can_have_multiple_ranges for form in self.forms.all())
 

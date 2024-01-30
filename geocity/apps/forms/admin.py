@@ -307,6 +307,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "geometry_types",
                     "wms_layers",
                     "wms_layers_order",
+                    "geo_step_help_text",
                 )
             },
         ),

@@ -1175,6 +1175,27 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_geotime_step_help_text_appears_when_defined(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        help_text = "Mon texte d'aide"
+        form = factories.FormFactory(
+            has_geometry_point=True,
+            has_geometry_line=True,
+            has_geometry_polygon=True,
+            geo_step_help_text=help_text,
+        )
+        submission.forms.set([form])
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, help_text)
+
     def test_geotime_step_only_two_geom_field_appear_when_only_two_geom_type_are_required(
         self,
     ):
