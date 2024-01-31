@@ -1177,7 +1177,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_geotime_step_help_text_appears_when_defined(self):
         submission = factories.SubmissionFactory(author=self.user)
-        help_text = "Mon texte d'aide"
+        help_text = "Mon texte pour aider la saisie"
         form = factories.FormFactory(
             has_geometry_point=True,
             has_geometry_line=True,
