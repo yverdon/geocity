@@ -21,6 +21,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       ENV: PROD
+      DISABLE_MIGRATION_SCRIPT_ON_PRODUCTION:
       CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE:
       DJANGO_DOCKER_PORT:
       STATIC_URL:
