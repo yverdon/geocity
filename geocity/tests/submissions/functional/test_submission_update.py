@@ -148,7 +148,7 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
     def test_fields_step_submit_updates_submission_with_date(self):
 
         date_field = factories.FieldFactory(
-            input_type=submissions_models.Field.INPUT_TYPE_DATE, name="datum"
+            input_type=submissions_models.Field.INPUT_TYPE_DATE, content="datum"
         )
         today = date.today()
         form = self.submission.forms.first()
@@ -166,7 +166,7 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
 
-        field_val = self.submission.get_fields_values().get(field__name="datum")
+        field_val = self.submission.get_fields_values().get(field__content="datum")
         self.assertEqual(
             field_val.value,
             {"val": today.isoformat()},

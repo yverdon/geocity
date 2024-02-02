@@ -1,6 +1,7 @@
 import collections
 import uuid
 
+from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -847,7 +848,15 @@ class Field(models.Model):
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
-    name = models.CharField(_("nom"), max_length=255)
+    name = models.CharField(
+        _("nom"),
+        max_length=255,
+        help_text=_("Nom visible que dans l'interface d'administration"),
+    )
+    content = RichTextField(
+        _("Contenu"),
+        help_text=(_("Contenu visible lors de la saisie du formulaire")),
+    )
     api_name = models.CharField(
         _("Nom dans l'API"),
         max_length=255,

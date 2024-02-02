@@ -102,8 +102,8 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        position_1 = content.find(field_1.field.name)
-        position_2 = content.find(field_2.field.name)
+        position_1 = content.find(field_1.field.content)
+        position_2 = content.find(field_2.field.content)
         self.assertGreater(position_1, position_2)
 
     def test_fields_step_shows_downloadable_file(self):

@@ -15,7 +15,8 @@
             {% endif %}
             {% for field in fields %}
               {% if field.label %}
-                <dt> {{ field.label }} </dt>
+                {% comment %} striptags used to remove all html tags, and prevent images from showing {% endcomment %}
+                <dt> {{ field.label|striptags }} </dt>
                 {% if field.widget_type == 'geometrywidgetadvanced' and field.value %}
                 <dd>
                   <span class="disable-map-modal-button">
@@ -31,7 +32,8 @@
             {% endfor %}
 
             {% for field in appendices %}
-              <dt>{{ field.label }}</dt>
+              {% comment %} striptags used to remove all html tags, and prevent images from showing {% endcomment %}
+              <dt>{{ field.label|striptags }}</dt>
               <dd>
                 {% if not field.value %}
                   <em>{% translate "Information non fournie" %}</em>
