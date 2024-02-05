@@ -1,3 +1,4 @@
+import uuid
 from datetime import timezone
 
 import factory.fuzzy
@@ -463,7 +464,7 @@ class FieldFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = forms_models.Field
 
-    name = factory.Faker("word")
+    name = factory.LazyAttribute(lambda a: str(uuid.uuid4())[0:6])
     placeholder = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TEXT
