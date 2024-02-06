@@ -7,7 +7,7 @@ set -e
 python3 manage.py shell -c "import django; django.db.connection.ensure_connection();"
 
 # On PROD, we run migrations at startup unless explicitly disabled. If disabled,
-# this commands must be run manually
+# If disabled, these commands must be executed manually.
 if [ "$ENV" == "PROD" ] && [ "${DISABLE_MIGRATION_SCRIPT_ON_PRODUCTION}" != "true" ]; then
     python3 manage.py migrate
     python3 manage.py update_integrator_permissions
