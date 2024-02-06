@@ -28,6 +28,8 @@ class Transaction(models.Model):
     STATUS_TO_REFUND = "to_refund"
     STATUS_REFUNDED = "refunded"
     STATUS_FAILED = "failed"
+    TYPE_SUBMISSION = "submission"
+    TYPE_PROLONGATION = "prolongation"
     submission_price = models.ForeignKey(
         "SubmissionPrice",
         on_delete=models.CASCADE,
@@ -54,6 +56,16 @@ class Transaction(models.Model):
         _("Date de fin d'authorisation"), null=True
     )
     payment_url = models.CharField(_("URL de paiement"), max_length=255, null=True)
+
+    transaction_type = models.CharField(
+        _("Type de transaction"),
+        choices=[
+            (TYPE_SUBMISSION, _("Soumission")),
+            (TYPE_PROLONGATION, _("Prolongation")),
+        ],
+        max_length=20,
+        default=TYPE_SUBMISSION,
+    )
 
     class Meta:
         abstract = True

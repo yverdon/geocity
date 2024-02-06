@@ -72,7 +72,7 @@ def submit_submission(submission, request):
 
         # Check if submission requires payment
         attachments = []
-        if submission.requires_payment:
+        if submission.requires_online_payment():
             attachments = submission.get_submission_payment_attachments("confirmation")
 
         send_email_notification(data, attachments=attachments)

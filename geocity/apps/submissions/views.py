@@ -48,7 +48,7 @@ from geocity.apps.accounts.decorators import (
 )
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.accounts.users import get_departments, has_profile
-from geocity.apps.forms.models import Field, Form
+from geocity.apps.forms.models import Field, Form, Price
 
 from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
@@ -1410,6 +1410,43 @@ def submission_fields(request, submission_id):
     )
 
 
+def _set_prolongation_requested_and_notify(submission, request):
+    submission.prolongation_status = submission.PROLONGATION_STATUS_PENDING
+    submission.save()
+
+    attachments = []
+    if (
+        submission.requires_online_payment()
+        and submission.author.userprofile.notify_per_email
+    ):
+        attachments = submission.get_submission_payment_attachments("confirmation")
+        data = {
+            "subject": "{} ({})".format(
+                _("Votre demande de prolongation"), submission.get_forms_names_list()
+            ),
+            "users_to_notify": [submission.author.email],
+            "template": "submission_acknowledgment.txt",
+            "submission": submission,
+            "absolute_uri_func": request.build_absolute_uri,
+        }
+        services.send_email_notification(data, attachments=attachments)
+
+    # Send the email to the services
+    messages.success(request, _("Votre demande de prolongation a été envoyée"))
+
+    data = {
+        "subject": "{} ({})".format(
+            _("Une demande de prolongation vient d'être soumise"),
+            submission.get_forms_names_list(),
+        ),
+        "users_to_notify": submission.get_secretary_email(),
+        "template": "submission_prolongation_for_services.txt",
+        "submission": submission,
+        "absolute_uri_func": request.build_absolute_uri,
+    }
+    services.send_email_notification(data, attachments=attachments)
+
+
 @redirect_bad_status_to_detail
 @login_required
 @permanent_user_required
@@ -1429,31 +1466,55 @@ def submission_prolongation(request, submission_id):
         messages.error(request, _("La demande de permis ne peut pas être prolongée."))
         return redirect("submissions:submissions_list")
 
+    prices_form = None
+    requires_online_payment = False
+    if submission.requires_online_payment():
+        form_payment = submission.get_form_for_payment()
+        if form_payment is not None:
+            requires_online_payment = form_payment.requires_online_payment
+
     if request.method == "POST":
         form = forms.SubmissionProlongationForm(instance=submission, data=request.POST)
         del form.fields["prolongation_status"]
         del form.fields["prolongation_comment"]
 
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.prolongation_status = submission.PROLONGATION_STATUS_PENDING
-            obj.save()
+        prices_form_valid = True
+        if requires_online_payment:
+            prices_form = forms.ProlongationFormsPriceSelectForm(
+                instance=submission, data=request.POST
+            )
+            if prices_form.is_valid():
+                prices_form.save()
+            else:
+                prices_form_valid = False
+        if form.is_valid() and prices_form_valid:
+            if requires_online_payment:
+                if not prices_form.cleaned_data.get("selected_price"):
+                    messages.error(request, _("Veuillez sélectionner un tarif"))
+                    return render(
+                        request,
+                        "submissions/submission_prolongation.html",
+                        {
+                            "submission": submission,
+                            "submission_prolongation_form": form,
+                            "prices_form": prices_form,
+                        },
+                    )
+                else:
+                    price = Price.objects.get(
+                        pk=int(prices_form.cleaned_data.get("selected_price"))
+                    )
+                    processor = get_payment_processor(submission.get_form_for_payment())
+                    payment_url = processor.create_prolongation_transaction_and_return_payment_page_url(
+                        submission,
+                        price,
+                        int(form.cleaned_data["prolongation_date"].timestamp()),
+                        request,
+                    )
+                    return redirect(payment_url)
 
-            # Send the email to the services
-            messages.success(request, _("Votre demande de prolongation a été envoyée"))
-
-            data = {
-                "subject": "{} ({})".format(
-                    _("Une demande de prolongation vient d'être soumise"),
-                    submission.get_forms_names_list(),
-                ),
-                "users_to_notify": submission.get_secretary_email(),
-                "template": "submission_prolongation_for_services.txt",
-                "submission": form.instance,
-                "absolute_uri_func": request.build_absolute_uri,
-            }
-            services.send_email_notification(data)
-
+            obj = form.save()
+            _set_prolongation_requested_and_notify(obj, request)
             return redirect("submissions:submissions_list")
     else:
         if submission.author != request.user:
@@ -1481,6 +1542,8 @@ def submission_prolongation(request, submission_id):
             return redirect("submissions:submissions_list")
 
         form = forms.SubmissionProlongationForm(instance=submission)
+        if requires_online_payment:
+            prices_form = forms.ProlongationFormsPriceSelectForm(instance=submission)
         del form.fields["prolongation_status"]
         del form.fields["prolongation_comment"]
 
@@ -1490,6 +1553,7 @@ def submission_prolongation(request, submission_id):
         {
             "submission": submission,
             "submission_prolongation_form": form,
+            "prices_form": prices_form,
         },
     )
 
@@ -2373,3 +2437,67 @@ def submission_validations_edit(request, submission_id):
             "formset": formset,
         },
     )
+
+
+@method_decorator(login_required, name="dispatch")
+class ConfirmProlongationTransactionView(View):
+    def get(self, request, pk, prolongation_date, *args, **kwargs):
+        transaction = get_transaction_from_id(pk)
+        submission = transaction.submission_price.submission
+
+        submission.generate_and_save_pdf("confirmation", transaction)
+
+        if (
+            not request.user == submission.author
+            or not transaction.status == transaction.STATUS_UNPAID
+        ):
+            raise PermissionDenied
+
+        processor = get_payment_processor(submission.get_form_for_payment())
+        if processor.is_transaction_authorized(transaction):
+            transaction.set_paid()
+            submission.prolongation_date = datetime.fromtimestamp(prolongation_date)
+            _set_prolongation_requested_and_notify(submission, request)
+            return render(
+                request,
+                "submissions/submission_payment_callback_confirm.html",
+                {
+                    "submission": submission,
+                },
+            )
+
+        transaction.set_failed()
+        return render(
+            request,
+            "submissions/submission_payment_callback_fail.html",
+            {
+                "submission": submission,
+                "submission_url": reverse(
+                    "submissions:submission_prolongation",
+                    kwargs={"submission_id": submission.pk},
+                ),
+            },
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class FailProlongationTransactionCallback(View):
+    def get(self, request, pk, *args, **kwargs):
+        transaction = get_transaction_from_id(pk)
+        submission = transaction.submission_price.submission
+        if not request.user == submission.author:
+            raise PermissionDenied
+
+        transaction.set_failed()
+
+        return render(
+            request,
+            "submissions/submission_payment_callback_fail.html",
+            {
+                "submission": submission,
+                "submission_url": reverse(
+                    "submissions:submission_prolongation",
+                    kwargs={"submission_id": submission.pk},
+                ),
+            },
+        )

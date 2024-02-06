@@ -13,10 +13,17 @@
     {{ submission_prolongation_form.media }}
     {% bootstrap_form submission_prolongation_form %}
 
+    {% include "submissions/_submission_prices.html" %}
     {% buttons %}
     <div class="text-right">
       <a href="{% url 'submissions:submissions_list' %}" class="mr-2">{% translate "Retour à la liste des demandes" %}</a>
-      <button class="btn btn-primary">{% translate "Enregistrer" %}</button>
+      <button class="btn btn-primary">
+        {% if submission.requires_online_payment %}
+          {% translate "Payer" %}
+        {% else %}
+          {% translate "Enregistrer" %}
+      {% endif %}
+      </button>
     </div>
     {% endbuttons %}
   </form>

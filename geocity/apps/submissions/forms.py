@@ -352,7 +352,7 @@ class FormsSingleSelectForm(FormsSelectForm):
         return self.instance
 
 
-class FormsPriceSelectForm(forms.Form):
+class AbstractFormsPriceSelectForm(forms.Form):
 
     selected_price = forms.ChoiceField(
         label=False, widget=SingleFormRadioSelectWidget(), required=True
@@ -364,7 +364,10 @@ class FormsPriceSelectForm(forms.Form):
         prices = form_for_payment.prices.order_by("formprice")
 
         initial = {}
-        if self.instance.submission_price is not None:
+        if (
+            self.instance.submission_price is not None
+            and self.instance.submission_price.original_price is not None
+        ):
             initial = {
                 "selected_price": self.instance.submission_price.original_price.pk
             }
@@ -372,18 +375,58 @@ class FormsPriceSelectForm(forms.Form):
             # Select the only available price
             initial = {"selected_price": prices.first().pk}
 
-        super(FormsPriceSelectForm, self).__init__(
-            *args, **{**kwargs, "initial": initial}
-        )
-
-        if self.instance.status != self.instance.STATUS_DRAFT:
-            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+        super().__init__(*args, **{**kwargs, "initial": initial})
 
         choices = []
         for price in prices:
             choices.append((price.pk, price.str_for_choice()))
         self.fields["selected_price"].choices = choices
 
+
+class FormsPriceSelectForm(AbstractFormsPriceSelectForm):
+
+    selected_price = forms.ChoiceField(
+        label=False, widget=SingleFormRadioSelectWidget(), required=True
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        super().__init__(instance, *args, **kwargs)
+        if self.instance.status != self.instance.STATUS_DRAFT:
+            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+
+    @transaction.atomic
+    def save(self):
+        selected_price_id = self.cleaned_data["selected_price"]
+        selected_price = Price.objects.get(pk=selected_price_id)
+        price_data = {
+            "amount": selected_price.amount,
+            "currency": selected_price.currency,
+            "text": selected_price.text,
+        }
+        current_submission_price = self.instance.get_submission_price()
+        if current_submission_price is None:
+            SubmissionPrice.objects.create(
+                **{
+                    **price_data,
+                    "original_price": selected_price,
+                    "submission": self.instance,
+                }
+            )
+        else:
+            if self.instance.status != self.instance.STATUS_DRAFT:
+                raise forms.ValidationError(
+                    _("Le prix ne peut pas être modifié pour cette demande.")
+                )
+            current_submission_price.amount = price_data["amount"]
+            current_submission_price.text = price_data["text"]
+            current_submission_price.currency = price_data["currency"]
+            current_submission_price.original_price = selected_price
+            current_submission_price.save()
+
+        return self.instance
+
+
+class ProlongationFormsPriceSelectForm(AbstractFormsPriceSelectForm):
     @transaction.atomic
     def save(self):
         selected_price_id = self.cleaned_data["selected_price"]
