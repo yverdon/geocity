@@ -464,7 +464,7 @@ class FieldFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = forms_models.Field
 
-    name = factory.LazyAttribute(lambda a: str(uuid.uuid4())[0:6])
+    name = factory.LazyAttribute(lambda a: str(uuid.uuid4()))
     placeholder = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TEXT
