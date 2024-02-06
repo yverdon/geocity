@@ -490,6 +490,14 @@ class Form(models.Model):
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
+    geo_step_help_text = models.CharField(
+        _("Texte facultatif d'aide"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Permet d'être plus explicite sur ce qui est attendu de la personne qui remplit le formulaire."
+        ),
+    )
     prices = models.ManyToManyField(
         "Price", verbose_name=_("tarifs"), related_name="forms", through=FormPrice
     )
