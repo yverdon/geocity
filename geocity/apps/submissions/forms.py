@@ -1680,11 +1680,11 @@ class SubmissionClassifyForm(forms.ModelForm):
 
         approve = self.initial.get("approve")
         document_required = self.instance.is_validation_document_required()
-        approval_document_required = (
-            self.instance.is_validation_document_required_only_for_approval()
+        approval_document_required = self.instance.is_validation_document_required(
+            "only_for_approval"
         )
-        refusal_document_required = (
-            self.instance.is_validation_document_required_only_for_refusal()
+        refusal_document_required = self.instance.is_validation_document_required(
+            "only_for_refusal"
         )
 
         if not (approve and (document_required or approval_document_required)) and not (

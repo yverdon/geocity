@@ -1123,23 +1123,23 @@ class Submission(models.Model):
         distinct_available_actions = list(dict.fromkeys(available_actions))
         return distinct_available_actions
 
-    def is_validation_document_required(self):
-        return self.forms.filter(
-            validation_document=True,
-            validation_document_required_for=Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL,
-        ).exists()
+    def is_validation_document_required(self, requirement_type=None):
+        filters = {"validation_document": True}
 
-    def is_validation_document_required_only_for_approval(self):
-        return self.forms.filter(
-            validation_document=True,
-            validation_document_required_for=Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL,
-        ).exists()
+        if requirement_type == "only_for_approval":
+            filters[
+                "validation_document_required_for"
+            ] = Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL
+        elif requirement_type == "only_for_refusal":
+            filters[
+                "validation_document_required_for"
+            ] = Form.VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL
+        else:
+            filters[
+                "validation_document_required_for"
+            ] = Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL
 
-    def is_validation_document_required_only_for_refusal(self):
-        return self.forms.filter(
-            validation_document=True,
-            validation_document_required_for=Form.VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL,
-        ).exists()
+        return self.forms.filter(**filters).exists()
 
     def has_default_validation_texts(self):
         return self.forms.exclude(default_validation_text="").exists()
