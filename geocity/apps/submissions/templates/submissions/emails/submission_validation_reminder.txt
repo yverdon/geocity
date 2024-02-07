@@ -1,4 +1,4 @@
-{% load i18n %}{% autoescape off %}{% translate "Bonjour," %}
+{% load i18n %}{% autoescape off %}{% translate "Bonjour" %},
 
 {% translate "Une demande est toujours en attente de validation de votre part." %}
 
