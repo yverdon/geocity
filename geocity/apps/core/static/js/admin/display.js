@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementsByClassName('field-wms_layers')[0].classList.remove('display-none')
       document.getElementsByClassName('field-wms_layers_order')[0].classList.remove('display-none')
       document.getElementsByClassName('field-can_have_multiple_ranges')[0].classList.remove('display-none')
+      document.getElementsByClassName('field-geo_step_help_text')[0].classList.remove('display-none')
     }
 
     if (state == 2) {
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementsByClassName('field-wms_layers')[0].classList.add('display-none')
       document.getElementsByClassName('field-wms_layers_order')[0].classList.add('display-none')
       document.getElementsByClassName('field-can_have_multiple_ranges')[0].classList.add('display-none')
+      document.getElementsByClassName('field-geo_step_help_text')[0].classList.add('display-none')
     }
   }
 

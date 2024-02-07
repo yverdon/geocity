@@ -2,7 +2,7 @@ import io
 import mimetypes
 import string
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from itertools import groupby
 
 from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
@@ -360,20 +360,27 @@ class FormsPriceSelectForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        form_for_payment = self.instance.get_form_for_payment()
+        prices = form_for_payment.prices.order_by("formprice")
+
         initial = {}
         if self.instance.submission_price is not None:
             initial = {
                 "selected_price": self.instance.submission_price.original_price.pk
             }
+        elif prices.count() == 1:
+            # Select the only available price
+            initial = {"selected_price": prices.first().pk}
+
         super(FormsPriceSelectForm, self).__init__(
             *args, **{**kwargs, "initial": initial}
         )
+
         if self.instance.status != self.instance.STATUS_DRAFT:
             self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
-        form_for_payment = self.instance.get_form_for_payment()
 
         choices = []
-        for price in form_for_payment.prices.order_by("formprice"):
+        for price in prices:
             choices.append((price.pk, price.str_for_choice()))
         self.fields["selected_price"].choices = choices
 
@@ -630,6 +637,20 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_date_field_kwargs(self, field, default_kwargs):
+        default_min_date = "1900-01-01"
+        default_max_date = "2100-12-31"
+
+        min_date = (
+            field.minimum_date.strftime("%Y-%m-%d")
+            if field.minimum_date and isinstance(field.minimum_date, date)
+            else default_min_date
+        )
+        max_date = (
+            field.maximum_date.strftime("%Y-%m-%d")
+            if field.maximum_date and isinstance(field.maximum_date, date)
+            else default_max_date
+        )
+
         return {
             **default_kwargs,
             "input_formats": [settings.DATE_INPUT_FORMAT],
@@ -638,8 +659,8 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                     "format": "DD.MM.YYYY",
                     "locale": "fr-CH",
                     "useCurrent": False,
-                    "minDate": "1900/01/01",
-                    "maxDate": "2100/12/31",
+                    "minDate": min_date,
+                    "maxDate": max_date,
                 },
                 attrs={
                     "placeholder": ("ex: " + field.placeholder)
@@ -1399,11 +1420,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         if self.fields.get("starts_at"):
             # starts_at >= min_start_date
             self.fields["starts_at"].widget.config["options"].update(
-                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+                {"minDate": min_start_date.strftime("%Y-%m-%d")}
             )
             # ends_at >= starts_at
             self.fields["ends_at"].widget.config["options"].update(
-                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+                {"minDate": min_start_date.strftime("%Y-%m-%d")}
             )
 
     def get_widget_options(self, submission):
@@ -1615,7 +1636,7 @@ class SubmissionProlongationForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-                "minDate": (datetime.today()).strftime("%Y/%m/%d"),
+                "minDate": (datetime.today()).strftime("%Y-%m-%d"),
             }
         ).start_of("event days"),
         help_text="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",

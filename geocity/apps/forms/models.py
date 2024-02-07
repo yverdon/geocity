@@ -505,6 +505,14 @@ class Form(models.Model):
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
+    geo_step_help_text = models.CharField(
+        _("Texte facultatif d'aide"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Permet d'être plus explicite sur ce qui est attendu de la personne qui remplit le formulaire."
+        ),
+    )
     prices = models.ManyToManyField(
         "Price", verbose_name=_("tarifs"), related_name="forms", through=FormPrice
     )
@@ -971,6 +979,18 @@ class Field(models.Model):
             """Lorsque cette case est cochée, ce champ peut être utilisé pour filtrer <b>si la demande est rendue publique par le pilote</b>.<br>
             Actuellement ne fonctionne que pour les champs à choix simple ou multiples dans agenda."""
         ),
+    )
+    minimum_date = models.DateField(
+        _("Date minimale"),
+        null=True,
+        blank=True,
+        help_text=_("Format: YYYY-MM-JJ"),
+    )
+    maximum_date = models.DateField(
+        _("Date maximale"),
+        null=True,
+        blank=True,
+        help_text=_("Format: YYYY-MM-JJ"),
     )
 
     class Meta(object):
