@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
             row.save(update_fields=["validation_document"])
 
     dependencies = [
-        ("forms", "0031_alter_field_input_type"),
+        ("forms", "0033_form_geo_step_help_text"),
     ]
 
     operations = [
