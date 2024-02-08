@@ -22,6 +22,6 @@ class Command(BaseCommand):
             for integrator_group in integrator_groups:
                 integrator_group.permissions.set(get_integrator_permissions())
 
-            self.stdout.write("Update of integrator permissions sucessful.")
+            self.stdout.write("Update of integrator permissions successful.")
         except CommandError:
             self.stdout.write("ERROR: Error while updating integrator permissions!")
