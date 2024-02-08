@@ -2028,7 +2028,8 @@ def submission_classify(request, submission_id, approve):
             models.Submission.STATUS_APPROVED
             if approve
             else models.Submission.STATUS_REJECTED
-        )
+        ),
+        "approve": approve,
     }
     title = (
         _("Approbation de la demande #%s") if approve else _("Refus de la demande #%s")

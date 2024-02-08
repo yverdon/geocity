@@ -1123,8 +1123,23 @@ class Submission(models.Model):
         distinct_available_actions = list(dict.fromkeys(available_actions))
         return distinct_available_actions
 
-    def is_validation_document_required(self):
-        return self.forms.filter(requires_validation_document=True).exists()
+    def is_validation_document_required(self, requirement_type=None):
+        filters = {"validation_document": True}
+
+        if requirement_type == "only_for_approval":
+            filters[
+                "validation_document_required_for"
+            ] = Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL
+        elif requirement_type == "only_for_refusal":
+            filters[
+                "validation_document_required_for"
+            ] = Form.VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL
+        else:
+            filters[
+                "validation_document_required_for"
+            ] = Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL
+
+        return self.forms.filter(**filters).exists()
 
     def has_default_validation_texts(self):
         return self.forms.exclude(default_validation_text="").exists()

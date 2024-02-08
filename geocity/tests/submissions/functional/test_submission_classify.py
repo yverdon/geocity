@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import models as submissions_models
 from geocity.tests import factories
 
@@ -240,13 +241,13 @@ class SubmissionClassifyTestCase(TestCase):
 
     def test_email_to_services_is_sent_when_secretariat_classifies_submission(self):
         form = factories.FormFactory(
-            requires_validation_document=False,
+            validation_document=False,
             notify_services=True,
             services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
         )
         form_name_1 = form.name
         form2 = factories.FormFactory(
-            requires_validation_document=False,
+            validation_document=False,
             notify_services=True,
             services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
         )
@@ -350,27 +351,118 @@ class ApprovedSubmissionClassifyTestCase(TestCase):
         )
         return response
 
-    def test_classify_submission_with_required_validation_doc_shows_file_field(
-        self,
-    ):
-        form = factories.FormFactory(requires_validation_document=True)
-        self.validation.submission.forms.set([form])
-        response = self._get_approval()
-        self.assertContains(response, "validation_pdf")
+    def _get_refusal(self):
+        response = self.client.get(
+            reverse(
+                "submissions:submission_reject",
+                kwargs={"submission_id": self.validation.submission.pk},
+            ),
+        )
+        self.assertContains(response, "Refus de la demande")
+        self.assertEqual(
+            self.validation.submission.status,
+            submissions_models.Submission.STATUS_PROCESSING,
+        )
+        return response
 
-    def test_classify_submission_without_required_validation_doc_does_not_show_file_field(
+    def test_classify_approve_submission_without_required_validation_doc_does_not_show_file_field(
         self,
     ):
-        form = factories.FormFactory(requires_validation_document=False)
+        form = factories.FormFactory(validation_document=False)
         self.validation.submission.forms.set([form])
         response = self._get_approval()
         self.assertNotContains(response, "validation_pdf")
 
-    def test_classify_submission_with_any_object_requiring_validation_doc_shows_file_field(
+    def test_classify_reject_submission_without_required_validation_doc_does_not_show_file_field(
         self,
     ):
-        form1 = factories.FormFactory(requires_validation_document=True)
-        form2 = factories.FormFactory(requires_validation_document=False)
+        form = factories.FormFactory(validation_document=False)
+        self.validation.submission.forms.set([form])
+        response = self._get_refusal()
+        self.assertNotContains(response, "validation_pdf")
+
+    def test_classify_approve_submission_with_required_validation_doc_for_approval_shows_file_field(
+        self,
+    ):
+        form = factories.FormFactory(
+            validation_document=True,
+            validation_document_required_for=forms_models.Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_approval()
+        self.assertContains(response, "validation_pdf")
+
+    def test_classify_reject_submission_with_required_validation_doc_for_approval_does_not_show_file_field(
+        self,
+    ):
+        form = factories.FormFactory(
+            validation_document=True,
+            validation_document_required_for=forms_models.Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_refusal()
+        self.assertNotContains(response, "validation_pdf")
+
+    def test_classify_approve_submission_with_required_validation_doc_for_refusal_does_not_show_file_field(
+        self,
+    ):
+        form = factories.FormFactory(
+            validation_document=True,
+            validation_document_required_for=forms_models.Form.VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_approval()
+        self.assertNotContains(response, "validation_pdf")
+
+    def test_classify_reject_submission_with_required_validation_doc_for_refusal_shows_file_field(
+        self,
+    ):
+        form = factories.FormFactory(
+            validation_document=True,
+            validation_document_required_for=forms_models.Form.VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_refusal()
+        self.assertContains(response, "validation_pdf")
+
+    def test_classify_approve_submission_with_required_validation_doc_for_approval_and_refusal_shows_file_field(
+        self,
+    ):
+        form = factories.FormFactory(
+            validation_document=True,
+            validation_document_required_for=forms_models.Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_approval()
+        self.assertContains(response, "validation_pdf")
+
+    def test_classify_reject_submission_with_required_validation_doc_for_approval_and_refusal_shows_file_field(
+        self,
+    ):
+        form = factories.FormFactory(
+            validation_document=True,
+            validation_document_required_for=forms_models.Form.VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_refusal()
+        self.assertContains(response, "validation_pdf")
+
+    def test_classify_approve_submission_with_any_object_requiring_validation_doc_shows_file_field(
+        self,
+    ):
+        form1 = factories.FormFactory(validation_document=True)
+        form2 = factories.FormFactory(validation_document=False)
         self.validation.submission.forms.set([form1, form2])
         response = self._get_approval()
         self.assertContains(response, "validation_pdf")
+
+    def test_classify_approve_submission_with_default_validation_text_shows_text(
+        self,
+    ):
+        default_validation_text = "Mon texte de validation par défaut"
+        form = factories.FormFactory(
+            default_validation_text=default_validation_text,
+        )
+        self.validation.submission.forms.set([form])
+        response = self._get_approval()
+        self.assertContains(response, default_validation_text)
