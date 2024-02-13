@@ -3006,6 +3006,54 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
             mail.outbox[0].message().as_string(),
         )
 
+    def test_secretary_reply_to_email_is_set_for_the_administrative_entity(self):
+        reply_to_email = "reply-to@geocity.ch"
+        form = factories.FormFactory()
+        self.submission.forms.set([form])
+
+        self.administrative_entity_expeditor = (
+            submissions_models.AdministrativeEntity.objects.first()
+        )
+        self.administrative_entity_expeditor.reply_to_email = reply_to_email
+        self.administrative_entity_expeditor.save()
+        self.administrative_entity_expeditor.refresh_from_db()
+
+        response = self.client.post(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
+            ),
+            data={
+                "status": submissions_models.Submission.STATUS_RECEIVED,
+                "action": submissions_models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].reply_to, [reply_to_email])
+
+    def test_secretary_reply_to_email_is_not_set_for_the_administrative_entity(self):
+        form = factories.FormFactory()
+        self.submission.forms.set([form])
+
+        response = self.client.post(
+            reverse(
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
+            ),
+            data={
+                "status": submissions_models.Submission.STATUS_RECEIVED,
+                "action": submissions_models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].reply_to, [])
+
 
 class SubmissionAnonymousTestCase(TestCase):
     def setUp(self):
