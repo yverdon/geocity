@@ -1318,20 +1318,20 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
 class ServiceFeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        self.submission = kwargs.pop("submission", None)
+        submission = kwargs.pop("submission", None)
 
         current_user = kwargs.pop("user", None)
 
         service_fee = kwargs.get("instance", None)
-        self.mode = kwargs.pop("mode", None)
+        mode = kwargs.pop("mode", None)
         # Convert timedelta to minutes as the form input is of integer type
         if service_fee:
-            self.mode = (
+            mode = (
                 "hourly_rate"
                 if service_fee.service_fee_type.fix_price == None
                 else "fix_price"
             )
-            if self.mode == "hourly_rate":
+            if mode == "hourly_rate":
                 service_fee.time_spent_on_task = int(
                     service_fee.time_spent_on_task.total_seconds() / 60
                 )
@@ -1347,14 +1347,14 @@ class ServiceFeeForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        if self.mode == "hourly_rate":
+        if mode == "hourly_rate":
             # Remove "monetary_amount" field
             self.fields.pop("monetary_amount")
-        elif self.mode == "fix_price":
+        elif mode == "fix_price":
             # Remove "time_spent_on_task" field
             self.fields.pop("time_spent_on_task")
-        elif self.mode not in ("hourly_rate", "fix_price", None):
-            # self.mode is None when reaching the /delete route:
+        elif mode not in ("hourly_rate", "fix_price", None):
+            # mode is None when reaching the /delete route:
             raise ValueError(
                 _(
                     "Bad value for Service Fee Type 'mode', it must be either 'hourly_rate' or 'fix_price'."
@@ -1367,8 +1367,7 @@ class ServiceFeeForm(forms.ModelForm):
         validator_filter = Q(permit_department__is_validator=True)
         current_user_filter = Q(pk__in=current_user_groups_pk)
         administrative_entity_filter = Q(
-            permit_department__administrative_entity=self.submission.administrative_entity,
-            permit_department__is_integrator_admin=False,
+            permit_department__administrative_entity=submission.administrative_entity,
         )
         groups_of_the_current_administrative_entity = Group.objects.filter(
             administrative_entity_filter & (backoffice_filter | validator_filter)
@@ -1383,7 +1382,7 @@ class ServiceFeeForm(forms.ModelForm):
         administrative_entity_service_fee_types = self.fields[
             "service_fee_type"
         ].queryset = ServiceFeeType.objects.filter(
-            administrative_entity=self.submission.administrative_entity
+            administrative_entity=submission.administrative_entity
         )
         self.fields[
             "service_fee_type"
@@ -1398,7 +1397,7 @@ class ServiceFeeForm(forms.ModelForm):
                 is_visible_by_validator=True,
             )
 
-        if self.mode == "fix_price":
+        if mode == "fix_price":
             self.fields["service_fee_type"].queryset = self.fields[
                 "service_fee_type"
             ].queryset.filter(fix_price__isnull=False)
@@ -1417,7 +1416,7 @@ class ServiceFeeForm(forms.ModelForm):
                     else True
                 )
 
-        elif self.mode == "hourly_rate":
+        elif mode == "hourly_rate":
             self.fields["service_fee_type"].queryset = self.fields[
                 "service_fee_type"
             ].queryset.filter(fix_price__isnull=True)
@@ -1426,6 +1425,10 @@ class ServiceFeeForm(forms.ModelForm):
         restricted_users_to_display_for_pilot = User.objects.filter(
             groups__in=groups_of_the_current_administrative_entity
         ).distinct()
+
+        self.fields[
+            "provided_by"
+        ].label_from_instance = lambda obj: f"{obj.get_full_name()}"
 
         if backoffice_groups_of_the_current_user:
             self.fields["provided_by"].queryset = restricted_users_to_display_for_pilot

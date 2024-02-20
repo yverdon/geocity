@@ -2186,14 +2186,21 @@ def administrative_entities_geojson(request, administrative_entity_id):
 
 
 # TODO: handle active form to redirect to correct tab
-def to_service_fees_page(submission_id=None):
+def to_service_fees_page(submission=None):
     """
     Function to return to the main service fees page.
     """
+
+    if not submission:
+        raise Http404
+
+    # update submission total fee monetary amount
+    submission.update_service_fees_total_price()
+
     return reverse(
         "submissions:submission_detail",
         kwargs={
-            "submission_id": submission_id,
+            "submission_id": submission.pk,
         },
     )
 
@@ -2210,7 +2217,12 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         statuses=models.Submission.SERVICE_FEES_STATUSES,
     )
     if not permissions.has_permission_to_manage_service_fees(request.user, submission):
-        raise Http404
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Vous n'avez pas la permission d'effectuer ce changement"),
+        )
+        return redirect(to_service_fees_page(submission))
 
     service_fee = (
         get_object_or_404(ServiceFee.objects.filter(pk=service_fee_id))
@@ -2275,14 +2287,19 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
                 not service_fee.service_fee_type.is_visible_by_validator
                 and not is_backoffice_of_submission
             ):
-                raise Http404
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    _("Vous n'avez pas la permission d'effectuer ce changement"),
+                )
+                return redirect(to_service_fees_page(submission))
             else:
                 service_fee.delete()
                 messages.success(request, success_message)
-            return redirect(to_service_fees_page(submission_id))
+            return redirect(to_service_fees_page(submission))
         elif "cancel" in request.POST:
             messages.success(request, cancel_message)
-            return redirect(to_service_fees_page(submission_id))
+            return redirect(to_service_fees_page(submission))
 
         if service_fees_form.is_valid():
 
@@ -2292,7 +2309,12 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
             ).is_visible_by_validator
             # Ensure validator cannot save pilot service fee
             if not is_backoffice_of_submission and not is_visible_by_validator:
-                raise Http404
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    _("Vous n'avez pas la permission d'effectuer ce changement"),
+                )
+                return redirect(to_service_fees_page(submission))
             obj = service_fees_form.save(commit=False)
             if action == "create":
                 obj.created_by = request.user
@@ -2301,9 +2323,6 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
             obj.updated_by = request.user
             obj.permit_department = department
             obj.save()
-
-            # update submission total fee monetary amount
-            submission.update_service_fees_total_price()
 
             messages.success(request, success_message)
 
@@ -2314,7 +2333,7 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
                     context,
                 )
             elif "save" in request.POST:
-                return redirect(to_service_fees_page(submission_id))
+                return redirect(to_service_fees_page(submission))
             else:
                 raise HttpResponse(status=404)
         else:

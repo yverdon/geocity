@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import *
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -278,7 +279,9 @@ class ServiceFee(models.Model):
             )
             # Compute the corresponding monetary amount
             self.monetary_amount = (
-                float(self.hourly_rate) * self.time_spent_on_task.total_seconds() / 3600
+                Decimal(self.hourly_rate)
+                * Decimal(self.time_spent_on_task.total_seconds())
+                / Decimal(3600)
             )
         # For fixed price service fees
         else:

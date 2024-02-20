@@ -408,6 +408,10 @@ class ServiceFeeTable(tables.Table):
         def render_footer(self, bound_column, table):
             return timedelta(seconds=self.time_spent_on_task_amount)
 
+    class ProvidedByFullName(tables.Column):
+        def render(self, value, bound_column, record):
+            return value.get_full_name()
+
     permit_department = tables.Column(
         verbose_name=_("Service"),
         orderable=False,
@@ -417,7 +421,7 @@ class ServiceFeeTable(tables.Table):
         verbose_name=_("Prestation"),
         orderable=False,
     )
-    provided_by = tables.Column(
+    provided_by = ProvidedByFullName(
         verbose_name=_("Saisie par"),
         orderable=False,
     )
