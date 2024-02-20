@@ -1271,6 +1271,11 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             if submission.administrative_entity.expeditor_email
             else settings.DEFAULT_FROM_EMAIL
         )
+        reply_to = (
+            submission.administrative_entity.reply_to_email
+            if submission.administrative_entity.reply_to_email
+            else None
+        )
 
         if submission.status == models.Submission.STATUS_AWAITING_SUPPLEMENT:
             submission_url = submission.get_absolute_url(
@@ -1309,6 +1314,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 "name": submission.author.get_full_name(),
                 "request_submission_edit_text": request_submission_edit_text,
             },
+            reply_to=reply_to,
         )
 
 
