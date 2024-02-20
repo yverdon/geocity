@@ -38,7 +38,7 @@
           {% if has_permission_to_classify and directives %}
 
             <li class="nav-item">
-            <a class="btn btn-primary btn-action nav-link" id="directives-tab" data-toggle="tab" href="#directives" role="tab" aria-controls="directives">
+            <a class="btn btn-primary btn-action nav-link{% if active_form == "directives" %} active{% endif %}" id="directives-tab" data-toggle="tab" href="#directives" role="tab" aria-controls="directives">
                 {% translate "Directives" %}
             </a>
             </li>

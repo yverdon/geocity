@@ -2197,11 +2197,14 @@ def to_service_fees_page(submission=None):
     # update submission total fee monetary amount
     submission.update_service_fees_total_price()
 
-    return reverse(
-        "submissions:submission_detail",
-        kwargs={
-            "submission_id": submission.pk,
-        },
+    return (
+        reverse(
+            "submissions:submission_detail",
+            kwargs={
+                "submission_id": submission.pk,
+            },
+        )
+        + f"?prev_active_form=services_fees"
     )
 
 
