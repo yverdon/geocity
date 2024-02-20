@@ -135,7 +135,9 @@ class FormQuerySet(models.QuerySet):
             if integrator_admin:
                 """An integrator can fill all forms he owns + public ones"""
                 queryset = queryset.filter(
-                    Q(integrator=integrator_admin) | Q(forms__is_public=True)
+                    Q(integrator=integrator_admin)
+                    | Q(forms__is_public=True)
+                    | Q(pk__in=user_administrative_entities)
                 )
             elif user_administrative_entities and user_can_view_private_form:
                 """User is trusted and associated to administrative entities,
