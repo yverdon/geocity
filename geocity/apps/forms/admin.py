@@ -90,6 +90,7 @@ class FormAdminForm(forms.ModelForm):
                 }
             ),
             "quick_access_slug": forms.TextInput(),
+            "validation_document_required_for": forms.RadioSelect(),
         }
         help_texts = {
             "wms_layers": "URL pour la ou les couches WMS utiles à la saisie de la demande pour ce type d'objet",
@@ -220,7 +221,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "requires_payment",
         "requires_online_payment",
         "payment_settings",
-        "requires_validation_document",
+        "validation_document",
+        "get_validation_document_required_for",
         "disable_validation_by_validators",
         "is_anonymous",
         "notify_services",
@@ -235,7 +237,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "publication_enabled",
         "permanent_publication_enabled",
         "max_submissions_nb_submissions",
-        "get_max_submissions_message",
         "agenda_visible",
     ]
     list_filter = ["administrative_entities"]
@@ -283,7 +284,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             _("Validation et nombre max."),
             {
                 "fields": (
-                    "requires_validation_document",
+                    "validation_document",
+                    "validation_document_required_for",
                     "default_validation_text",
                     "disable_validation_by_validators",
                     "max_submissions",
@@ -307,6 +309,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "geometry_types",
                     "wms_layers",
                     "wms_layers_order",
+                    "geo_step_help_text",
                 )
             },
         ),
@@ -381,12 +384,18 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     max_submissions_nb_submissions.admin_order_field = "max_submissions"
     max_submissions_nb_submissions.short_description = _("Nombre maximum de demandes")
 
-    def get_max_submissions_message(self, obj):
-        return obj.max_submissions_message if obj.max_submissions else "-"
+    def get_validation_document_required_for(self, obj):
+        return (
+            obj.get_validation_document_required_for_display()
+            if obj.validation_document
+            else "-"
+        )
 
-    get_max_submissions_message.admin_order_field = "max_submissions_message"
-    get_max_submissions_message.short_description = _(
-        "Message lorsque le nombre maximal est atteint"
+    get_validation_document_required_for.admin_order_field = (
+        "validation_document_required_for"
+    )
+    get_validation_document_required_for.short_description = _(
+        "Document de validation obligatoire pour"
     )
 
     def get_queryset(self, request):
@@ -538,6 +547,18 @@ class FieldAdminForm(forms.ModelForm):
 
         return self.cleaned_data["allowed_file_types"]
 
+    def clean_maximum_date(self):
+        minimum_date = self.cleaned_data.get("minimum_date")
+        maximum_date = self.cleaned_data.get("maximum_date")
+
+        if minimum_date is not None and maximum_date is not None:
+            if minimum_date >= maximum_date:
+                raise forms.ValidationError(
+                    _("La date maximale doit être ultérieure à la date minimale.")
+                )
+
+        return maximum_date
+
     class Media:
         js = ("js/admin/form_field.js",)
 
@@ -663,6 +684,8 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "store_geometry_for_address_field",
                     "map_widget_configuration",
                     "allowed_file_types",
+                    "minimum_date",
+                    "maximum_date",
                     "integrator",
                     "form_list",
                 )

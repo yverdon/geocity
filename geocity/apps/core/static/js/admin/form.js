@@ -85,4 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   maxSubmissions.addEventListener('input', hideMaxSubmissions);
   hideMaxSubmissions();
+
+  const validationDocument = document.getElementById('id_validation_document');
+  const validationDocumentRequiredFor = document.getElementById('id_validation_document_required_for').closest('.form-group.field-validation_document_required_for');
+
+  function hideValidationDocument() {
+    if (!validationDocument.checked) {
+      validationDocumentRequiredFor.style.display = 'none';
+    } else {
+      validationDocumentRequiredFor.style.display = 'block';
+    }
+  }
+
+  validationDocument.addEventListener('input', hideValidationDocument);
+  hideValidationDocument();
 });

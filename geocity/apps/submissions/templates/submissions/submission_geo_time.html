@@ -12,6 +12,14 @@
   <h3>{{ geo_title }}</h3>
   <hr>
   {% directives_and_legal_cta submission %}
+  {% if submission.has_geo_step_help_texts %}
+  <p class="mb-2 font-weight-bold">
+    {% for text in submission.get_geo_step_help_texts %}
+      {{ text }}
+      {% if not forloop.last %}<br>{% endif %}
+    {% endfor %}
+  </p>
+  {% endif %}
   <form method="post">
     <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}" data-permit-duration-max="{{ submission.max_validity }}">
       {% for form in formset.forms %}
