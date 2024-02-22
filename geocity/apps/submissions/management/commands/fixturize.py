@@ -536,7 +536,7 @@ class Command(BaseCommand):
         forms = administrative_entity.forms
         first_form = forms.first()
         form_no_validation_document = forms.order_by("id")[0]
-        form_no_validation_document.requires_validation_document = False
+        form_no_validation_document.validation_document = False
         form_no_validation_document.save()
         last_form = forms.last()
         department = administrative_entity.departments.filter(is_validator=True).first()

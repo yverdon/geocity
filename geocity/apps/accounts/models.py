@@ -317,6 +317,18 @@ class AdministrativeEntity(models.Model):
             )
         ],
     )
+    reply_to_email = models.CharField(
+        _("Adresse email de réponse"),
+        max_length=255,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$",
+                message="Le format de l'adresse email n'est pas valable.",
+            )
+        ],
+        help_text="Permet de définir une adresse email de réponse autre que celle de l'expéditeur des notifications",
+    )
     is_single_form_submissions = models.BooleanField(
         _("Autoriser uniquement un objet par demande"),
         default=True,

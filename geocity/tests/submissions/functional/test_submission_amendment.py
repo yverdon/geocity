@@ -352,7 +352,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
         )
         form = factories.FormFactory(
-            requires_validation_document=False,
+            validation_document=False,
             notify_services=True,
             services_to_notify="service-1@geocity.ch, service-2@geocity.ch, i-am-not-an-email,  ,\n\n\n",
         )

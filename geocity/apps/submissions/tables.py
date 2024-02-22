@@ -503,16 +503,19 @@ class PandasExportMixin(ExportMixin):
             list_selected_forms = list(
                 submission.selected_forms.values_list("form_id", flat=True)
             )
-            sheet_name = "_".join(map(str, list_selected_forms))
-            ordered_dict = SubmissionPrintSerializer(submission).data
-            ordered_dict.move_to_end("geometry")
-            data_dict = dict(ordered_dict)
-            data_str = json.dumps(data_dict)
-            record = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
 
-            if sheet_name not in records.keys():
-                records[sheet_name] = []
-            records[sheet_name].append(record)
+            # Handle null selected_forms (due to old bug YC-1093)
+            if list_selected_forms:
+                sheet_name = "_".join(map(str, list_selected_forms))
+                ordered_dict = SubmissionPrintSerializer(submission).data
+                ordered_dict.move_to_end("geometry")
+                data_dict = dict(ordered_dict)
+                data_str = json.dumps(data_dict)
+                record = json.loads(data_str, object_pairs_hook=collections.OrderedDict)
+
+                if sheet_name not in records.keys():
+                    records[sheet_name] = []
+                records[sheet_name].append(record)
 
         now = timezone.now()
 

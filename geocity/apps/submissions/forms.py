@@ -687,6 +687,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
         default_help_text = f"Le fichier doit faire moins de {str(file_size_mb)} Mo"
         dynamic_help_text = ""
+
         global_allowed_file_extensions_list = (
             config.ALLOWED_FILE_EXTENSIONS.translate(
                 str.maketrans("", "", string.whitespace)
@@ -699,6 +700,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             .lower()
             .split(",")
         )
+
         if field.allowed_file_types:
             extensions_intersect = list(
                 set(global_allowed_file_extensions_list).intersection(
@@ -713,6 +715,12 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             dynamic_help_text = (
                 f"{default_help_text}, format(s): {config.ALLOWED_FILE_EXTENSIONS}"
             )
+
+        dynamic_help_text = (
+            f"{field.help_text}<br>{dynamic_help_text}"
+            if field.help_text != ""
+            else dynamic_help_text
+        )
 
         allowed_mimetypes_str = ", ".join(
             [mimetypes.types_map[f".{item}"] for item in extensions_intersect]
@@ -1275,6 +1283,11 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             if submission.administrative_entity.expeditor_email
             else settings.DEFAULT_FROM_EMAIL
         )
+        reply_to = (
+            submission.administrative_entity.reply_to_email
+            if submission.administrative_entity.reply_to_email
+            else None
+        )
 
         if submission.status == models.Submission.STATUS_AWAITING_SUPPLEMENT:
             submission_url = submission.get_absolute_url(
@@ -1313,6 +1326,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 "name": submission.author.get_full_name(),
                 "request_submission_edit_text": request_submission_edit_text,
             },
+            reply_to=reply_to,
         )
 
 
@@ -1888,7 +1902,18 @@ class SubmissionClassifyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if not self.instance.is_validation_document_required():
+        approve = self.initial.get("approve")
+        document_required = self.instance.is_validation_document_required()
+        approval_document_required = self.instance.is_validation_document_required(
+            "only_for_approval"
+        )
+        refusal_document_required = self.instance.is_validation_document_required(
+            "only_for_refusal"
+        )
+
+        if not (approve and (document_required or approval_document_required)) and not (
+            not approve and (document_required or refusal_document_required)
+        ):
             del self.fields["validation_pdf"]
 
         if self.instance.has_default_validation_texts():

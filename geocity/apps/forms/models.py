@@ -135,7 +135,9 @@ class FormQuerySet(models.QuerySet):
             if integrator_admin:
                 """An integrator can fill all forms he owns + public ones"""
                 queryset = queryset.filter(
-                    Q(integrator=integrator_admin) | Q(forms__is_public=True)
+                    Q(integrator=integrator_admin)
+                    | Q(forms__is_public=True)
+                    | Q(pk__in=user_administrative_entities)
                 )
             elif user_administrative_entities and user_can_view_private_form:
                 """User is trusted and associated to administrative entities,
@@ -355,6 +357,18 @@ class Form(models.Model):
     Represents a Form configuration object.
     """
 
+    VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL = 1
+    VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL = 2
+    VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL = 3
+    VALIDATION_DOCUMENT_REQUIRED_FOR_CHOICES = (
+        (VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL, _("Approbation")),
+        (VALIDATION_DOCUMENT_REQUIRED_FOR_REFUSAL, _("Refus")),
+        (
+            VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL_AND_REFUSAL,
+            _("Approbation et refus"),
+        ),
+    )
+
     integrator = models.ForeignKey(
         Group,
         null=True,
@@ -424,8 +438,11 @@ class Form(models.Model):
         verbose_name=_("Paramètres de paiement"),
     )
 
-    requires_validation_document = models.BooleanField(
-        _("Document de validation obligatoire"), default=True
+    validation_document = models.BooleanField(_("Document de validation"), default=True)
+    validation_document_required_for = models.IntegerField(
+        _("Document de validation obligatoire pour"),
+        choices=VALIDATION_DOCUMENT_REQUIRED_FOR_CHOICES,
+        default=VALIDATION_DOCUMENT_REQUIRED_FOR_APPROVAL,
     )
     default_validation_text = models.TextField(
         _("Texte de validation par défaut"), blank=True
@@ -492,6 +509,14 @@ class Form(models.Model):
     wms_layers = models.URLField(_("Couche(s) WMS"), blank=True, max_length=1024)
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
+    )
+    geo_step_help_text = models.CharField(
+        _("Texte facultatif d'aide"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Permet d'être plus explicite sur ce qui est attendu de la personne qui remplit le formulaire."
+        ),
     )
     prices = models.ManyToManyField(
         "Price", verbose_name=_("tarifs"), related_name="forms", through=FormPrice

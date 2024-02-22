@@ -58,7 +58,7 @@ class Transaction(models.Model):
     creation_date = models.DateTimeField(_("Date de création"), auto_now_add=True)
     updated_date = models.DateTimeField(_("Date de modification"), auto_now=True)
     authorization_timeout_on = models.DateTimeField(
-        _("Date de fin d'authorisation"), null=True
+        _("Date de fin d'autorisation"), null=True
     )
     payment_url = models.CharField(_("URL de paiement"), max_length=255, null=True)
 
