@@ -1,4 +1,4 @@
-{% load i18n %}{% autoescape off %}{% blocktranslate %}Bonjour {{ name }}{% endblocktranslate %},
+{% load i18n %}{% autoescape off %}{% translate "Bonjour," %}
 
 {% translate "Nous vous informons qu'une demande a été traitée et classée par le secrétariat." %}
 

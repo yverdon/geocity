@@ -1,4 +1,4 @@
-{% load i18n %}{% autoescape off %}{% blocktranslate %}Bonjour {{ name }}{% endblocktranslate %},
+{% load i18n %}{% autoescape off %}{% translate "Bonjour," %}
 
 {% translate "Les services chargés de la validation d'une demande ont donné leur préavis." %}
 
