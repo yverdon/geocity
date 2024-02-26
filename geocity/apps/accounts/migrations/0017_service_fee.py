@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0015_alter_siteprofile_integrator"),
+        ("accounts", "0016_administrativeentity_reply_to_email"),
     ]
 
     operations = [

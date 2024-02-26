@@ -10,8 +10,11 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("accounts", "0016_service_fee"),
-        ("submissions", "0024_geom_field_input_type_for_form"),
+        ("accounts", "0017_service_fee"),
+        (
+            "submissions",
+            "0025_alter_historicalpostfinancetransaction_authorization_timeout_on_and_more",
+        ),
     ]
 
     operations = [
