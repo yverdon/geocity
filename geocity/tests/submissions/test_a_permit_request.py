@@ -2890,7 +2890,7 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        self.assertInHTML("Payer", content)
+        self.assertInHTML('<button class="btn btn-primary">Payer</button>', content)
 
     def test_single_price_is_preselected_in_prolongation_page(self):
         submission = factories.SubmissionFactory(
