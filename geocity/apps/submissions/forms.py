@@ -1377,7 +1377,7 @@ class ServiceFeeForm(forms.ModelForm):
                     service_fee.time_spent_on_task.total_seconds() / 60
                 )
 
-        # Assigns automatically provided_by
+        # Assigns automatically provided_by when blank
         # Mandatory. "provided_by" field is disabled for validators
         if "data" in kwargs and kwargs["data"]:
             data = kwargs["data"].copy()
