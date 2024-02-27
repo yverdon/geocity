@@ -13,7 +13,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
@@ -1331,131 +1331,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
 
 class ServiceFeeForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        submission = kwargs.pop("submission", None)
-
-        current_user = kwargs.pop("user", None)
-
-        service_fee = kwargs.get("instance", None)
-        mode = kwargs.pop("mode", None)
-        # Convert timedelta to minutes as the form input is of integer type
-        if service_fee:
-            mode = (
-                "hourly_rate"
-                if service_fee.service_fee_type.fix_price == None
-                else "fix_price"
-            )
-            if mode == "hourly_rate":
-                service_fee.time_spent_on_task = int(
-                    service_fee.time_spent_on_task.total_seconds() / 60
-                )
-
-        # This is mandatory because the "provided_by" field is disabled for
-        # validators here after:
-        if "data" in kwargs and kwargs["data"]:
-            data = kwargs["data"].copy()
-            data["provided_by"] = (
-                current_user if "provided_by" not in data else data["provided_by"]
-            )
-            kwargs["data"] = data
-
-        super().__init__(*args, **kwargs)
-
-        if mode == "hourly_rate":
-            # Remove "monetary_amount" field
-            self.fields.pop("monetary_amount")
-        elif mode == "fix_price":
-            # Remove "time_spent_on_task" field
-            self.fields.pop("time_spent_on_task")
-        elif mode not in ("hourly_rate", "fix_price", None):
-            # mode is None when reaching the /delete route:
-            raise ValueError(
-                _(
-                    "Bad value for Service Fee Type 'mode', it must be either 'hourly_rate' or 'fix_price'."
-                )
-            )
-
-        current_user_groups_pk = current_user.groups.all().values_list("pk", flat=True)
-
-        backoffice_filter = Q(permit_department__is_backoffice=True)
-        validator_filter = Q(permit_department__is_validator=True)
-        current_user_filter = Q(pk__in=current_user_groups_pk)
-        administrative_entity_filter = Q(
-            permit_department__administrative_entity=submission.administrative_entity,
-        )
-        groups_of_the_current_administrative_entity = Group.objects.filter(
-            administrative_entity_filter & (backoffice_filter | validator_filter)
-        )
-        backoffice_groups_of_the_current_user = (
-            groups_of_the_current_administrative_entity.filter(
-                current_user_filter & backoffice_filter
-            )
-        )
-
-        # Get service fee types for current administrative entity
-        administrative_entity_service_fee_types = self.fields[
-            "service_fee_type"
-        ].queryset = ServiceFeeType.objects.filter(
-            administrative_entity=submission.administrative_entity
-        )
-        self.fields[
-            "service_fee_type"
-        ].queryset = administrative_entity_service_fee_types
-        # Filter out service fee types if the user is only in validator groups of the current administrative entity
-        if not backoffice_groups_of_the_current_user and Group.objects.filter(
-            validator_filter & administrative_entity_filter & current_user_filter
-        ):
-            self.fields[
-                "service_fee_type"
-            ].queryset = administrative_entity_service_fee_types.filter(
-                is_visible_by_validator=True,
-            )
-
-        if mode == "fix_price":
-            self.fields["service_fee_type"].queryset = self.fields[
-                "service_fee_type"
-            ].queryset.filter(fix_price__isnull=False)
-            self.monetary_amount = (
-                self.fields["service_fee_type"]
-                .queryset.filter(fix_price__isnull=False)
-                .values_list("fix_price", flat=True)
-            )
-
-            # ServiceFeeType monetary_amount for fix_price can be editable or not editable, depending on fix_price_editable value
-            self.fields["monetary_amount"].widget.attrs["readonly"] = True
-            if service_fee:
-                self.fields["monetary_amount"].widget.attrs["readonly"] = (
-                    not service_fee.service_fee_type.fix_price_editable
-                    if service_fee.service_fee_type
-                    else True
-                )
-
-        elif mode == "hourly_rate":
-            self.fields["service_fee_type"].queryset = self.fields[
-                "service_fee_type"
-            ].queryset.filter(fix_price__isnull=True)
-
-        # If the user is in both pilot and validator groups, mutiple groups will cause valisation error, hence the distict()
-        restricted_users_to_display_for_pilot = User.objects.filter(
-            groups__in=groups_of_the_current_administrative_entity
-        ).distinct()
-
-        self.fields[
-            "provided_by"
-        ].label_from_instance = lambda obj: f"{obj.get_full_name()}"
-
-        if backoffice_groups_of_the_current_user:
-            self.fields["provided_by"].queryset = restricted_users_to_display_for_pilot
-        else:
-            # Get only current user in list for validators
-            # Validator A should not see validator B or C, but only himself.
-            self.fields["provided_by"].queryset = User.objects.filter(
-                pk=current_user.id
-            )
-            self.fields["provided_by"].widget.attrs["disabled"] = True
-
-    required_css_class = "required"
-
     class Meta:
         model = ServiceFee
         localized_fields = "__all__"
@@ -1483,6 +1358,119 @@ class ServiceFeeForm(forms.ModelForm):
                 attrs={"min": 0, "step": 1},
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        submission = kwargs.pop("submission", None)
+        current_user = kwargs.pop("user", None)
+        service_fee = kwargs.get("instance", None)
+        mode = kwargs.pop("mode", None)
+
+        # Convert timedelta to minutes
+        if service_fee:
+            mode = (
+                "hourly_rate"
+                if service_fee.service_fee_type.fix_price == None
+                else "fix_price"
+            )
+            if mode == "hourly_rate":
+                service_fee.time_spent_on_task = int(
+                    service_fee.time_spent_on_task.total_seconds() / 60
+                )
+
+        # Assigns automatically provided_by
+        # Mandatory. "provided_by" field is disabled for validators
+        if "data" in kwargs and kwargs["data"]:
+            data = kwargs["data"].copy()
+            data["provided_by"] = (
+                current_user if "provided_by" not in data else data["provided_by"]
+            )
+            kwargs["data"] = data
+
+        super().__init__(*args, **kwargs)
+
+        # Mode manager. Show fields according to selected "mode"
+        if mode == "hourly_rate":
+            self.fields.pop("monetary_amount")
+        elif mode == "fix_price":
+            self.fields.pop("time_spent_on_task")
+        elif mode not in ("hourly_rate", "fix_price", None):
+            # mode is None when reaching the /delete route:
+            raise ValueError(
+                _(
+                    "Bad value for Service Fee Type 'mode', it must be either 'hourly_rate' or 'fix_price'."
+                )
+            )
+
+        current_user_groups = current_user.groups.all()
+
+        backoffice_filter = Q(permit_department__is_backoffice=True)
+        validator_filter = Q(permit_department__is_validator=True)
+        administrative_entity_filter = Q(
+            permit_department__administrative_entity=submission.administrative_entity,
+        )
+
+        current_user_administrative_entity_groups = current_user_groups.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+
+        current_user_backoffice_groups = (
+            current_user_administrative_entity_groups.filter(backoffice_filter)
+        )
+
+        current_user_validator_groups = (
+            current_user_administrative_entity_groups.filter(validator_filter)
+        )
+
+        # Get service fee types for current administrative entity
+        fee_types_qs = ServiceFeeType.objects.filter(
+            administrative_entity=submission.administrative_entity
+        )
+
+        # Check if user is only validator for current administrative_entity
+        if not current_user_backoffice_groups and current_user_validator_groups:
+            fee_types_qs = fee_types_qs.filter(is_visible_by_validator=True)
+
+        if mode == "fix_price":
+            fee_types_qs = fee_types_qs.filter(fix_price__isnull=False)
+
+            self.monetary_amount = fee_types_qs.filter(
+                fix_price__isnull=False
+            ).values_list("fix_price", flat=True)
+
+            # ServiceFeeType monetary_amount for fix_price can be editable or not editable, depending on fix_price_editable value
+            self.fields["monetary_amount"].widget.attrs["readonly"] = True
+            if service_fee:
+                self.fields["monetary_amount"].widget.attrs["readonly"] = (
+                    not service_fee.service_fee_type.fix_price_editable
+                    if service_fee.service_fee_type
+                    else True
+                )
+
+        elif mode == "hourly_rate":
+            fee_types_qs = fee_types_qs.filter(fix_price__isnull=True)
+
+        # Assign de queryset to the field
+        self.fields["service_fee_type"].queryset = fee_types_qs
+
+        # Displayable users for pilot
+        # Distinct to prevent error from being pilot and validator
+        displayable_users_for_provided_by = User.objects.filter(
+            groups__in=current_user_administrative_entity_groups
+        ).distinct()
+
+        self.fields[
+            "provided_by"
+        ].label_from_instance = lambda obj: f"{obj.get_full_name()}"
+
+        if current_user_backoffice_groups:
+            self.fields["provided_by"].queryset = displayable_users_for_provided_by
+        else:
+            # Get only current user in list for validators
+            # Validator A should not see validator B or C, but only himself.
+            self.fields["provided_by"].queryset = User.objects.filter(
+                pk=current_user.id
+            )
+            self.fields["provided_by"].widget.attrs["disabled"] = True
 
     def clean_time_spent_on_task(self):
         time_spent_on_task = int(float(self.data["time_spent_on_task"]))
