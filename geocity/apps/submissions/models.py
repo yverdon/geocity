@@ -1282,6 +1282,7 @@ class Submission(models.Model):
             .order_by("-updated_date")
             .first()
         )
+
     # ServiceFees for submission
     def get_service_fees(self):
         return ServiceFee.objects.filter(submission=self)
