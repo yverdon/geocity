@@ -14,13 +14,13 @@ fi
 
 if [ "$ENV" == "PROD" ]; then
     python3 manage.py collectstatic --no-input
-    python3 manage.py compilemessages -l fr
     python3 manage.py update_integrator_permissions
 elif [ "$ENV" == "DEV" ]; then
-    python3 manage.py compilemessages -l fr
     python3 manage.py migrate
     python3 manage.py update_integrator_permissions
 fi
+
+python3 manage.py compilemessages -l fr
 
 
 # Run the command
