@@ -51,7 +51,7 @@ from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
-from . import filters, forms, models, permissions, services, tables
+from . import filters, forms, models, permissions, services, shortcuts, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
 from .payments.models import ServiceFee, ServiceFeeType
 from .payments.services import (
@@ -265,12 +265,21 @@ class SubmissionDetailView(View):
                 data=self.submission.get_transactions()
             )
 
+        displayable_provided_by_users = (
+            shortcuts.get_displayable_service_fee_provided_by_for_validators(
+                self.submission.administrative_entity, self.request.user
+            )
+        )
+
         service_fees = self.submission.get_service_fees()
         if not permissions.is_backoffice_of_submission(
             self.request.user, self.submission
         ):
             service_fees = service_fees.filter(
-                (Q(created_by=self.request.user) | Q(provided_by=self.request.user))
+                (
+                    Q(created_by__in=displayable_provided_by_users)
+                    | Q(provided_by__in=displayable_provided_by_users)
+                )
             )
 
         service_fees_table = ServiceFeeTable(
@@ -2220,6 +2229,7 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         submission_id,
         statuses=models.Submission.SERVICE_FEES_STATUSES,
     )
+
     if not permissions.has_permission_to_manage_service_fees(request.user, submission):
         messages.add_message(
             request,
@@ -2234,17 +2244,37 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         else None
     )
 
-    action = request.GET.get("action")
-    mode = request.GET.get("mode") if request.GET.get("mode") else None
+    # Manage access to this view
+    # Backoffice can see and update everything of his entity
+    # Validator can update and delete element from his group
+    is_backoffice_of_submission = permissions.is_backoffice_of_submission(
+        request.user, submission
+    )
+    displayable_provided_by_users = (
+        shortcuts.get_displayable_service_fee_provided_by_for_validators(
+            submission.administrative_entity, request.user
+        )
+    )
+
+    action = request.GET.get("action", None)
+    mode = request.GET.get("mode", None)
+
+    if service_fee:
+        if not is_backoffice_of_submission and not (
+            service_fee.provided_by in displayable_provided_by_users
+            or service_fee.created_by in displayable_provided_by_users
+        ):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Cette prestation n'existe pas ou n'est pas disponible"),
+            )
+            return redirect(to_service_fees_page(submission))
 
     if request.method == "POST":
 
         departments = (
             get_departments(request.user) if action in ("create", "update") else None
-        )
-
-        is_backoffice_of_submission = permissions.is_backoffice_of_submission(
-            request.user, submission
         )
 
         # Ensure the backoffice group is selected if the user is also in validator group for the submission

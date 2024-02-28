@@ -13,7 +13,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
@@ -1409,6 +1409,10 @@ class ServiceFeeForm(forms.ModelForm):
             permit_department__administrative_entity=submission.administrative_entity,
         )
 
+        administrative_entity_groups = Group.objects.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+
         current_user_administrative_entity_groups = current_user_groups.filter(
             administrative_entity_filter & (backoffice_filter | validator_filter)
         )
@@ -1452,24 +1456,22 @@ class ServiceFeeForm(forms.ModelForm):
         # Assign de queryset to the field
         self.fields["service_fee_type"].queryset = fee_types_qs
 
-        # Displayable users for pilot
-        # Distinct to prevent error from being pilot and validator
-        displayable_users_for_provided_by = User.objects.filter(
-            groups__in=current_user_administrative_entity_groups
+        # Displayable users for backoffice
+        # Distinct to prevent error from being backoffice and validator
+        displayable_provided_by_users = User.objects.filter(
+            groups__in=administrative_entity_groups
         ).distinct()
 
         self.fields[
             "provided_by"
         ].label_from_instance = lambda obj: f"{obj.get_full_name()}"
 
-        if current_user_backoffice_groups:
-            self.fields["provided_by"].queryset = displayable_users_for_provided_by
-        else:
-            # Get only current user in list for validators
-            # Validator A should not see validator B or C, but only himself.
-            self.fields["provided_by"].queryset = User.objects.filter(
-                pk=current_user.id
-            )
+        # Backoffice and validator have access to the list
+        # Reason : Watching another validator fee should show name correctly
+        self.fields["provided_by"].queryset = displayable_provided_by_users
+
+        # Only backoffice can change user
+        if not current_user_backoffice_groups:
             self.fields["provided_by"].widget.attrs["disabled"] = True
 
     def clean_time_spent_on_task(self):
