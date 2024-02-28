@@ -1,4 +1,5 @@
 import io
+import logging
 import mimetypes
 import string
 from collections import defaultdict
@@ -12,7 +13,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
@@ -40,8 +41,10 @@ from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import SubmissionPrice
+from .payments.models import ServiceFee, ServiceFeeType, SubmissionPrice
 from .permissions import has_permission_to_amend_submission
+
+logger = logging.getLogger(__name__)
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -353,7 +356,6 @@ class FormsSingleSelectForm(FormsSelectForm):
 
 
 class FormsPriceSelectForm(forms.Form):
-
     selected_price = forms.ChoiceField(
         label=False, widget=SingleFormRadioSelectWidget(), required=True
     )
@@ -599,7 +601,6 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_regex_field_kwargs(self, field, default_kwargs):
-
         return {
             **default_kwargs,
             "widget": forms.Textarea(
@@ -657,7 +658,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             "widget": DatePickerInput(
                 options={
                     "format": "DD.MM.YYYY",
-                    "locale": "fr-CH",
+                    "locale": settings.LANGUAGE_CODE,
                     "useCurrent": False,
                     "minDate": min_date,
                     "maxDate": max_date,
@@ -1022,6 +1023,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             "featured_agenda",
             "shortname",
             "status",
+            "service_fees_total_price",
         ]
         widgets = {
             "is_public": forms.RadioSelect(
@@ -1033,6 +1035,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             "featured_agenda": forms.RadioSelect(
                 choices=BOOLEAN_CHOICES,
             ),
+            "service_fees_total_price": forms.TextInput(),
         }
 
     def __init__(self, user, *args, **kwargs):
@@ -1127,6 +1130,15 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 == self.instance.forms.count()
             ):
                 self.fields["is_public"].widget = forms.HiddenInput()
+
+            # Show/Hide total fees prices if module id enabled in admin
+            fees_module_enabled = self.instance.forms.filter(
+                fees_module_enabled=True
+            ).exists()
+            if not fees_module_enabled:
+                self.fields["service_fees_total_price"].widget = forms.HiddenInput()
+            else:
+                self.fields["service_fees_total_price"].widget.attrs["readonly"] = True
 
             # Hide agenda fields if agenda is not activated
             if not self.instance.forms.filter(agenda_visible=True).exists():
@@ -1318,6 +1330,174 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
 
+class ServiceFeeForm(forms.ModelForm):
+    class Meta:
+        model = ServiceFee
+        localized_fields = "__all__"
+        fields = [
+            "service_fee_type",
+            "provided_by",
+            "provided_at",
+            "time_spent_on_task",
+            "monetary_amount",
+        ]
+
+        widgets = {
+            "service_fee_type": Select2Widget(
+                {"onchange": "updateFormMonetaryAmount();"}
+            ),
+            "provided_by": Select2Widget(),
+            "provided_at": DatePickerInput(
+                options={
+                    "format": "DD.MM.YYYY",
+                    "locale": settings.LANGUAGE_CODE,
+                    "useCurrent": False,
+                }
+            ),
+            "time_spent_on_task": forms.NumberInput(
+                attrs={"min": 0, "step": 1},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        submission = kwargs.pop("submission", None)
+        current_user = kwargs.pop("user", None)
+        service_fee = kwargs.get("instance", None)
+        mode = kwargs.pop("mode", None)
+
+        # Convert timedelta to minutes
+        if service_fee:
+            mode = (
+                "hourly_rate"
+                if service_fee.service_fee_type.fix_price == None
+                else "fix_price"
+            )
+            if mode == "hourly_rate":
+                service_fee.time_spent_on_task = int(
+                    service_fee.time_spent_on_task.total_seconds() / 60
+                )
+
+        # Assigns automatically provided_by when blank
+        # Mandatory. "provided_by" field is disabled for validators
+        if "data" in kwargs and kwargs["data"]:
+            data = kwargs["data"].copy()
+            data["provided_by"] = (
+                current_user if "provided_by" not in data else data["provided_by"]
+            )
+            kwargs["data"] = data
+
+        super().__init__(*args, **kwargs)
+
+        # Mode manager. Show fields according to selected "mode"
+        if mode == "hourly_rate":
+            self.fields.pop("monetary_amount")
+        elif mode == "fix_price":
+            self.fields.pop("time_spent_on_task")
+        elif mode not in ("hourly_rate", "fix_price", None):
+            # mode is None when reaching the /delete route:
+            raise ValueError(
+                _(
+                    "Bad value for Service Fee Type 'mode', it must be either 'hourly_rate' or 'fix_price'."
+                )
+            )
+
+        current_user_groups = current_user.groups.all()
+
+        backoffice_filter = Q(permit_department__is_backoffice=True)
+        validator_filter = Q(permit_department__is_validator=True)
+        administrative_entity_filter = Q(
+            permit_department__administrative_entity=submission.administrative_entity,
+        )
+
+        administrative_entity_groups = Group.objects.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+
+        current_user_administrative_entity_groups = current_user_groups.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+
+        current_user_backoffice_groups = (
+            current_user_administrative_entity_groups.filter(backoffice_filter)
+        )
+
+        current_user_validator_groups = (
+            current_user_administrative_entity_groups.filter(validator_filter)
+        )
+
+        # Get service fee types for current administrative entity
+        fee_types_qs = ServiceFeeType.objects.filter(
+            administrative_entity=submission.administrative_entity
+        )
+
+        # Check if user is only validator for current administrative_entity
+        if not current_user_backoffice_groups and current_user_validator_groups:
+            fee_types_qs = fee_types_qs.filter(is_visible_by_validator=True)
+
+        if mode == "fix_price":
+            fee_types_qs = fee_types_qs.filter(fix_price__isnull=False)
+
+            self.monetary_amount = fee_types_qs.filter(
+                fix_price__isnull=False
+            ).values_list("fix_price", flat=True)
+
+            # ServiceFeeType monetary_amount for fix_price can be editable or not editable, depending on fix_price_editable value
+            self.fields["monetary_amount"].widget.attrs["readonly"] = True
+            if service_fee:
+                self.fields["monetary_amount"].widget.attrs["readonly"] = (
+                    not service_fee.service_fee_type.fix_price_editable
+                    if service_fee.service_fee_type
+                    else True
+                )
+
+        elif mode == "hourly_rate":
+            fee_types_qs = fee_types_qs.filter(fix_price__isnull=True)
+
+        # Assign de queryset to the field
+        self.fields["service_fee_type"].queryset = fee_types_qs
+
+        # Displayable users for backoffice
+        # Distinct to prevent error from being backoffice and validator
+        displayable_provided_by_users = User.objects.filter(
+            groups__in=administrative_entity_groups
+        ).distinct()
+
+        self.fields[
+            "provided_by"
+        ].label_from_instance = lambda obj: f"{obj.get_full_name()}"
+
+        # Backoffice and validator have access to the list
+        # Reason : Watching another validator fee should show name correctly
+        self.fields["provided_by"].queryset = displayable_provided_by_users
+
+        # Only backoffice can change user
+        if not current_user_backoffice_groups:
+            self.fields["provided_by"].widget.attrs["disabled"] = True
+
+    def clean_time_spent_on_task(self):
+        time_spent_on_task = int(float(self.data["time_spent_on_task"]))
+        if time_spent_on_task < 0 or not isinstance(time_spent_on_task, int):
+            raise ValidationError(
+                _(
+                    "Le temps passé pour réaliser la prestation doit être un nombre entier supérieur ou égal à zéro."
+                )
+            )
+
+        return timedelta(minutes=time_spent_on_task)
+
+    def clean_provided_at(self):
+        provided_at = self.cleaned_data["provided_at"]
+        if not isinstance(provided_at, date):
+            raise ValidationError({"provided_at": _("This date is wrongly formatted.")})
+
+        return provided_at
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        return cleaned_data
+
+
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
     template_name = "geometrywidget/geometrywidget.html"
@@ -1347,11 +1527,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date de début"),
-        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        input_formats=settings.DATETIME_INPUT_FORMATS,
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             },
             attrs={"autocomplete": "off"},
@@ -1360,11 +1540,11 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     )
     ends_at = forms.DateTimeField(
         label=_("Date de fin"),
-        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        input_formats=settings.DATETIME_INPUT_FORMATS,
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             },
             attrs={"autocomplete": "off"},
@@ -1373,7 +1553,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     )
 
     class Meta:
-
         model = models.SubmissionGeoTime
         fields = [
             "geom",
@@ -1644,11 +1823,11 @@ class SubmissionValidationPokeForm(forms.Form):
 class SubmissionProlongationForm(forms.ModelForm):
     prolongation_date = forms.DateTimeField(
         label=_("Nouvelle date de fin demandée"),
-        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        input_formats=[settings.DATETIME_INPUT_FORMATS],
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
                 "minDate": (datetime.today()).strftime("%Y-%m-%d"),
             }
@@ -1877,7 +2056,7 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         ) and not self.cleaned_data.get("is_public"):
             raise ValidationError(
                 _(
-                    "Un département doit être renseigner ou le document doit être publique"
+                    "Un département doit être renseigné ou le document doit être publique"
                 )
             )
 
@@ -1960,7 +2139,7 @@ class SubmissionInquiryForm(forms.ModelForm):
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             }
         ),
@@ -1971,7 +2150,7 @@ class SubmissionInquiryForm(forms.ModelForm):
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             }
         ),

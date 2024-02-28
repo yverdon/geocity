@@ -1,305 +1,366 @@
 {% load i18n %}
 {% load bootstrap4 %}
 {% load render_table from django_tables2 %}
-
 <div class="container">
   {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
-  <h2>{% translate "" %}</h2>
-  <div class="row">
-    <div class="col">
-      <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
-
-      {% if forms.amend %}
-
-          <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" or active_form == "request_inquiry" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% translate "Traitement" %}</a>
-          </li>
-
-      {% endif %}
-
-      {% if not submission.is_classified and forms.request_validation and not submission.validation_by_validators_is_disabled %}
-
-          <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% translate "Envoi pour validation" %}</a>
-          </li>
-
-      {% endif %}
-
-      {% if forms.validate %}
-
-          <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
-              {% translate "Validation" %}
-              </a>
-          </li>
-
-      {% endif %}
-
-      {% if has_permission_to_classify and directives %}
-
-        <li class="nav-item">
-        <a class="btn btn-primary btn-action nav-link" id="directives-tab" data-toggle="tab" href="#directives" role="tab" aria-controls="directives">
-            {% translate "Directives" %}
-        </a>
-        </li>
-
-      {% endif %}
-
-      {% if not submission.is_classified %}
-          {% if forms.poke or can_classify %}
-
-              <li class="nav-item">
-                  <a class="btn btn-primary btn-action nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
-                  {% translate "Classement" %}
-                  </a>
-              </li>
-
+    <h2>{% translate "" %}</h2>
+    <div class="row">
+      <div class="col">
+        <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
+          {% if forms.amend %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" or active_form == "request_inquiry" %} active{% endif %}"
+                 id="amend-tab"
+                 data-toggle="tab"
+                 href="#amend"
+                 role="tab"
+                 aria-controls="amend"
+                 aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% translate "Traitement" %}</a>
+            </li>
           {% endif %}
-      {% endif %}
-
-      {% if forms.prolong and prolongation_enabled %}
-
-          <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
-              {% translate "Prolongation" %}
+          {% if not submission.is_classified and forms.request_validation %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "request_validation" %} active{% endif %}"
+                 id="request-validation-tab"
+                 data-toggle="tab"
+                 href="#request-validation"
+                 role="tab"
+                 aria-controls="request-validation"
+                 aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% translate "Envoi pour validation" %}</a>
+            </li>
+          {% endif %}
+          {% if forms.validate %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "validate" %} active{% endif %}"
+                 id="validate-tab"
+                 data-toggle="tab"
+                 href="#validate"
+                 role="tab"
+                 aria-controls="validate"
+                 aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
+                {% translate "Validation" %}
               </a>
-          </li>
-
-      {% endif %}
-      {% if formsets.complementary_documents and document_enabled %}
-          <li class="nav-item">
-            <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                {% translate "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
-            </a>
-          </li>
-      {% endif %}
-      {% if transactions_table and online_payment_enabled %}
-          <li class="nav-item">
-            <a class="btn btn-primary btn-action nav-link{% if active_form == 'payments' %} active{% endif %}" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments">
-                {% translate "Paiement en ligne" %}
-            </a>
-          </li>
-      {% endif %}
-      </ul>
+            </li>
+          {% endif %}
+          {% if has_permission_to_classify and directives %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "directives" %} active{% endif %}"
+                 id="directives-tab"
+                 data-toggle="tab"
+                 href="#directives"
+                 role="tab"
+                 aria-controls="directives">{% translate "Directives" %}</a>
+            </li>
+          {% endif %}
+          {% if not submission.is_classified %}
+            {% if forms.poke or can_classify %}
+              <li class="nav-item">
+                <a class="btn btn-primary btn-action nav-link{% if active_form == "poke" %} active{% endif %}"
+                   id="classify-tab"
+                   data-toggle="tab"
+                   href="#classify"
+                   role="tab"
+                   aria-controls="classify"
+                   aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
+                  {% translate "Classement" %}
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+          {% if forms.prolong and prolongation_enabled %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == 'prolong' %} active{% endif %}"
+                 id="classify-tab"
+                 data-toggle="tab"
+                 href="#prolong"
+                 role="tab"
+                 aria-controls="prolong"
+                 aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
+                {% translate "Prolongation" %}
+              </a>
+            </li>
+          {% endif %}
+          {% if formsets.complementary_documents and document_enabled %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}"
+                 id="documents-tab"
+                 data-toggle="tab"
+                 href="#documents"
+                 role="tab"
+                 aria-controls="documents">{% translate "Documents et impressions" %}</a>
+            </li>
+          {% endif %}
+          {% if transactions_table and online_payment_enabled %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == 'payments' %} active{% endif %}"
+                 id="payments-tab"
+                 data-toggle="tab"
+                 href="#payments"
+                 role="tab"
+                 aria-controls="payments">{% translate "Paiement en ligne" %}</a>
+            </li>
+          {% endif %}
+          {% if has_permission_to_manage_service_fees and service_fees_table %}
+            <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link {% if active_form == 'services_fees' %}active{% endif %}"
+                 id="services-fees-tab"
+                 data-toggle="tab"
+                 href="#services-fees"
+                 role="tab"
+                 aria-controls="services-fees"
+                 aria-selected="{% if active_form == 'services_fees' %}true{% else %}false{% endif %}">
+                {% translate "Prestations" %}
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
-  </div>
-
-  <div class="row sub-row">
-    <div class="col">
-      <div class="pt-3 tab-content box box--default box--tabbed">
-
-        {% if forms.amend %}
-            <div class='tab-pane{% if active_form == "amend" or active_form == "request_inquiry" %} show active{% endif %}' id="amend" role="tabpanel" aria-labelledby="amend-tab">
-                <h4>{% translate "Informations générales" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-                    {% for field in forms.amend.get_base_fields %}
-                        {% bootstrap_field field layout='horizontal'%}
-                    {% endfor %}
-                    <div class="container">
-                      {% for object_type, fields in forms.amend.get_fields_by_form %}
-                          {% if fields %}
-                            <h4 class="my-5">{{ object_type }}</h4>
-                            <div class="row">
-                              <div class="col-10">
-                              </div>
-                              <div class="col-2">
-                                <p>{% translate 'Visible par' %}</p>
-                                <hr>
-                              </div>
-                            </div>
-                            <div class="row">
-                              {% for field, is_visible_by_author, is_visible_by_validators in fields %}
-                                <div class="col-10">
-                                  {% bootstrap_field field layout='horizontal'%}
-                                </div>
-                                <div class="col-2">
-                                  <p>
-                                    {% if is_visible_by_author %}
-                                      <i class="fa fa-check-circle" aria-hidden="true"></i>
-                                    {% else %}
-                                      <i class="fa fa-times-circle" aria-hidden="true"></i>
-                                    {% endif %}
-                                    &nbsp;{% translate 'Auteur' %}
-                                  </p>
-                                  <p>
-                                    {% if is_visible_by_validators %}
-                                      <i class="fa fa-check-circle" aria-hidden="true"></i>
-                                    {% else %}
-                                      <i class="fa fa-times-circle" aria-hidden="true"></i>
-                                    {% endif %}
-                                    &nbsp;{% translate 'Validateurs' %}
-                                  </p>
-                                </div>
-                              {% endfor %}
-                            </div>
-                          {% endif %}
-                      {% endfor %}
-                    </div>
-
-                    <div class="text-right">
-                        <input name="action" type="hidden" value="amend">
-                        <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
-                        <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
-                    </div>
-                </form>
-
-              {% if publication_enabled %}
-              <hr>
-              <h4>{% translate "Mise en consultation publique" %}</h4><span class="badge badge-beta badge-success">Beta</span>
+    <div class="row sub-row">
+      <div class="col">
+        <div class="pt-3 tab-content box box--default box--tabbed">
+          {% if forms.amend %}
+            <div class='tab-pane{% if active_form == "amend" or active_form == "request_inquiry" %} show active{% endif %}'
+                 id="amend"
+                 role="tabpanel"
+                 aria-labelledby="amend-tab">
+              <h4>{% translate "Informations générales" %}</h4>
               <form method="post">
                 {% csrf_token %}
-
-                {{ forms.request_inquiry.media }}
-                {% bootstrap_form forms.request_inquiry layout='horizontal' %}
+                {% for field in forms.amend.get_base_fields %}
+                  {% bootstrap_field field layout='horizontal' %}
+                {% endfor %}
+                <div class="container">
+                  {% for object_type, fields in forms.amend.get_fields_by_form %}
+                    {% if fields %}
+                      <h4 class="my-5">{{ object_type }}</h4>
+                      <div class="row">
+                        <div class="col-10"></div>
+                        <div class="col-2">
+                          <p>{% translate 'Visible par' %}</p>
+                          <hr>
+                        </div>
+                      </div>
+                      <div class="row">
+                        {% for field, is_visible_by_author, is_visible_by_validators in fields %}
+                          <div class="col-10">{% bootstrap_field field layout='horizontal' %}</div>
+                          <div class="col-2">
+                            <p>
+                              {% if is_visible_by_author %}
+                                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                              {% else %}
+                                <i class="fa fa-times-circle" aria-hidden="true"></i>
+                              {% endif %}
+                              &nbsp;{% translate 'Auteur' %}
+                            </p>
+                            <p>
+                              {% if is_visible_by_validators %}
+                                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                              {% else %}
+                                <i class="fa fa-times-circle" aria-hidden="true"></i>
+                              {% endif %}
+                              &nbsp;{% translate 'Validateurs' %}
+                            </p>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
                 <div class="text-right">
-                    <input name="action" type="hidden" value="request_inquiry">
-                    <button class="btn btn-primary" {% if forms.request_inquiry.disabled %}disabled{% endif %}>{% translate "Envoyer" %}</button>
+                  <input name="action" type="hidden" value="amend">
+                  <button class="btn btn-primary"
+                          {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                  <button class="btn btn-primary"
+                          name="save_continue"
+                          {% if forms.amend.disabled %}disabled{% endif %}>
+                    {% translate "Enregistrer et continuer les modifications" %}
+                  </button>
                 </div>
               </form>
+              {% if publication_enabled %}
+                <hr>
+                <h4>{% translate "Mise en consultation publique" %}</h4>
+                <span class="badge badge-beta badge-success">Beta</span>
+                <form method="post">
+                  {% csrf_token %}
+                  {{ forms.request_inquiry.media }}
+                  {% bootstrap_form forms.request_inquiry layout='horizontal' %}
+                  <div class="text-right">
+                    <input name="action" type="hidden" value="request_inquiry">
+                    <button class="btn btn-primary"
+                            {% if forms.request_inquiry.disabled %}disabled{% endif %}>
+                      {% translate "Envoyer" %}
+                    </button>
+                  </div>
+                </form>
               {% endif %}
-
             </div>
-        {% endif %}
-
-        {% if not submission.is_classified and forms.request_validation and not submission.validation_by_validators_is_disabled %}
-            <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
-                <h4>{% translate "Envoi aux services pour validation" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {% bootstrap_form forms.request_validation layout='horizontal' %}
-                    <div class="text-right">
-                        <input name="action" type="hidden" value="request_validation">
-                        <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% translate "Envoyer pour validation" %}</button>
-                        {% if has_permission_to_validate_submission %}
-                          <button class="btn btn-primary" name="save_continue" {% if forms.request_validation.disabled %}disabled{% endif %}>{% translate "Envoyer pour validation et continuer les modifications" %}</button>
-                        {% endif %}
-                    </div>
-                </form>
-            </div>
-        {% endif %}
-
-        {% if forms.validate %}
-            <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
-                <h4>{% translate "Réponse à la demande de validation" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {% bootstrap_form forms.validate layout='horizontal' %}
-                    <div class="text-right">
-                        <input name="action" type="hidden" value="validate">
-                        <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% translate "Soumettre" %}</button>
-                        {% if has_permission_to_classify_submission %}
-                          <button class="btn btn-primary" name="save_continue" {% if forms.validate.disabled %}disabled{% endif %}>{% translate "Soumettre et continuer les modifications" %}</button>
-                        {% endif %}
-                    </div>
-                </form>
-            </div>
-        {% endif %}
-
-        {% if directives %}
-            <div class="tab-pane" id="directives" role="tabpanel" aria-labelledby="directives-tab">
-                <h4>{% translate "Directives liées à la demande" %}</h4>
-
-                {% for directive_file, directive_description, additional_information in directives %}
-                    <div{% if not forloop.last %} class="mb-3"{% endif %}>
-                      {% if directive_file and directive_description %}
-                          <span class="directive_description">{{ directive_description }}</span>:
-                          <i class="fa fa-download" aria-hidden="true"></i>
-                          <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% translate "Télécharger le fichier" %}</a>
-                          <br>
-                      {% endif %}
-
-                      {% if additional_information %}
-                          <span class="additional_information">{{ additional_information|safe }}</span>
-                      {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% if not submission.is_classified %}
-            {% if forms.poke or can_classify %}
-                <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
-                    <h4>{% translate "Classement de la demande" %}</h4>
-                    <form method="post">
-                        {% csrf_token %}
-
-                        {% if nb_pending_validations and not forms.poke.disabled %}
-                            <div class="form-text text-muted mb-3">{% translate "La demande ne peut pas être classée car elle est toujours en attente de validation." %}</div>
-                            <div class="text-right">
-                                <button name="action" value="poke" class="btn btn-primary">
-                                    {% blocktranslate trimmed count counter=nb_pending_validations %}
-                                    Envoyer un rappel au service
-                                    {% plural %}
-                                    Envoyer des rappels à {{ counter }} services
-                                    {% endblocktranslate %}
-                                </button>
-                            </div>
-
-                        {% elif has_permission_to_classify %}
-                            {% if not can_classify %}
-                                <div class="form-text text-muted mb-3">{% translate "La demande ne peut pas être classée car elle n'a pas encore été envoyée en validation." %}</div>
-                            {% else %}
-                                <div class="form-text text-muted mb-3">{% translate "Un message facultatif pourra être ajouté à la réponse à la page suivante." %}</div>
-                                <div class="text-right">
-                                    <a href="{% url 'submissions:submission_reject' submission_id=submission.pk %}" class="btn btn-primary ">
-                                        {% translate "Refuser" %}
-                                    </a>
-                                    <a href="{% url 'submissions:submission_approve' submission_id=submission.pk %}" class="btn btn-primary">
-                                        {% translate "Approuver" %}
-                                    </a>
-                                </div>
-                            {% endif %}
-                        {% endif %}
-                    </form>
+          {% endif %}
+          {% if not submission.is_classified and forms.request_validation %}
+            <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}"
+                 id="request-validation"
+                 role="tabpanel"
+                 aria-labelledby="request-validation-tab">
+              <h4>{% translate "Envoi aux services pour validation" %}</h4>
+              <form method="post">
+                {% csrf_token %}
+                {% bootstrap_form forms.request_validation layout='horizontal' %}
+                <div class="text-right">
+                  <input name="action" type="hidden" value="request_validation">
+                  <button class="btn btn-primary"
+                          {% if forms.request_validation.disabled %}disabled{% endif %}>
+                    {% translate "Envoyer pour validation" %}
+                  </button>
+                  {% if has_permission_to_validate_submission %}
+                    <button class="btn btn-primary"
+                            name="save_continue"
+                            {% if forms.request_validation.disabled %}disabled{% endif %}>
+                      {% translate "Envoyer pour validation et continuer les modifications" %}
+                    </button>
+                  {% endif %}
                 </div>
-            {% endif %}
-        {% endif %}
-
-        {% if forms.prolong and prolongation_enabled %}
-            <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
-                <h4>{% translate "Prolongation de la demande" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {{ forms.prolong.media }}
-                    {% if not forms.prolong.prolongation_date.value %}
-                        <div class="form-text text-muted mb-3">{% translate "Aucune prolongation n'a été demandée par l'auteur-e." %}</div>
-                    {% endif %}
-
-                    {% bootstrap_form forms.prolong layout='horizontal' %}
-                    <div class="text-right">
-                        <input name="action" type="hidden" value="prolong">
-                        <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
-                        <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
-                    </div>
-                </form>
+              </form>
             </div>
-        {% endif %}
-
-        {% if formsets.complementary_documents and document_enabled %}
-          <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+          {% endif %}
+          {% if forms.validate %}
+            <div class="tab-pane{% if active_form == "validate" %} show active{% endif %}"
+                 id="validate"
+                 role="tabpanel"
+                 aria-labelledby="validate-tab">
+              <h4>{% translate "Réponse à la demande de validation" %}</h4>
+              <form method="post">
+                {% csrf_token %}
+                {% bootstrap_form forms.validate layout='horizontal' %}
+                <div class="text-right">
+                  <input name="action" type="hidden" value="validate">
+                  <button class="btn btn-primary"
+                          {% if forms.validate.disabled %}disabled{% endif %}>{% translate "Soumettre" %}</button>
+                  {% if has_permission_to_classify_submission %}
+                    <button class="btn btn-primary"
+                            name="save_continue"
+                            {% if forms.validate.disabled %}disabled{% endif %}>
+                      {% translate "Soumettre et continuer les modifications" %}
+                    </button>
+                  {% endif %}
+                </div>
+              </form>
+            </div>
+          {% endif %}
+          {% if directives %}
+            <div class="tab-pane"
+                 id="directives"
+                 role="tabpanel"
+                 aria-labelledby="directives-tab">
+              <h4>{% translate "Directives liées à la demande" %}</h4>
+              {% for directive_file, directive_description, additional_information in directives %}
+                <div {% if not forloop.last %}class="mb-3"{% endif %}>
+                  {% if directive_file and directive_description %}
+                    <span class="directive_description">{{ directive_description }}</span>:
+                    <i class="fa fa-download" aria-hidden="true"></i>
+                    <a class="directive_file"
+                       href="{{ directive_file.url }}"
+                       target="_blank"
+                       rel="noreferrer">{% translate "Télécharger le fichier" %}</a>
+                    <br>
+                  {% endif %}
+                  {% if additional_information %}
+                    <span class="additional_information">{{ additional_information|safe }}</span>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if not submission.is_classified %}
+            {% if forms.poke or can_classify %}
+              <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif %}"
+                   id="classify"
+                   role="tabpanel"
+                   aria-labelledby="classify-tab">
+                <h4>{% translate "Classement de la demande" %}</h4>
+                <form method="post">
+                  {% csrf_token %}
+                  {% if nb_pending_validations and not forms.poke.disabled %}
+                    <div class="form-text text-muted mb-3">
+                      {% translate "La demande ne peut pas être classée car elle est toujours en attente de validation." %}
+                    </div>
+                    <div class="text-right">
+                      <button name="action" value="poke" class="btn btn-primary">
+                        {% blocktranslate trimmed count counter=nb_pending_validations %}
+                          Envoyer un rappel au service
+                        {% plural %}
+                          Envoyer des rappels à {{ counter }} services
+                        {% endblocktranslate %}
+                      </button>
+                    </div>
+                  {% elif has_permission_to_classify %}
+                    {% if not can_classify %}
+                      <div class="form-text text-muted mb-3">
+                        {% translate "La demande ne peut pas être classée car elle n'a pas encore été envoyée en validation." %}
+                      </div>
+                    {% else %}
+                      <div class="form-text text-muted mb-3">
+                        {% translate "Un message facultatif pourra être ajouté à la réponse à la page suivante." %}
+                      </div>
+                      <div class="text-right">
+                        <a href="{% url 'submissions:submission_reject' submission_id=submission.pk %}"
+                           class="btn btn-primary ">{% translate "Refuser" %}</a>
+                        <a href="{% url 'submissions:submission_approve' submission_id=submission.pk %}"
+                           class="btn btn-primary">{% translate "Approuver" %}</a>
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                </form>
+              </div>
+            {% endif %}
+          {% endif %}
+          {% if forms.prolong and prolongation_enabled %}
+            <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif %}"
+                 id="prolong"
+                 role="tabpanel"
+                 aria-labelledby="prolong-tab">
+              <h4>{% translate "Prolongation de la demande" %}</h4>
+              <form method="post">
+                {% csrf_token %}
+                {{ forms.prolong.media }}
+                {% if not forms.prolong.prolongation_date.value %}
+                  <div class="form-text text-muted mb-3">{% translate "Aucune prolongation n'a été demandée par l'auteur-e." %}</div>
+                {% endif %}
+                {% bootstrap_form forms.prolong layout='horizontal' %}
+                <div class="text-right">
+                  <input name="action" type="hidden" value="prolong">
+                  <button class="btn btn-primary"
+                          {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                  <button class="btn btn-primary"
+                          name="save_continue"
+                          {% if forms.prolong.disabled %}disabled{% endif %}>
+                    {% translate "Enregistrer et continuer les modifications" %}
+                  </button>
+                </div>
+              </form>
+            </div>
+          {% endif %}
+          {% if formsets.complementary_documents and document_enabled %}
+            <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}"
+                 id="documents"
+                 role="tabpanel"
+                 aria-labelledby="documents-tab">
               <h4>{% translate "Ajout de documents à la demande" %}</h4>
               <form method="post" enctype="multipart/form-data">
                 {{ formsets.complementary_documents.management_form }}
                 {% csrf_token %}
                 <div id="complementary-documents">
-
                   {% for form in formsets.complementary_documents %}
                     <div class="complementary-document">
-
                       {# Main document fields (either select report or upload) #}
                       <div class="form-group row">
                         <div class="col-sm-5">
-                          {% bootstrap_field form.generate_from_model layout='vertical'%}
+                          {% bootstrap_field form.generate_from_model layout='vertical' %}
                           <button id="id_form-{{ forloop.counter0 }}-print_preview"
                                   data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" "000000000" %}"
                                   class="btn btn-primary"
-                                  name="preview" disabled>
-                            {% translate "Prévisualiser" %}
-                          </button>
+                                  name="preview"
+                                  disabled>{% translate "Prévisualiser" %}</button>
                         </div>
                         <div class="col-sm-2">
                           <div class="vertical-divider">
@@ -307,23 +368,20 @@
                           </div>
                         </div>
                         <div class="col-sm-5">
-                          {% bootstrap_field form.document layout='vertical'%}
-                          {% bootstrap_field form.document_type layout='vertical'%}
-
+                          {% bootstrap_field form.document layout='vertical' %}
+                          {% bootstrap_field form.document_type layout='vertical' %}
                           {# Parent fields #}
                           {% for field in form %}
                             {% if field.name|slice:":7" == "parent_" %}
-                              {% bootstrap_field field layout='vertical'%}
+                              {% bootstrap_field field layout='vertical' %}
                             {% endif %}
                           {% endfor %}
-
                         </div>
                       </div>
-
                       {# All other fields #}
                       {% for field in form %}
                         {% if field.name != "generate_from_model" and field.name != "document" and field.name != "document_type" and field.name != "document_type" and field.name|slice:":7" != "parent_" %}
-                          {% bootstrap_field field layout='horizontal'%}
+                          {% bootstrap_field field layout='horizontal' %}
                         {% endif %}
                       {% endfor %}
                     </div>
@@ -335,22 +393,67 @@
                 </div>
                 <div class="text-right">
                   <input name="action" type="hidden" value="complementary_documents">
-                  <button class="btn btn-primary" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
-                  <button class="btn btn-primary" name="save_continue" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
+                  <button class="btn btn-primary"
+                          {% if forms.complementary_documents.disabled %}disabled{% endif %}>
+                    {% translate "Enregistrer" %}
+                  </button>
+                  <button class="btn btn-primary"
+                          name="save_continue"
+                          {% if forms.complementary_documents.disabled %}disabled{% endif %}>
+                    {% translate "Enregistrer et continuer les modifications" %}
+                  </button>
                 </div>
               </form>
-          </div>
-        {% endif %}
-
-        {% if transactions_table and online_payment_enabled %}
-          <div class='tab-pane{% if active_form == "payments" %} show active{% endif %}' id="payments" role="tabpanel" aria-labelledby="payments-tab">
-            <h4>{% translate "Transactions" %}</h4>
-            <div>
-              {% render_table transactions_table %}
             </div>
-        {% endif %}
+          {% endif %}
+          {% if transactions_table and online_payment_enabled %}
+            <div class='tab-pane{% if active_form == "payments" %} show active{% endif %}'
+                 id="payments"
+                 role="tabpanel"
+                 aria-labelledby="payments-tab">
+              <h4>{% translate "Transactions" %}</h4>
+              <div>{% render_table transactions_table %}</div>
+            </div>
+          {% endif %}
+          {% if has_permission_to_manage_service_fees and service_fees_table %}
+            <div class="tab-pane{% if active_form == "services_fees" %} show active{% endif %}"
+                 id="services-fees"
+                 role="tabpanel"
+                 aria-labelledby="services-fees-tab">
+              <form method="post">
+                {% csrf_token %}
+                <h4>{% translate "Liste des prestations saisies" %}</h4>
+                {% if service_fees_table.data %}
+                  <div>{% render_table service_fees_table %}</div>
+                {% else %}
+                  <div>
+                    <p>{% translate "Le tableau des prestations est actuellement vide." %}</p>
+                  </div>
+                {% endif %}
+                <div class="text-right">
+                  <p class="bold">{% translate "Ajouter une nouvelle prestation" %}:</p>
+                  <a class="btn btn-primary"
+                    name="action"
+                    mode="hourly_rate"
+                    href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}?action=create&mode=hourly_rate"
+                    title="{% translate 'Ajouter une prestation de type horaire.' %}">
+                    <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
+                    {% translate "Horaire" %}
+                  </a>
+                  <a class="btn btn-primary"
+                    name="action"
+                    mode="fix_price"
+                    href="{% url 'submissions:create_submission_service_fees' submission_id=submission.pk %}?action=create&mode=fix_price"
+                    title="{% translate 'Ajouter une prestation de type forfaitaire.' %}">
+                    <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
+                    {% translate "Forfaitaire" %}
+                  </a>
+                </div>
+              </form>
+            </div>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </div>
   {% endif %}
 </div>

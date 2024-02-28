@@ -249,7 +249,6 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             ),
             to_attr="current_inquiries_filtered",
         )
-
         qs = (
             Submission.objects.filter(base_filter)
             .filter(
@@ -263,6 +262,9 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
             .prefetch_related(geotime_prefetch)
             .prefetch_related(current_inquiry_prefetch)
             .prefetch_related("selected_forms", "contacts")
+            .prefetch_related("service_fee")
+            .prefetch_related("service_fee__permit_department")
+            .prefetch_related("service_fee__service_fee_type")
             .select_related(
                 "administrative_entity",
                 "author",

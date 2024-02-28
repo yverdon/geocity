@@ -1,9 +1,12 @@
+import datetime
 import importlib
 import os
+import random
 import re
 import shutil
 import sys
 import unicodedata
+from datetime import timedelta
 from io import StringIO
 
 from constance import config
@@ -23,6 +26,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
+from geocity.apps.submissions.payments.models import ServiceFeeType
 
 
 def strip_accents(text):
@@ -218,6 +222,7 @@ class Command(BaseCommand):
                     module.small_text,
                 )
                 self.stdout.write(" • Creating default report...")
+                self.setup_fees(administrative_entity, integrator_group)
                 Report.create_default_report(administrative_entity.id)
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
@@ -380,6 +385,7 @@ class Command(BaseCommand):
             is_public=True,
             notify_services=True,
             document_enabled=True,
+            fees_module_enabled=True,
             publication_enabled=True,
             permanent_publication_enabled=True,
             services_to_notify="",
@@ -942,6 +948,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                 "amend_submission",
                 "edit_submission_validations",
                 "classify_submission",
+                "can_manage_service_fee",
             ],
             content_type=self.submission_ct,
         )
@@ -998,11 +1005,15 @@ Après : Excellent projet qui bénéficiera à la communauté."""
 
         # Set permissions
         permissions = self.get_validator_permissions()
-        group.permissions.set([permissions])
+        group.permissions.set(permissions)
 
     def get_validator_permissions(self):
-        permissions = Permission.objects.get(
-            codename="validate_submission", content_type=self.submission_ct
+        permissions = Permission.objects.filter(
+            codename__in=[
+                "validate_submission",
+                "can_manage_service_fee",
+            ],
+            content_type=self.submission_ct,
         )
         return permissions
 
@@ -1085,6 +1096,7 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             archive_link="https://mapnv.ch",
             geom=geom,
             is_single_form_submissions=True,
+            services_fees_hourly_rate=154,
         )
 
         administrative_entity.tags.add(entity)
@@ -1238,3 +1250,144 @@ Après : Excellent projet qui bénéficiera à la communauté."""
                         selected_form=selected_form,
                         value={"val": image_path},
                     )
+
+    def setup_fees(self, administrative_entity, integrator_group):
+
+        current_pilot_group = Group.objects.filter(
+            permit_department__is_backoffice=True,
+            permit_department__administrative_entity=administrative_entity,
+        )
+        first_pilot_user = User.objects.filter(groups__in=current_pilot_group).first()
+
+        # Hourly rate for all
+        ServiceFeeType.objects.create(
+            administrative_entity=administrative_entity,
+            name="Prestation horaire A",
+            fix_price=None,
+            is_visible_by_validator=True,
+        )
+        # Fixed price for all
+        ServiceFeeType.objects.create(
+            administrative_entity=administrative_entity,
+            name="Prestation forfaitaire A",
+            fix_price=150,
+            is_visible_by_validator=True,
+        )
+        # Fixed price editable for all
+        ServiceFeeType.objects.create(
+            administrative_entity=administrative_entity,
+            name="Prestation forfaitaire C - montant modifiable",
+            fix_price=150,
+            is_visible_by_validator=True,
+            fix_price_editable=True,
+        )
+
+        # Hourly rate for pilots only
+        ServiceFeeType.objects.create(
+            administrative_entity=administrative_entity,
+            name="Prestation horaire B",
+            fix_price=None,
+            is_visible_by_validator=False,
+        )
+        # Fixed price for pilots only
+        ServiceFeeType.objects.create(
+            administrative_entity=administrative_entity,
+            name="Prestation forfaitaire B",
+            fix_price=150,
+            is_visible_by_validator=False,
+        )
+
+        for submission in Submission.objects.filter(
+            administrative_entity=administrative_entity
+        ):
+
+            # hourly rate for all
+            for service_fee_type in ServiceFeeType.objects.filter(
+                fix_price__isnull=True,
+                is_visible_by_validator=True,
+                administrative_entity=administrative_entity,
+            ):
+                time_spent = timedelta(minutes=random.randint(10, 90))
+                monetary_amount = (
+                    administrative_entity.services_fees_hourly_rate
+                    * time_spent.total_seconds()
+                    / 3600
+                )
+                ServiceFee.objects.create(
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    created_by=first_pilot_user,
+                    updated_by=first_pilot_user,
+                    permit_department=integrator_group.permit_department,
+                    provided_by=first_pilot_user,
+                    provided_at=datetime.now(),
+                    submission=submission,
+                    service_fee_type=service_fee_type,
+                    time_spent_on_task=time_spent,
+                    hourly_rate=administrative_entity.services_fees_hourly_rate,
+                    monetary_amount=monetary_amount,
+                )
+
+            # fix price for all
+            for service_fee_type in ServiceFeeType.objects.filter(
+                fix_price__isnull=False,
+                is_visible_by_validator=True,
+                administrative_entity=administrative_entity,
+            ):
+                ServiceFee.objects.create(
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    created_by=first_pilot_user,
+                    updated_by=first_pilot_user,
+                    permit_department=integrator_group.permit_department,
+                    provided_by=first_pilot_user,
+                    provided_at=datetime.now(),
+                    submission=submission,
+                    service_fee_type=service_fee_type,
+                    monetary_amount=service_fee_type.fix_price,
+                )
+
+            # hourly rate for pilots only
+            for service_fee_type in ServiceFeeType.objects.filter(
+                fix_price__isnull=True,
+                is_visible_by_validator=False,
+                administrative_entity=administrative_entity,
+            ):
+                time_spent = timedelta(minutes=random.randint(10, 90))
+                monetary_amount = (
+                    administrative_entity.services_fees_hourly_rate
+                    * time_spent.total_seconds()
+                    / 3600
+                )
+                ServiceFee.objects.create(
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    created_by=first_pilot_user,
+                    updated_by=first_pilot_user,
+                    permit_department=integrator_group.permit_department,
+                    provided_by=first_pilot_user,
+                    provided_at=datetime.now(),
+                    submission=submission,
+                    service_fee_type=service_fee_type,
+                    time_spent_on_task=time_spent,
+                    hourly_rate=administrative_entity.services_fees_hourly_rate,
+                    monetary_amount=monetary_amount,
+                )
+            # fix price for pilots only
+            for service_fee_type in ServiceFeeType.objects.filter(
+                fix_price__isnull=False,
+                is_visible_by_validator=False,
+                administrative_entity=administrative_entity,
+            ):
+                ServiceFee.objects.create(
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    created_by=first_pilot_user,
+                    updated_by=first_pilot_user,
+                    permit_department=integrator_group.permit_department,
+                    provided_by=first_pilot_user,
+                    provided_at=datetime.now(),
+                    submission=submission,
+                    service_fee_type=service_fee_type,
+                    monetary_amount=service_fee_type.fix_price,
+                )

@@ -334,7 +334,6 @@ class AdministrativeEntity(models.Model):
         default=True,
         help_text=_("Nécessaire pour l'utilisation du système de paiement en ligne"),
     )
-
     sites = models.ManyToManyField(
         Site,
         related_name="administrative_entity",
@@ -357,6 +356,14 @@ class AdministrativeEntity(models.Model):
     signature_sheet_description = models.TextField(
         _("Texte explicatif relatif au volet de transmission"), blank=True
     )
+    services_fees_hourly_rate = models.DecimalField(
+        decimal_places=2,
+        max_digits=12,
+        default=settings.DEFAULT_SERVICES_FEES_RATE,
+        verbose_name=_("Tarif horaire"),
+        help_text=_("Tarif horaire des prestations de l'entité administrative"),
+    )
+
     objects = AdministrativeEntityManager()
 
     class Meta:
@@ -611,7 +618,6 @@ class UserProfile(models.Model):
         verbose_name_plural = _("3.2 Consultation des auteurs")
 
     def __str__(self):
-
         return (
             str(self.user.first_name) + " " + str(self.user.last_name)
             if self.user

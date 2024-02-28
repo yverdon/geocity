@@ -1,0 +1,131 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block content %}
+  <h3 class="mt-2">
+    {% if action == "update" %}
+      {% translate "Modifier une prestation de type " %}
+    {% elif action == "delete" %}
+      {% translate "Supprimer une prestation de type " %}
+    {% elif action == "create" %}
+      {% translate "Ajouter une nouvelle prestation de type " %}
+    {% else %}
+      {% translate "Consulter une prestation de type " %}
+    {% endif %}
+    {% if service_fees_form.mode == "hourly_rate" %}
+      {% translate "horaire" %}
+    {% elif service_fees_form.mode == "fix_price" %}
+      {% translate "forfaitaire" %}
+    {% endif %}
+  </h3>
+  <hr>
+  {% if action == "delete" %}
+    <p>
+      {% translate "Êtes-vous certain de vouloir supprimer la prestation suivante: " %}
+    </p>
+  {% elif not action or action not in "create,update,delete" %}
+    <p>
+      {% translate "Vous êtes en mode consultation. Aucune action n'est possible ici." %}
+    </p>
+  {% endif %}
+
+  {% if action == "create" %}
+    <form method="POST">
+      {% csrf_token %}
+      {{ service_fees_form.media }}
+      {% bootstrap_form service_fees_form layout='horizontal' %}
+
+      <div class="text-right">
+        <button class="btn btn-primary" name="save" type="submit" value="Save"
+          title="{% translate 'Enregistrer la prestation et revenir à la l\'onglet général des prestations.' %}">
+          <i class="fa fa-save" aria-hidden="true"></i>&nbsp;
+          {% translate "Enregistrer" %}
+        </button>
+        <button class="btn btn-primary" name="save_continue" type="submit" value="Save_Continue"
+          title="{% translate 'Enregistrer la prestation et permettre d\'en créer une nouvelle directement.' %}">
+          <i class="fa fa-save" aria-hidden="true"></i>&thinsp;<i class="fa fa-plus" aria-hidden="true"></i>&nbsp;
+          {% translate "Enregistrer et ajouter une nouvelle prestation de même type" %}
+        </button>
+        <button class="btn btn-primary" name="cancel" type="submit" value="Cancel"
+          title="{% translate 'Annuler la création de la prestation sans l\'enregistrer.' %}"
+          onclick="javascript:history.back();">
+            <i class="fa fa-times" aria-hidden="true"></i>&nbsp;
+            {% translate "Annuler" %}
+        </button>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if action == "update" %}
+    <form method="POST">
+      {% csrf_token %}
+      {{ service_fees_form.media }}
+      {% bootstrap_form service_fees_form layout='horizontal' %}
+
+      <hr>
+      <div class="text-right">
+        <button class="btn btn-primary" name="save" type="submit" value="Save"
+          title="{% translate 'Enregistrer les modifications apportées à la prestation.' %}">
+          <i class="fa fa-save" aria-hidden="true"></i>&nbsp;
+          {% translate "Enregistrer" %}
+        </button>
+        <button class="btn btn-primary" name="cancel" type="submit" value="Cancel"
+          title="{% translate 'Annuler la demande de modification et revenir à l\'onglet général des prestations.' %}">
+          <i class="fa fa-times" aria-hidden="true"></i>&nbsp;
+          {% translate "Annuler" %}
+        </button>
+      </div>
+    </form>
+  {% endif %}
+
+  {% if action == "delete" %}
+    <form method="GET">
+      {% csrf_token %}
+      {% bootstrap_form service_fees_form layout='horizontal' %}
+    </form>
+    <hr>
+    <div class="text-right">
+      <form method="POST">
+        {% csrf_token %}
+        <button class="btn btn-primary" name="confirm" type="submit" value="Confirm"
+          title="{% translate 'Supprimer définitivement la prestation.' %}">
+          <i class="fa fa-trash fa-trash-white" aria-hidden="true"></i>&nbsp;
+          {% translate "Confirmer la suppression" %}
+        </button>
+        <button class="btn btn-primary" name="cancel" type="submit" value="Cancel"
+          title="{% translate 'Annuler la suppression de la prestation et revenir l\'onglet général des prestations.' %}">
+          <i class="fa fa-times" aria-hidden="true"></i>&nbsp;
+          {% translate "Annuler" %}
+        </button>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if not action or action not in "create,update,delete" %}
+    <form method="GET">
+      {% csrf_token %}
+      {% bootstrap_form service_fees_form layout='horizontal' %}
+    </form>
+    <hr>
+    <div class="text-left">
+      <form method="POST">
+        {% csrf_token %}
+        <button class="btn btn-primary" name="cancel" type="submit" value="Cancel"
+          title="{% translate 'Retour à l\'onglet général des prestations.' %}">
+          <i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp;
+          {% translate "Retour" %}
+        </button>
+      </form>
+    </div>
+  {% endif %}
+
+  {{ data|json_script:"get-data" }}
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/submission_prestation.js' %}" defer></script>
+{% endblock %}
