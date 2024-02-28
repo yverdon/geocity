@@ -122,7 +122,7 @@
                       <b>{% translate "Demande soumise par" %}</b>
                     </div>
                     <div class="row-2 history_user">
-                      <b>{{ archive.history_user }}</b>
+                      <b>{{ archive.history_user.get_full_name }}</b>
                     </div>
                   </li>
                 {% else %}
@@ -135,7 +135,7 @@
                       <b>{{ archive.get_status_display }}</b>
                     </div>
                     <div class="row-2 history_user">
-                      ({{ archive.history_user }})
+                      ({{ archive.history_user.get_full_name }})
                     </div>
                   </li>
                 {% endif %}

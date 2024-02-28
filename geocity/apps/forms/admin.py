@@ -222,7 +222,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "requires_online_payment",
         "payment_settings",
         "validation_document",
-        "validation_document_required_for",
+        "get_validation_document_required_for",
         "disable_validation_by_validators",
         "is_anonymous",
         "notify_services",
@@ -237,7 +237,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "publication_enabled",
         "permanent_publication_enabled",
         "max_submissions_nb_submissions",
-        "get_max_submissions_message",
         "agenda_visible",
     ]
     list_filter = ["administrative_entities"]
@@ -385,12 +384,18 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     max_submissions_nb_submissions.admin_order_field = "max_submissions"
     max_submissions_nb_submissions.short_description = _("Nombre maximum de demandes")
 
-    def get_max_submissions_message(self, obj):
-        return obj.max_submissions_message if obj.max_submissions else "-"
+    def get_validation_document_required_for(self, obj):
+        return (
+            obj.get_validation_document_required_for_display()
+            if obj.validation_document
+            else "-"
+        )
 
-    get_max_submissions_message.admin_order_field = "max_submissions_message"
-    get_max_submissions_message.short_description = _(
-        "Message lorsque le nombre maximal est atteint"
+    get_validation_document_required_for.admin_order_field = (
+        "validation_document_required_for"
+    )
+    get_validation_document_required_for.short_description = _(
+        "Document de validation obligatoire pour"
     )
 
     def get_queryset(self, request):

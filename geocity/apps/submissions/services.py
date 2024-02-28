@@ -177,6 +177,12 @@ def send_email_notification(data, attachments=None):
         if data["submission"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
+    reply_to = (
+        data["submission"].administrative_entity.reply_to_email
+        if data["submission"].administrative_entity.reply_to_email
+        else None
+    )
+
     send_email(
         template=data["template"],
         sender=sender,
@@ -195,10 +201,13 @@ def send_email_notification(data, attachments=None):
             "message_for_notified_services": data.get("message_for_notified_services"),
         },
         attachments=attachments,
+        reply_to=reply_to,
     )
 
 
-def send_email(template, sender, receivers, subject, context, attachments=None):
+def send_email(
+    template, sender, receivers, subject, context, attachments=None, reply_to=None
+):
     email_content = render_to_string(f"submissions/emails/{template}", context)
     emails = [
         (
@@ -210,12 +219,15 @@ def send_email(template, sender, receivers, subject, context, attachments=None):
         for email_address in receivers
         if validate_email(email_address)
     ]
+    reply_to = [reply_to] if reply_to and validate_email(reply_to) else None
 
     if emails:
-        send_mass_email(emails, attachments=attachments, fail_silently=True)
+        send_mass_email(
+            emails, attachments=attachments, reply_to=reply_to, fail_silently=True
+        )
 
 
-def send_mass_email(datatuple, attachments=None, fail_silently=False):
+def send_mass_email(datatuple, attachments=None, reply_to=None, fail_silently=False):
     """
     Sends multiple emails at once. Since this functionality exists in Django's std library,
     under the name "send_mass_mail", but has been "frozen" for development,
@@ -227,7 +239,12 @@ def send_mass_email(datatuple, attachments=None, fail_silently=False):
     messages = []
     for subject, message, sender, recipient in datatuple:
         email_msg = EmailMessage(
-            subject, message, sender, recipient, connection=connection
+            subject,
+            message,
+            sender,
+            recipient,
+            reply_to=reply_to,
+            connection=connection,
         )
         if attachments:
             for filename, attachment in attachments:
