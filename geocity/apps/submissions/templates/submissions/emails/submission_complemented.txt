@@ -1,4 +1,4 @@
-{% load i18n %}{% autoescape off %}{% blocktranslate %}Bonjour {{ name }}{% endblocktranslate %},
+{% load i18n %}{% autoescape off %}{% translate "Bonjour," %}
 
 {% translate "La demande de compléments a été traitée." %}
 
