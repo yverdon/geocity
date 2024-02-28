@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0024_geom_field_input_type_for_form"),
+        ("submissions", "0025_alter_historicalpostfinancetransaction_authorization_timeout_on_and_more"),
     ]
 
     operations = [
