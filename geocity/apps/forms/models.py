@@ -484,6 +484,9 @@ class Form(models.Model):
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
     )
+    fees_module_enabled = models.BooleanField(
+        _("Activer le module de gestion des émoluments"), default=False
+    )
     shortname = models.CharField(
         _("nom court"),
         max_length=32,

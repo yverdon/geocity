@@ -684,19 +684,30 @@ DEBUG_TOOLBAR_CONFIG = {
     },
 }
 
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname}: {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname}: {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "console": {
-            "level": "INFO",
+            "level": "ERROR" if ENV == "PROD" else "INFO",
             "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
     "loggers": {
         "": {
             "handlers": ["console"],
-            "level": "ERROR",
             "propagate": True,
         },
     },
@@ -707,3 +718,8 @@ PAYMENT_PROCESSING_TEST_ENVIRONMENT = (
     os.getenv("PAYMENT_PROCESSING_TEST_ENVIRONMENT", "true").lower() == "true" or DEBUG
 )
 PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
+
+# Services fees
+## Default rate [CHF] for services fees
+DEFAULT_SERVICES_FEES_RATE = 0.00
+DEFAULT_CURRENCY = "CHF"

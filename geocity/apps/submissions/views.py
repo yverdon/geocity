@@ -23,6 +23,7 @@ from django.core.exceptions import (
     SuspiciousOperation,
 )
 from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import F, Prefetch, Q, Sum
 from django.forms import formset_factory, modelformset_factory
@@ -50,8 +51,9 @@ from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form, Price
 
-from . import filters, forms, models, permissions, services, tables
+from . import filters, forms, models, permissions, services, shortcuts, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
+from .payments.models import ServiceFee, ServiceFeeType
 from .payments.services import (
     get_payment_processor,
     get_transaction_from_id,
@@ -74,6 +76,7 @@ from .steps import (
 from .tables import (
     CustomFieldValueAccessibleSubmission,
     PandasExportMixin,
+    ServiceFeeTable,
     TransactionsTable,
     get_custom_dynamic_table,
 )
@@ -125,7 +128,6 @@ def get_submission_for_edition(user, submission_id):
 
 def get_submission_for_prolongation(user, submission_id):
     allowed_statuses = models.Submission.PROLONGABLE_STATUSES
-
     submission = get_submission_for_user_or_404(
         user,
         submission_id,
@@ -186,8 +188,8 @@ class SubmissionDetailView(View):
         return render(self.request, "submissions/submission_detail.html", context)
 
     def get_context_data(self, **kwargs):
-        current_actions = self.submission.get_actions_for_administrative_entity()
 
+        current_actions = self.submission.get_actions_for_administrative_entity()
         action_forms = {
             action: self.get_form_for_action(action) for action in current_actions
         }
@@ -216,6 +218,7 @@ class SubmissionDetailView(View):
 
             if "poke" in active_forms and "validate" in active_forms:
                 active_form = active_forms[active_forms.index("validate")]
+
         elif len(active_forms) > 0:
             active_form = active_forms[0]
         else:
@@ -262,6 +265,31 @@ class SubmissionDetailView(View):
                 data=self.submission.get_transactions()
             )
 
+        displayable_provided_by_users = (
+            shortcuts.get_validators_for_user_groups_in_administrative_entity(
+                self.submission.administrative_entity, self.request.user
+            )
+        )
+
+        service_fees = self.submission.get_service_fees()
+        if not permissions.is_backoffice_of_submission(
+            self.request.user, self.submission
+        ):
+            service_fees = service_fees.filter(
+                (
+                    Q(created_by__in=displayable_provided_by_users)
+                    | Q(provided_by__in=displayable_provided_by_users)
+                )
+            )
+
+        service_fees_table = ServiceFeeTable(
+            data=service_fees,
+        )
+
+        is_fees_module_enabled = self.submission.forms.filter(
+            fees_module_enabled=True
+        ).exists()
+
         return {
             **kwargs,
             **{
@@ -298,6 +326,11 @@ class SubmissionDetailView(View):
                 "inquiry_in_progress": self.submission.status
                 == models.Submission.STATUS_INQUIRY_IN_PROGRESS,
                 "current_user": self.request.user,
+                "has_permission_to_manage_service_fees": permissions.has_permission_to_manage_service_fees(
+                    self.request.user, self.submission
+                )
+                and is_fees_module_enabled,
+                "service_fees_table": service_fees_table,
             },
         }
 
@@ -316,6 +349,7 @@ class SubmissionDetailView(View):
 
         form = self.get_form_for_action(action, data=request.POST, files=request.FILES)
         form_type = "forms"
+
         # if no form was found, it might be a formset
         if not form:
             form = self.get_formset_for_action(
@@ -2225,13 +2259,255 @@ def administrative_entities_geojson(request, administrative_entity_id):
     return JsonResponse(geojson, safe=False)
 
 
+# TODO: handle active form to redirect to correct tab
+def to_service_fees_page(submission=None):
+    """
+    Function to return to the main service fees page.
+    """
+
+    if not submission:
+        raise Http404
+
+    # update submission total fee monetary amount
+    submission.update_service_fees_total_price()
+
+    return (
+        reverse(
+            "submissions:submission_detail",
+            kwargs={
+                "submission_id": submission.pk,
+            },
+        )
+        + f"?prev_active_form=services_fees"
+    )
+
+
+@redirect_bad_status_to_detail
+@login_required
+@permanent_user_required
+@permission_required("submissions.can_manage_service_fee")
+@check_mandatory_2FA
+def submission_service_fees(request, submission_id, service_fee_id=None):
+    submission = get_submission_for_user_or_404(
+        request.user,
+        submission_id,
+        statuses=models.Submission.SERVICE_FEES_STATUSES,
+    )
+
+    if not permissions.has_permission_to_manage_service_fees(request.user, submission):
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Vous n'avez pas la permission d'effectuer ce changement"),
+        )
+        return redirect(to_service_fees_page(submission))
+
+    service_fee = (
+        get_object_or_404(ServiceFee.objects.filter(pk=service_fee_id))
+        if service_fee_id
+        else None
+    )
+
+    # Manage access to this view
+    # Backoffice can see and update everything of his entity
+    # Validator can update and delete element from his group
+    is_backoffice_of_submission = permissions.is_backoffice_of_submission(
+        request.user, submission
+    )
+    displayable_provided_by_users = (
+        shortcuts.get_validators_for_user_groups_in_administrative_entity(
+            submission.administrative_entity, request.user
+        )
+    )
+
+    action = request.GET.get("action", None)
+    mode = request.GET.get("mode", None)
+
+    if service_fee:
+        if not is_backoffice_of_submission and not (
+            service_fee.provided_by in displayable_provided_by_users
+            or service_fee.created_by in displayable_provided_by_users
+        ):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Cette prestation n'existe pas ou n'est pas disponible"),
+            )
+            return redirect(to_service_fees_page(submission))
+
+    if request.method == "POST":
+
+        departments = (
+            get_departments(request.user) if action in ("create", "update") else None
+        )
+
+        # Ensure the backoffice group is selected if the user is also in validator group for the submission
+        if is_backoffice_of_submission and departments:
+            department = departments.filter(is_backoffice=True).first()
+        elif departments and not is_backoffice_of_submission:
+            department = departments.first()
+
+        service_fees_form = forms.ServiceFeeForm(
+            submission=submission,
+            instance=service_fee,
+            data=request.POST,
+            user=request.user,
+            mode=mode,
+        )
+
+        if action in ("create", "update"):
+            context = {
+                "service_fees_form": service_fees_form,
+                "action": action,
+                "mode": mode,
+            }
+
+        if action == "create":
+            cancel_message = _(
+                """Aucune prestation n'a été créée en raison de l'annulation de cette action."""
+            )
+            success_message = _("La prestation a bien été renseignée.")
+        elif action == "update":
+            cancel_message = _(
+                """La prestation n'a pas été modifiée en raison de l'annulation de cette action."""
+            )
+            success_message = _("La prestation a été mise à jour avec succès.")
+        elif action == "delete":
+            cancel_message = _(
+                """La prestation n'a pas été supprimée en raison de l'annulation de cette action."""
+            )
+            success_message = _("La prestation a été supprimée avec succès.")
+        else:
+            cancel_message = _("""Vous êtes de retour à la liste des prestations.""")
+
+        if "confirm" in request.POST:
+            if (
+                not service_fee.service_fee_type.is_visible_by_validator
+                and not is_backoffice_of_submission
+            ):
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    _("Vous n'avez pas la permission d'effectuer ce changement"),
+                )
+                return redirect(to_service_fees_page(submission))
+            else:
+                service_fee.delete()
+                messages.success(request, success_message)
+            return redirect(to_service_fees_page(submission))
+        elif "cancel" in request.POST:
+            messages.success(request, cancel_message)
+            return redirect(to_service_fees_page(submission))
+
+        if service_fees_form.is_valid():
+
+            service_fee_type = service_fees_form.cleaned_data["service_fee_type"]
+            is_visible_by_validator = ServiceFeeType.objects.get(
+                pk=service_fee_type.pk
+            ).is_visible_by_validator
+            # Ensure validator cannot save pilot service fee
+            if not is_backoffice_of_submission and not is_visible_by_validator:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    _("Vous n'avez pas la permission d'effectuer ce changement"),
+                )
+                return redirect(to_service_fees_page(submission))
+            obj = service_fees_form.save(commit=False)
+            if action == "create":
+                obj.created_by = request.user
+
+            obj.submission = submission
+            obj.updated_by = request.user
+            obj.permit_department = department
+            obj.save()
+
+            messages.success(request, success_message)
+
+            if action == "create" and "save_continue" in request.POST:
+                return render(
+                    request,
+                    "submissions/submission_service_fees.html",
+                    context,
+                )
+            elif "save" in request.POST:
+                return redirect(to_service_fees_page(submission))
+            else:
+                raise HttpResponse(status=404)
+        else:
+            error_message = _(
+                "Le formulaire n'est pas valide. Impossible de traiter les données."
+            )
+            if service_fees_form.is_bound:
+                error_message += f"\nform.errors: {service_fees_form.errors}"
+            else:
+                error_message += f"\nform is unbound."
+
+            return render(
+                request,
+                "submissions/submission_service_fees.html",
+                context,
+            )
+    elif request.method == "GET":
+        initial = (
+            {
+                "provided_by": request.user,
+            }
+            if action == "create"
+            else {}
+        )
+        service_fees_form = forms.ServiceFeeForm(
+            submission=submission,
+            initial=initial,
+            instance=service_fee,
+            user=request.user,
+            mode=mode,
+        )
+
+        services_fees_form_data_qs = service_fees_form.fields[
+            "service_fee_type"
+        ].queryset.values(
+            "name",
+            "fix_price",
+            "fix_price_editable",
+        )
+        data = json.dumps(
+            [item for item in services_fees_form_data_qs],
+            cls=DjangoJSONEncoder,
+            ensure_ascii=False,
+        )
+
+        context = {
+            "service_fees_form": service_fees_form,
+            "data": data,
+            "action": action,
+            "mode": mode,
+        }
+        # Disable form instance for all available action values but "update"
+        if action not in [
+            "create",
+            "update",
+        ]:
+            forms.disable_form(
+                service_fees_form,
+            )
+            if action != "delete":
+                context.pop("action")
+
+        return render(
+            request,
+            "submissions/submission_service_fees.html",
+            context,
+        )
+
+
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class ChangeTransactionStatus(View):
     permission_error_message = _(
-        "Vous n'avez pas les permissions pour changer le statut de cette transaction"
+        "Vous n'avez pas les permissions pour changer le statut de cette transaction."
     )
-    not_exist_error_message = _("La transaction demandée n'existe pas")
+    not_exist_error_message = _("La transaction demandée n'existe pas.")
 
     def get(self, request, *args, **kwargs):
         try:
@@ -2408,21 +2684,21 @@ def submission_validations_edit(request, submission_id):
         edit_only=True,
         extra=0,
     )
+
     if request.method == "POST":
-        if request.method == "POST":
-            formset = submissionValidationFormset(request.POST)
-            if formset.is_valid():
-                formset.save()
-                if "save_continue" in request.POST:
-                    return redirect(
-                        "submissions:submission_validations_edit",
-                        submission_id=submission_id,
-                    )
-                else:
-                    return redirect(
-                        "submissions:submission_detail",
-                        submission_id=submission_id,
-                    )
+        formset = submissionValidationFormset(request.POST)
+        if formset.is_valid():
+            formset.save()
+            if "save_continue" in request.POST:
+                return redirect(
+                    "submissions:submission_validations_edit",
+                    submission_id=submission_id,
+                )
+            else:
+                return redirect(
+                    "submissions:submission_detail",
+                    submission_id=submission_id,
+                )
 
     else:
         formset = submissionValidationFormset(

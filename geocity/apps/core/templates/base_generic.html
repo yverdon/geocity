@@ -16,9 +16,10 @@
       <script src="https://use.fontawesome.com/006d51a83c.js"></script>
       <script
         type="text/javascript"
-        src="{% static "django_tables2_column_shifter/js/django_tables2_column_shifter.min.js" %}">
+        src="{% static 'django_tables2_column_shifter/js/django_tables2_column_shifter.min.js' %}">
       </script>
-      <script src="{% static "js/search.js" %}"></script>
+      <script src="{% static 'js/search.js' %}"></script>
+      <script src="{% static 'js/messages_timer.js' %}"></script>
     {% endblock %}
     {% block stylesheets %}
       <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
@@ -32,7 +33,7 @@
       --text-color: {{ config.TEXT_COLOR }};
       --title-color: {{ config.TITLE_COLOR }};
       --table-color: {{ config.TABLE_COLOR }};
-      --login-background-color:{{ config.LOGIN_BACKGROUND_COLOR }};
+      --login-background-color: {{ config.LOGIN_BACKGROUND_COLOR }};
       }
     </style>
   </head>
@@ -44,7 +45,7 @@
       {% block navbar %}
         <nav class="navbar navbar-expand-md navbar-light bg-light mb-4 sticky-top">
           <div class="navbar-brand d-flex align-items-center">
-              <img src={% static "images/geocity_normal.svg" %} style="vertical-align:baseline" alt="logo" height="16"/>
+              <img src={% static 'images/geocity_normal.svg' %} style="vertical-align:baseline" alt="logo" height="16"/>
           </div>
 
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-toggle" aria-controls="navbar-toggle" aria-expanded="false" aria-label="Toggle navigation">

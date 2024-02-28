@@ -17,6 +17,7 @@ from knox.models import AuthToken
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
+from geocity.apps.submissions.payments.models import ServiceFeeType
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
@@ -66,6 +67,7 @@ LEGAL_TEXT_EXAMPLE = """
                             </li>
                         </ul>
                     """
+
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
@@ -453,7 +455,6 @@ class GroupAdminForm(forms.ModelForm):
         css = {"all": ("css/admin/admin.css",)}
 
     def clean_permissions(self):
-
         permissions = self.cleaned_data["permissions"]
         permissions_for_trusted_users = Permission.objects.filter(
             codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
@@ -603,7 +604,6 @@ class GroupAdmin(admin.ModelAdmin):
     get__sites_number.short_description = _("Nombre de sites")
 
     def get_queryset(self, request):
-
         if request.user.is_superuser:
             qs = Group.objects.all()
         else:
@@ -627,14 +627,12 @@ class GroupAdmin(admin.ModelAdmin):
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
-
             if (
                 not request.user.is_superuser
                 and request.user.groups.get(
                     permit_department__is_integrator_admin=True
                 ).pk
             ):
-
                 integrator_permissions = Permission.objects.filter(
                     codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )
@@ -649,7 +647,6 @@ class SiteWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
 
 
 def get_sites_field(user):
-
     qs = models.Site.objects.all()
 
     if not user.is_superuser:
@@ -702,6 +699,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "signature_sheet",
             "signature_sheet_description",
             "additional_searchtext_for_address_field",
+            "services_fees_hourly_rate",
             "geom",
             "integrator",
         ]
@@ -760,9 +758,15 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
     verbose_name_plural = _("Flux (complet par défaut)")
 
 
+class ServiceFeeInline(admin.TabularInline):
+    model = ServiceFeeType
+    extra = 3
+    verbose_name = _("Type de prestation")
+    verbose_name_plural = _("Types de prestation")
+
+
 @admin.register(models.AdministrativeEntityForAdminSite)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-
     fieldsets = (
         (
             None,
@@ -822,7 +826,17 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 ),
             },
         ),
+        (
+            _("Tarification des prestations"),
+            {
+                "fields": ("services_fees_hourly_rate",),
+                "description": _(
+                    "La tarification des prestations permet de saisir le tarif horaire de facturation des prestations pour l'entité administrative courante."
+                ),
+            },
+        ),
     )
+
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
         Form = super().get_form(request, obj, **kwargs)
@@ -837,6 +851,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     change_form_template = "accounts/admin/administrative_entity_change.html"
     form = AdministrativeEntityAdminForm
     inlines = [
+        ServiceFeeInline,
         SubmissionWorkflowStatusInline,
     ]
     list_filter = [
@@ -854,6 +869,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "get_tags",
         "get_is_single_form",
         "get_sites",
+        "services_fees_hourly_rate",
     ]
 
     def sortable_str(self, obj):
@@ -882,7 +898,6 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     get_is_single_form.admin_order_field = "is_single_form_submissions"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-
         if db_field.name == "integrator":
             kwargs["queryset"] = Group.objects.filter(
                 permit_department__is_integrator_admin=True,
@@ -890,7 +905,6 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
-
         if not request.user.is_superuser:
             obj.integrator = request.user.groups.get(
                 permit_department__is_integrator_admin=True

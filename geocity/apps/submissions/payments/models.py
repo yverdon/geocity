@@ -1,8 +1,15 @@
+from datetime import timedelta
+from decimal import *
+
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
 from geocity.apps.forms.models import Price
 from geocity.apps.reports.services import generate_report_pdf
 
@@ -128,3 +135,169 @@ class Transaction(models.Model):
         if read:
             output = output.read()
         return f"refund_{self.transaction_id}.pdf", output
+
+
+class ServiceFeeType(models.Model):
+    administrative_entity = models.ForeignKey(
+        AdministrativeEntity,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name=_("Entité administrative"),
+        related_name="administrative_entity",
+        help_text=_("Entité administrative."),
+    )
+    name = models.CharField(
+        verbose_name=_("Prestation"),
+        max_length=255,
+        null=False,
+    )
+    fix_price = models.DecimalField(
+        default=None,
+        null=True,  # For hourly service fees, this field has to be null,
+        blank=True,
+        decimal_places=2,
+        max_digits=12,
+        verbose_name=_("Tarif forfaitaire [CHF]"),
+        help_text=_("Le tarif forfaitaire de cette prestation."),
+    )
+    fix_price_editable = models.BooleanField(
+        verbose_name=_("Montant à saisir manuelllement"),
+        help_text=_(
+            "Exemple: montant demandant un calcul spécifique à réaliser en dehors de l'application"
+        ),
+        default=False,
+    )
+    is_visible_by_validator = models.BooleanField(
+        verbose_name=_("Visible par le validateur"),
+        help_text=_("Est visible par le validateur"),
+        default=False,
+    )
+
+    class Meta:
+        verbose_name = _("2.4 Type de prestation")
+        verbose_name_plural = _("2.4 Types de prestation")
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class ServiceFee(models.Model):
+
+    # Hidden yet mandatory fields
+    # created_* and updated_* fields to keep tracks of the user that has
+    # effectively created or updated the current prestation.
+    # Those fields SHOULD NOT be exposed in the form.
+    # Use the other ones, e.g. provided_*
+    created_at = models.DateTimeField(
+        verbose_name=_("Date de création."),
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        verbose_name=_("Date de dernière modification."),
+        auto_now=True,
+    )
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        max_length=255,
+        verbose_name=_("Créée par"),
+        related_name="service_fee_created_by",
+        help_text=_("La prestation a été créé par cet utilisateur."),
+    )
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        max_length=255,
+        verbose_name=_("Mise à jour par"),
+        related_name="service_fee_updated_by",
+        help_text=_("La prestation a été mise à jour par cet utilisateur."),
+    )
+    permit_department = models.ForeignKey(
+        PermitDepartment,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Département"),
+        related_name="permit_department",
+        help_text=_("Département."),
+    )
+    # Exposed fields: fields which can be used in the form based on that model.
+    # The "provided_by" field is used to select the name of the user
+    # on whose behalf the service was provided.
+    provided_by = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        max_length=255,
+        verbose_name=_("Saisie par"),
+        related_name="service_fee_provided_by",
+        help_text=_("La prestation a été effectuée au nom de cet utilisateur."),
+    )
+    provided_at = models.DateField(
+        default=timezone.now,
+        verbose_name=_("Saisie le"),
+        help_text=_("La prestation a été saisie à cette date."),
+    )
+    submission = models.ForeignKey(
+        "Submission",
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande"),
+        related_name="service_fee",
+        help_text=_("Demande"),
+    )
+    service_fee_type = models.ForeignKey(
+        "ServiceFeeType",
+        on_delete=models.CASCADE,
+        verbose_name=_("Type de prestation"),
+        related_name="service_fee_type",
+        help_text=_("Choix de la prestation ; à effectuer dans une liste prédéfinie."),
+    )
+    time_spent_on_task = models.DurationField(
+        default=0,
+        null=True,  # For fixed price service fees
+        verbose_name=_("Durée [m]"),
+        help_text=_("Temps passé pour effectuer la prestation (en minutes)."),
+    )
+    hourly_rate = models.DecimalField(
+        default=settings.DEFAULT_SERVICES_FEES_RATE,
+        null=True,  # For fixed price service fees, this field has to be null
+        decimal_places=2,
+        max_digits=12,
+        verbose_name=_("Tarif horaire [CHF]"),
+        help_text=_("Le tarif horaire de la prestation. Choisi par l'intégrateur."),
+    )
+    # The "monetary_amount" field must only be exposed for fixed price service fees
+    monetary_amount = models.DecimalField(
+        default=0.0,
+        decimal_places=2,
+        max_digits=12,
+        verbose_name=_("Montant [CHF]"),
+        help_text=_(
+            "Le montant de la prestation. "
+            "Calulé automatiquement en fonction du tarif horaire. "
+            "Est fixe si la prestation est forfaitaire. "
+            "Certains montants fixes peuvent être modifiables lorsque le type de prestation exige un calcul spécifique. "
+        ),
+    )
+
+    # Methods
+    def save(self, *args, **kwargs):
+        # For hourly service fees
+        if isinstance(self.time_spent_on_task, timedelta):
+            # Get service fee hourly rate from the service_fee_type model
+            self.hourly_rate = (
+                self.service_fee_type.administrative_entity.services_fees_hourly_rate
+            )
+            # Compute the corresponding monetary amount
+            self.monetary_amount = (
+                Decimal(self.hourly_rate)
+                * Decimal(self.time_spent_on_task.total_seconds())
+                / Decimal(3600)
+            )
+        # For fixed price service fees
+        else:
+            self.hourly_rate = None
+            self.time_spent_on_task = None
+
+        super(ServiceFee, self).save(*args, **kwargs)

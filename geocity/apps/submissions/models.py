@@ -19,7 +19,17 @@ from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import Count, F, JSONField, Max, Min, ProtectedError, Q, Value
+from django.db.models import (
+    Count,
+    F,
+    JSONField,
+    Max,
+    Min,
+    ProtectedError,
+    Q,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Concat
 from django.urls import reverse
 from django.utils import timezone
@@ -37,7 +47,7 @@ from geocity.apps.api.services import convert_string_to_api_key
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-from .payments.models import SubmissionPrice
+from .payments.models import ServiceFee, SubmissionPrice
 
 # Actions
 ACTION_AMEND = "amend"
@@ -47,7 +57,7 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
-ACTION_TRANSACTION = "transactins"
+
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -189,6 +199,17 @@ class Submission(models.Model):
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
     }
+    # Statuses that can be used for the pilot service to add/edit the service fees
+    SERVICE_FEES_STATUSES = {
+        STATUS_SUBMITTED_FOR_VALIDATION,
+        STATUS_APPROVED,
+        STATUS_PROCESSING,
+        STATUS_AWAITING_SUPPLEMENT,
+        STATUS_AWAITING_VALIDATION,
+        STATUS_REJECTED,
+        STATUS_RECEIVED,
+        STATUS_INQUIRY_IN_PROGRESS,
+    }
 
     # Statuses that can be edited by pilot service if granted permission "edit_submission"
     EDITABLE_STATUSES = {
@@ -296,6 +317,15 @@ class Submission(models.Model):
         blank=True,
         help_text=_("Facultative, sera transmise au requérant"),
     )
+    service_fees_total_price = models.DecimalField(
+        null=True,
+        blank=True,
+        default=0.0,
+        decimal_places=2,
+        max_digits=12,
+        verbose_name=_("Montant total des prestations [CHF]"),
+        help_text=_("Le montant total des prestations effectuées pour cette demande. "),
+    )
 
     history = HistoricalRecords()
 
@@ -314,6 +344,7 @@ class Submission(models.Model):
             ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
+            ("can_manage_service_fee", _("Gérer une prestation")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -710,7 +741,6 @@ class Submission(models.Model):
                 private_storage.save(path, value)
                 # Postprocess images: remove all exif metadata from for better security and user privacy
                 if upper_ext != "PDF":
-
                     upper_ext = ext[1:].upper()
                     formats_map = {"JPG": "JPEG"}
                     with Image.open(value) as image_full:
@@ -1005,7 +1035,6 @@ class Submission(models.Model):
         )
 
     def get_submission_directives(self):
-
         entity = self.administrative_entity
         entity_directives = []
         if (
@@ -1104,6 +1133,7 @@ class Submission(models.Model):
                 Submission.STATUS_AWAITING_VALIDATION,
                 Submission.STATUS_PROCESSING,
             ],
+            "can_manage_service_fee": list(Submission.SERVICE_FEES_STATUSES),
         }
 
         available_statuses_for_administrative_entity = (
@@ -1252,6 +1282,19 @@ class Submission(models.Model):
             .order_by("-updated_date")
             .first()
         )
+    # ServiceFees for submission
+    def get_service_fees(self):
+        return ServiceFee.objects.filter(submission=self)
+
+    def update_service_fees_total_price(self):
+        """
+        Sum the monetary total of fees created for this submission
+        """
+        total = ServiceFee.objects.filter(submission=self.pk).aggregate(
+            total=Sum("monetary_amount")
+        )["total"]
+        self.service_fees_total_price = total
+        self.save()
 
     def get_history(self):
         # Transactions history
@@ -1432,7 +1475,6 @@ class SelectedForm(models.Model):
 
 
 class ContactForm(models.Model):
-
     type = models.ForeignKey(
         ContactType,
         null=True,

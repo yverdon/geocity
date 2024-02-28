@@ -50,6 +50,16 @@ existing_submission_urlpatterns = [
         views.submission_prolongation,
         name="submission_prolongation",
     ),
+    path(
+        "service_fee/",
+        views.submission_service_fees,
+        name="create_submission_service_fees",
+    ),
+    path(
+        "service_fee/<int:service_fee_id>/",
+        views.submission_service_fees,
+        name="submission_service_fees",
+    ),
 ]
 
 urlpatterns = [

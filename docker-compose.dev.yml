@@ -5,6 +5,9 @@ volumes:
 
 services:
   web:
+    # Uncomment those two lines for debug
+    #tty: true
+    #stdin_open: true
     build:
       args:
         ENV: DEV
@@ -19,13 +22,20 @@ services:
       - ./_dev_volumes/private_documents:/private_documents
       - ./_dev_volumes/archive:/archive
     depends_on:
-      - "postgres"
+      postgres:
+        condition: service_healthy
     ports:
       - "${DJANGO_DOCKER_PORT}:9000"
 
   postgres:
     image: postgis/postgis:13-3.2
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-U", "${PGUSER}" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     environment:
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD}
