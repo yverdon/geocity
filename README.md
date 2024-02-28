@@ -15,8 +15,6 @@ git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n .env.example .env
 # start the stack
 docker-compose up --build -d --remove-orphans
-# run the migrations
-docker-compose run web scripts/migrate.sh
 ```
 
 **Load demo data**
