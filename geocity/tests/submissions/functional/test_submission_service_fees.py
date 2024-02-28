@@ -223,19 +223,19 @@ class PilotSubmissionServiceFeesTestCase(LoggedInSecretariatMixin, TestCase):
         select_provided_by = get_parser(str(parser.select("#id_provided_by")))
 
         # Assert correct options are displayed
-        self.assertIn(self.user.username, str(select_provided_by))
-        self.assertIn(pilot_user_2.username, str(select_provided_by))
-        self.assertIn(validator_user.username, str(select_provided_by))
+        self.assertIn(self.user.get_full_name(), str(select_provided_by))
+        self.assertIn(pilot_user_2.get_full_name(), str(select_provided_by))
+        self.assertIn(validator_user.get_full_name(), str(select_provided_by))
 
         # Assert default select user is the current user
         select_user = select_provided_by.select_one("option:checked")
         self.assertEqual(self.user.pk, int(select_user["value"]))
 
         # Assert untrusted user not in options
-        self.assertNotIn(untrusted_user.username, str(select_provided_by))
+        self.assertNotIn(untrusted_user.get_full_name(), str(select_provided_by))
         # Assert pilot in other user not in options
         self.assertNotIn(
-            pilot_user_not_in_same_entity.username, str(select_provided_by)
+            pilot_user_not_in_same_entity.get_full_name(), str(select_provided_by)
         )
 
 
@@ -412,10 +412,17 @@ class ValidatorSubmissionServiceFeesTestCase(TestCase):
 
     def test_validator_can_update_validator_service_fee(self):
 
+        validator_user = factories.ValidatorUserFactory(
+            groups=self.validator_user.groups.all()
+        )
+
         service_fee = factories.ServiceFeeFactory(
             time_spent_on_task=timedelta(minutes=60),
             service_fee_type=self.validator_service_fee_type,
             submission=self.submission_normal_user,
+            created_by=validator_user,
+            updated_by=validator_user,
+            provided_by=validator_user,
         )
 
         url = reverse(
@@ -490,11 +497,19 @@ class ValidatorSubmissionServiceFeesTestCase(TestCase):
 
     def test_validator_user_can_delete_service_fee_visible_by_validator(self):
 
+        validator_user = factories.ValidatorUserFactory(
+            groups=self.validator_user.groups.all()
+        )
+
         service_fee = factories.ServiceFeeFactory(
             time_spent_on_task=timedelta(minutes=60),
             service_fee_type=self.validator_service_fee_type,
             submission=self.submission_normal_user,
+            created_by=validator_user,
+            updated_by=validator_user,
+            provided_by=validator_user,
         )
+
         service_fee.refresh_from_db()
         url = reverse(
             "submissions:submission_service_fees",
@@ -513,9 +528,9 @@ class ValidatorSubmissionServiceFeesTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
-        is_fee_still_existing = ServiceFee.objects.filter(pk=service_fee.pk).exists()
+        fee = ServiceFee.objects.filter(pk=service_fee.pk)
 
-        self.assertEqual(is_fee_still_existing, False)
+        self.assertEqual(fee.exists(), False)
 
     def test_validator_user_cannot_delete_service_fee_not_visible_by_validator(self):
 
@@ -539,12 +554,20 @@ class ValidatorSubmissionServiceFeesTestCase(TestCase):
         response = self.client.post(
             url,
             data={"confirm": "Confirm"},
+            follow=True,
         )
-        self.assertEqual(response.status_code, 404)
 
-        is_fee_still_existing = ServiceFee.objects.filter(pk=service_fee.pk).exists()
+        expected_error = "<div class='alert alert-danger'>Cette prestation n'existe pas ou n'est pas disponible</div>"
 
-        self.assertEqual(is_fee_still_existing, True)
+        parser = get_parser(response.content)
+        error = str(parser.select(".alert-danger")[0])
+
+        self.assertEqual(response.status_code, 200)
+        self.assertHTMLEqual(error, expected_error)
+
+        fee = ServiceFee.objects.filter(pk=service_fee.pk)
+
+        self.assertEqual(fee.exists(), True)
 
     # IMPORTANT: this ensures that validator has not access to users
     def test_provided_by_select_only_contains_himself(
