@@ -22,9 +22,11 @@ def get_submission_for_user_or_404(user, submission_id, statuses=None):
     return permit_request
 
 
-def get_displayable_service_fee_provided_by_for_validators(administrative_entity, user):
+def get_validators_for_user_groups_in_administrative_entity(
+    administrative_entity, user
+):
     """
-    Return list of validator users for provided_by field.
+    Return list of validators for provided_by field.
     The value is based on the logged user
     Mostly used to manage ServiceFee view and what should be displayed
     """

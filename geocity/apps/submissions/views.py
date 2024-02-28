@@ -266,7 +266,7 @@ class SubmissionDetailView(View):
             )
 
         displayable_provided_by_users = (
-            shortcuts.get_displayable_service_fee_provided_by_for_validators(
+            shortcuts.get_validators_for_user_groups_in_administrative_entity(
                 self.submission.administrative_entity, self.request.user
             )
         )
@@ -2251,7 +2251,7 @@ def submission_service_fees(request, submission_id, service_fee_id=None):
         request.user, submission
     )
     displayable_provided_by_users = (
-        shortcuts.get_displayable_service_fee_provided_by_for_validators(
+        shortcuts.get_validators_for_user_groups_in_administrative_entity(
             submission.administrative_entity, request.user
         )
     )
