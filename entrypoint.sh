@@ -15,11 +15,9 @@ fi
 # On PROD, we always collect statics
 if [ "$ENV" == "PROD" ]; then
     python3 manage.py collectstatic --no-input
-    python3 manage.py update_integrator_permissions
     python3 manage.py compilemessages -l fr
-fi
-
-if [ "$ENV" == "DEV" ]; then
+    python3 manage.py update_integrator_permissions
+elif [ "$ENV" == "DEV" ]; then
     python3 manage.py migrate
     python3 manage.py update_integrator_permissions
 fi
