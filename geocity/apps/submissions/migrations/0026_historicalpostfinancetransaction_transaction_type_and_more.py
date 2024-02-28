@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0025_alter_historicalpostfinancetransaction_authorization_timeout_on_and_more"),
+        (
+            "submissions",
+            "0025_alter_historicalpostfinancetransaction_authorization_timeout_on_and_more",
+        ),
     ]
 
     operations = [
