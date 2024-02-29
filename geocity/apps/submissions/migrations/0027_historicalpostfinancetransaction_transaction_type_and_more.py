@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [
         (
             "submissions",
-            "0025_alter_historicalpostfinancetransaction_authorization_timeout_on_and_more",
+            "0026_service_fee",
         ),
     ]
 
