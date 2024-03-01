@@ -170,10 +170,10 @@
                 <div class="text-right">
                   <input name="action" type="hidden" value="amend">
                   <button class="btn btn-primary"
-                          {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                    {% if forms.amend.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
                   <button class="btn btn-primary"
-                          name="save_continue"
-                          {% if forms.amend.disabled %}disabled{% endif %}>
+                    name="save_continue"
+                    {% if forms.amend.disabled %}disabled{% endif %}>
                     {% translate "Enregistrer et continuer les modifications" %}
                   </button>
                 </div>
@@ -189,7 +189,7 @@
                   <div class="text-right">
                     <input name="action" type="hidden" value="request_inquiry">
                     <button class="btn btn-primary"
-                            {% if forms.request_inquiry.disabled %}disabled{% endif %}>
+                      {% if forms.request_inquiry.disabled %}disabled{% endif %}>
                       {% translate "Envoyer" %}
                     </button>
                   </div>
@@ -221,35 +221,6 @@
                   {% endif %}
                 </div>
               </form>
-            </div>
-          {% endif %}
-
-          {% if forms.prolong and prolongation_enabled %}
-            <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
-                <h4>{% translate "Prolongation de la demande" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {{ forms.prolong.media }}
-                    {% if not forms.prolong.prolongation_date.value %}
-                        <div class="form-text text-muted mb-3">{% translate "Aucune prolongation n'a été demandée par l'auteur-e." %}</div>
-                    {% endif %}
-
-                    {% bootstrap_form forms.prolong layout='horizontal' %}
-                    {% if submission.get_last_prolongation_transaction %}
-                    <div class="form-group row">
-                      <label class="col-md-3 col-form-label" for="id_prolongation_status">Transaction</label>
-                      <div class="col-md-9">
-                        <span><strong>{{ submission.get_last_prolongation_transaction.updated_date }}</strong>: {{ submission.submission_price.text }} - {{ submission.get_last_prolongation_transaction.amount }} {{ submission.get_last_prolongation_transaction.currency }} - {{ submission.get_last_prolongation_transaction.get_status_display }} (ID {{ submission.get_last_prolongation_transaction.transaction_id }})</span>
-                      </div>
-                    </div>
-                    {% endif %}
-                    <div class="text-right">
-                        <input name="action" type="hidden" value="prolong">
-                        <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
-                        <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
-                    </div>
-                </form>
             </div>
           {% endif %}
           {% if forms.validate %}
@@ -344,10 +315,7 @@
             {% endif %}
           {% endif %}
           {% if forms.prolong and prolongation_enabled %}
-            <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif %}"
-                 id="prolong"
-                 role="tabpanel"
-                 aria-labelledby="prolong-tab">
+            <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
               <h4>{% translate "Prolongation de la demande" %}</h4>
               <form method="post">
                 {% csrf_token %}
@@ -356,15 +324,18 @@
                   <div class="form-text text-muted mb-3">{% translate "Aucune prolongation n'a été demandée par l'auteur-e." %}</div>
                 {% endif %}
                 {% bootstrap_form forms.prolong layout='horizontal' %}
+                {% if submission.get_last_prolongation_transaction %}
+                  <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="id_prolongation_status">Transaction</label>
+                    <div class="col-md-9">
+                      <span><strong>{{ submission.get_last_prolongation_transaction.updated_date }}</strong>: {{ submission.submission_price.text }} - {{ submission.get_last_prolongation_transaction.amount }} {{ submission.get_last_prolongation_transaction.currency }} - {{ submission.get_last_prolongation_transaction.get_status_display }} (ID {{ submission.get_last_prolongation_transaction.transaction_id }})</span>
+                    </div>
+                  </div>
+                {% endif %}
                 <div class="text-right">
                   <input name="action" type="hidden" value="prolong">
-                  <button class="btn btn-primary"
-                          {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
-                  <button class="btn btn-primary"
-                          name="save_continue"
-                          {% if forms.prolong.disabled %}disabled{% endif %}>
-                    {% translate "Enregistrer et continuer les modifications" %}
-                  </button>
+                  <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer" %}</button>
+                  <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% translate "Enregistrer et continuer les modifications" %}</button>
                 </div>
               </form>
             </div>
