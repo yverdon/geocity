@@ -224,7 +224,7 @@
             </div>
           {% endif %}
 
-        {% if forms.prolong and prolongation_enabled %}
+          {% if forms.prolong and prolongation_enabled %}
             <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
                 <h4>{% translate "Prolongation de la demande" %}</h4>
                 <form method="post">
