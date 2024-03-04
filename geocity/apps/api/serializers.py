@@ -791,6 +791,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
     obj = value.get_selected_forms().all()
     form_fields = obj.values(
         "submission__featured_agenda",
+        "submission__status_agenda",
         "field_values__field__name",
         "field_values__field__api_name",
         "field_values__value__val",
@@ -889,6 +890,11 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     ]
 
                 result["properties"]["featured"] = field["submission__featured_agenda"]
+            result["properties"]["status"] = (
+                field["submission__status_agenda"]
+                if field["submission__status_agenda"] != "null"
+                else None
+            )
 
     # Custom way to retrieve starts_at and ends_at for both light and detailed
     geo_time_qs = value.geo_time.all()

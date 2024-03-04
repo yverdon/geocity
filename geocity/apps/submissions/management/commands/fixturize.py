@@ -1127,10 +1127,13 @@ Après : Excellent projet qui bénéficiera à la communauté."""
             sent_date=sent_date,
         )
 
+        starts_at = timezone.now() + timedelta(days=2)
+        ends_at = starts_at + timedelta(days=2)
+
         SubmissionGeoTime.objects.create(
             submission=submission,
-            starts_at=timezone.now(),
-            ends_at=timezone.now(),
+            starts_at=starts_at,
+            ends_at=ends_at,
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
         return submission
