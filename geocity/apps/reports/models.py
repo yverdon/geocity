@@ -3,7 +3,6 @@ import re
 from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
-from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.staticfiles import finders
@@ -13,6 +12,7 @@ from django.db import models
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+from django_ckeditor_5.fields import CKEditor5Field
 from jinja2.sandbox import SandboxedEnvironment
 from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
@@ -419,7 +419,7 @@ class SectionParagraph(Section):
         default=Location.CONTENT,
         max_length=255,
     )
-    content = RichTextField(
+    content = CKEditor5Field(
         _("Contenu"),
         help_text=(
             _(

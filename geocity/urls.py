@@ -2,6 +2,7 @@ import logging
 
 from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
 
@@ -51,6 +52,12 @@ urlpatterns += [
     path("admin/", admin.site.urls),
     path("accounts/social/", include("allauth.socialaccount.urls")),
 ]
+
+urlpatterns += [
+    path(
+        "ckeditor5/", include("django_ckeditor_5.urls"), name="ck_editor_5_upload_file"
+    ),
+] + static(settings.PRIVATE_MEDIA_ROOT, document_root=settings.MEDIA_ROOT)
 
 if settings.ENABLE_2FA:
     from two_factor.urls import urlpatterns as tf_urls
