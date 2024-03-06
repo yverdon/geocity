@@ -31,6 +31,7 @@ from django_select2.forms import Select2MultipleWidget, Select2Widget
 
 from geocity.apps.accounts.models import (
     AGENDA_PUBLIC_TYPE_CHOICES,
+    BOOLEAN_CHOICES,
     PUBLIC_TYPE_CHOICES,
     AdministrativeEntity,
     PermitDepartment,
@@ -1031,6 +1032,9 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             ),
             "is_public_agenda": forms.RadioSelect(
                 choices=AGENDA_PUBLIC_TYPE_CHOICES,
+            ),
+            "featured_agenda": forms.RadioSelect(
+                choices=BOOLEAN_CHOICES,
             ),
             "status_agenda": forms.RadioSelect(),
             "service_fees_total_price": forms.TextInput(),
