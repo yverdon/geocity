@@ -171,6 +171,8 @@ class ContactTypeForAdminSite(ContactType):
 
 class Submission(models.Model):
     class AgendaStatus(models.TextChoices):
+        # Cannot define `NULL = None, _("Aucun")`, cause it is transformed to string.
+        # Not the best practices but is explicit and easy to understand
         NULL = "null", _("Aucun")
         CANCELLED = "CANCELLED", _("Annulé")
         SOLDOUT = "SOLDOUT", _("Complet")

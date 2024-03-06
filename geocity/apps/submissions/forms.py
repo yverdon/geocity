@@ -36,6 +36,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
+from geocity.apps.submissions.models import Submission
 from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
@@ -1014,6 +1015,11 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         required=False,
         help_text=_("(Optionnel) Raison du changement du statut de la demande"),
     )
+    status_agenda = forms.ChoiceField(
+        widget=forms.RadioSelect(),
+        choices=Submission.AgendaStatus.choices,
+        required=False,
+    )
 
     class Meta:
         model = models.Submission
@@ -1036,7 +1042,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             "featured_agenda": forms.RadioSelect(
                 choices=BOOLEAN_CHOICES,
             ),
-            "status_agenda": forms.RadioSelect(),
             "service_fees_total_price": forms.TextInput(),
         }
 
