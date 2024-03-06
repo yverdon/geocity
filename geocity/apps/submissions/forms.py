@@ -1822,7 +1822,7 @@ class SubmissionValidationPokeForm(forms.Form):
 class SubmissionProlongationForm(forms.ModelForm):
     prolongation_date = forms.DateTimeField(
         label=_("Nouvelle date de fin demandée"),
-        input_formats=[settings.DATETIME_INPUT_FORMATS],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
