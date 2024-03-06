@@ -3,7 +3,7 @@ volumes:
 
 services:
   web: # Name of this container should not be changed
-    image: gms_web
+    image: geocity
     restart: unless-stopped
     build:
       context: ./

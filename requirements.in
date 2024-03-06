@@ -7,7 +7,7 @@ django-tables2
 django-tables2-column-shifter
 # Base docker image must be update when GDAL is updated
 # https://github.com/yverdon/docker-geocity/
-gdal==3.6.3
+gdal==3.8.3
 gunicorn
 html5lib
 jdcal
