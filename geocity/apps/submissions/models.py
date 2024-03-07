@@ -170,6 +170,13 @@ class ContactTypeForAdminSite(ContactType):
 
 
 class Submission(models.Model):
+    class AgendaStatus(models.TextChoices):
+        # Cannot define `NULL = None, _("Aucun")`, cause it is transformed to string.
+        # Not the best practices but is explicit and easy to understand
+        NULL = "null", _("Aucun")
+        CANCELLED = "CANCELLED", _("Annulé")
+        SOLDOUT = "SOLDOUT", _("Complet")
+
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
     STATUS_APPROVED = 2
@@ -301,6 +308,12 @@ class Submission(models.Model):
     is_public = models.BooleanField(_("Publication calendrier"), default=False)
     is_public_agenda = models.BooleanField(_("Publication agenda"), default=False)
     featured_agenda = models.BooleanField(_("Mise en vedette"), default=False)
+    status_agenda = models.CharField(
+        _("Statut de l'évènement"),
+        choices=AgendaStatus.choices,
+        default=AgendaStatus.NULL,
+        max_length=255,
+    )
     prolongation_date = models.DateTimeField(
         _("Nouvelle date de fin"), null=True, blank=True
     )

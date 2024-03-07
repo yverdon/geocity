@@ -36,6 +36,7 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
+from geocity.apps.submissions.models import Submission
 from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
@@ -1058,12 +1059,18 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         required=False,
         help_text=_("(Optionnel) Raison du changement du statut de la demande"),
     )
+    status_agenda = forms.ChoiceField(
+        widget=forms.RadioSelect(),
+        choices=Submission.AgendaStatus.choices,
+        required=False,
+    )
 
     class Meta:
         model = models.Submission
         fields = [
             "is_public",
             "is_public_agenda",
+            "status_agenda",
             "featured_agenda",
             "shortname",
             "status",
@@ -1188,6 +1195,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             if not self.instance.forms.filter(agenda_visible=True).exists():
                 self.fields["is_public_agenda"].widget = forms.HiddenInput()
                 self.fields["featured_agenda"].widget = forms.HiddenInput()
+                self.fields["status_agenda"].widget = forms.HiddenInput()
 
             for form, field in self.get_fields():
                 field_name = self.get_field_name(form.id, field.id)
