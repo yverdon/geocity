@@ -1271,6 +1271,18 @@ class Submission(models.Model):
             return None
         return self.submission_price.get_transactions()
 
+    def get_last_prolongation_transaction(self):
+        from .payments.models import Transaction
+
+        if self.get_transactions() is None:
+            return None
+        return (
+            self.get_transactions()
+            .filter(transaction_type=Transaction.TYPE_PROLONGATION)
+            .order_by("-updated_date")
+            .first()
+        )
+
     # ServiceFees for submission
     def get_service_fees(self):
         return ServiceFee.objects.filter(submission=self)

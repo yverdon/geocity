@@ -353,6 +353,9 @@ class TransactionsTable(tables.Table):
     updated_date = tables.Column(
         verbose_name=_("Date de modification"), orderable=False
     )
+    transaction_type = tables.Column(
+        verbose_name=_("Type de transaction"), orderable=False
+    )
     transaction_id = tables.Column(verbose_name=_("ID transaction"), orderable=False)
     amount = tables.Column(verbose_name=_("Montant"), orderable=False)
     currency = tables.Column(verbose_name=_("Devise"), orderable=False)
@@ -367,6 +370,7 @@ class TransactionsTable(tables.Table):
         model = Transaction
         fields = (
             "transaction_id",
+            "transaction_type",
             "creation_date",
             "updated_date",
             "amount",

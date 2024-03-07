@@ -2870,6 +2870,51 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
 
         assert "Vous devez choisir un tarif" in response.content.decode()
 
+    def test_price_selection_in_prolongation_page(self):
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_APPROVED
+        )
+
+        self.parent_type.form.needs_date = True
+        self.parent_type.form.permit_duration = 120
+        self.parent_type.form.expiration_reminder = True
+        self.parent_type.form.days_before_reminder = 10
+        self.parent_type.form.save()
+
+        submission.forms.set([self.parent_type.form])
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        content = response.content.decode()
+        self.assertInHTML('<button class="btn btn-primary">Payer</button>', content)
+
+    def test_single_price_is_preselected_in_prolongation_page(self):
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_APPROVED
+        )
+
+        price = factories.PriceFactory()
+        self.parent_type.form.prices.set([price])
+        self.parent_type.form.needs_date = True
+        self.parent_type.form.permit_duration = 120
+        self.parent_type.form.expiration_reminder = True
+        self.parent_type.form.days_before_reminder = 10
+        self.parent_type.form.save()
+
+        submission.forms.set([self.parent_type.form])
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        assert response.context["prices_form"].initial["selected_price"] == price.pk
+
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
