@@ -132,6 +132,16 @@ urlpatterns = [
         name="confirm_transaction",
     ),
     path(
+        "transactions/confirm_prolongation/<int:pk>/<int:prolongation_date>",
+        views.ConfirmProlongationTransactionView.as_view(),
+        name="confirm_prolongation_transaction",
+    ),
+    path(
+        "transactions/fail_prolongation/<int:pk>",
+        views.FailProlongationTransactionCallback.as_view(),
+        name="fail_prolongation_transaction",
+    ),
+    path(
         "transactions/fail/<int:pk>",
         views.FailTransactionCallback.as_view(),
         name="fail_transaction",
