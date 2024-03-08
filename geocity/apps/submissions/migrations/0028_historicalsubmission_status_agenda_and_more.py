@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0026_service_fee"),
+        (
+            "submissions",
+            "0027_historicalpostfinancetransaction_transaction_type_and_more",
+        ),
     ]
 
     operations = [
