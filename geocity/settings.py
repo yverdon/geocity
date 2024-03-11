@@ -661,6 +661,7 @@ CKEDITOR_5_CONFIGS = {
             "items": [
                 "undo",
                 "redo",
+                "htmlEmbed",
                 "sourceEditing",
                 "|",
                 "heading",
