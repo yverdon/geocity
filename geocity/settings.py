@@ -170,9 +170,9 @@ INSTALLED_APPS = [
     "django_cron",
     "axes",
     "captcha",
-    "ckeditor",
     "jazzmin",
     "jsoneditor",
+    "django_ckeditor_5",
     "django_jsonform",
     "django_select2",
     # django contrib apps
@@ -646,27 +646,72 @@ if ALLOW_REMOTE_USER_AUTH:
         "geocity.apps.accounts.auth_backends.EmailAuthenticationBackend",
     ]
 
-CKEDITOR_CONFIGS = {
+customColorPalette = [
+    {"color": "hsl(4, 90%, 58%)", "label": "Red"},
+    {"color": "hsl(340, 82%, 52%)", "label": "Pink"},
+    {"color": "hsl(291, 64%, 42%)", "label": "Purple"},
+    {"color": "hsl(262, 52%, 47%)", "label": "Deep Purple"},
+    {"color": "hsl(231, 48%, 48%)", "label": "Indigo"},
+    {"color": "hsl(207, 90%, 54%)", "label": "Blue"},
+]
+
+CKEDITOR_5_CONFIGS = {
     "default": {
-        # TODO: customize style and format dropdowns
-        "toolbar": "custom",
-        "toolbar_custom": [
-            ["Undo", "Redo"],
-            ["Image", "Table", "HorizontalRule", "SpecialChar"],
-            ["Bold", "Italic", "Strike", "-", "RemoveFormat"],
-            [
-                "NumberedList",
-                "BulletedList",
-                "-",
-                "Outdent",
-                "Indent",
-                "-",
-                "Blockquote",
+        "toolbar": {
+            "items": [
+                "undo",
+                "redo",
+                "sourceEditing",
+                "|",
+                "heading",
+                "|",
+                {
+                    "label": "Fonts",
+                    "icon": "text",
+                    "items": [
+                        "fontfamily",
+                        "fontsize",
+                        "fontColor",
+                        "fontBackgroundColor",
+                    ],
+                },
+                "|",
+                "bold",
+                "italic",
+                "underline",
+                "|",
+                {
+                    "label": "More basic styles",
+                    "icon": "threeVerticalDots",
+                    "items": [
+                        "strikethrough",
+                        "link",
+                        "superscript",
+                        "subscript",
+                        "code",
+                    ],
+                },
+                "|",
+                "alignment",
+                "|",
+                {
+                    "label": "Lists",
+                    "icon": False,
+                    "items": [
+                        "bulletedList",
+                        "numberedList",
+                        "todoList",
+                        "outdent",
+                        "indent",
+                    ],
+                },
+                "|",
+                "uploadImage",
+                "insertTable",
             ],
-            ["Styles", "Format"],
-            ["Source"],
-        ],
-    },
+            "shouldNotGroupWhenFull": True,
+        }
+    }
 }
 
 

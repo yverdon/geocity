@@ -65,7 +65,7 @@ django==4.2.10
     #   django-axes
     #   django-bootstrap-datepicker-plus
     #   django-bootstrap4
-    #   django-ckeditor
+    #   django-ckeditor-5
     #   django-cors-headers
     #   django-cron
     #   django-debug-toolbar
@@ -73,7 +73,6 @@ django==4.2.10
     #   django-filter
     #   django-formtools
     #   django-jazzmin
-    #   django-js-asset
     #   django-jsonform
     #   django-oauth-toolkit
     #   django-otp
@@ -98,14 +97,12 @@ django-appconf==1.0.6
     #   -r requirements.txt
     #   django-select2
 django-axes[ipware]==6.3.0
-    # via
-    #   -r requirements.txt
-    #   django-axes
+    # via -r requirements.txt
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.txt
 django-bootstrap4==21.2
     # via -r requirements.txt
-django-ckeditor==6.7.1
+django-ckeditor-5==0.2.12
     # via -r requirements.txt
 django-constance==3.1.0
     # via -r requirements.txt
@@ -131,10 +128,6 @@ django-ipware==6.0.4
     #   django-axes
 django-jazzmin==2.6.0
     # via -r requirements.txt
-django-js-asset==2.2.0
-    # via
-    #   -r requirements.txt
-    #   django-ckeditor
 django-jsoneditor==0.2.4
     # via -r requirements.txt
 django-jsonform==2.21.5
@@ -176,9 +169,7 @@ django-tables2-column-shifter==2.2.0
 django-taggit==5.0.1
     # via -r requirements.txt
 django-two-factor-auth[phonenumbers]==1.14.0
-    # via
-    #   -r requirements.txt
-    #   django-two-factor-auth
+    # via -r requirements.txt
 djangorestframework==3.14.0
     # via
     #   -r requirements.txt
@@ -280,6 +271,7 @@ pillow==10.2.0
     # via
     #   -r requirements.txt
     #   diffimg
+    #   django-ckeditor-5
     #   django-simple-captcha
     #   pdf2image
 pip-tools==7.4.0
@@ -308,7 +300,6 @@ pyjwt[crypto]==2.8.0
     # via
     #   -r requirements.txt
     #   django-allauth
-    #   pyjwt
 pypng==0.20220715.0
     # via
     #   -r requirements.txt
@@ -375,9 +366,7 @@ sqlparse==0.4.4
 stack-data==0.6.3
     # via ipython
 tablib[xlsx]==3.5.0
-    # via
-    #   -r requirements.txt
-    #   tablib
+    # via -r requirements.txt
 tomli==2.0.1
     # via
     #   build
