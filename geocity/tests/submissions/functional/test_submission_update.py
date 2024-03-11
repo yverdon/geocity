@@ -115,7 +115,6 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
     def test_fields_step_submit_updates_geotime_with_address_store_geometry_for_address_field(
         self,
     ):
-
         address_field = factories.FieldFactoryTypeAddress(
             input_type=submissions_models.Field.INPUT_TYPE_ADDRESS,
             store_geometry_for_address_field=True,
@@ -146,7 +145,6 @@ class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, geocoded_geotime_row)
 
     def test_fields_step_submit_updates_submission_with_date(self):
-
         date_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_DATE, name="datum"
         )

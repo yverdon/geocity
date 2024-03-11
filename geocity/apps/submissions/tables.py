@@ -1,6 +1,6 @@
 import collections
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO as IO
 
 import django_tables2 as tables
@@ -20,7 +20,7 @@ from geocity.apps.accounts.models import AdministrativeEntity
 
 from ..api.serializers import SubmissionPrintSerializer
 from . import models
-from .payments.models import Transaction
+from .payments.models import ServiceFee, Transaction
 from .permissions import is_backoffice_of_entity
 
 ATTRIBUTES = {
@@ -353,6 +353,9 @@ class TransactionsTable(tables.Table):
     updated_date = tables.Column(
         verbose_name=_("Date de modification"), orderable=False
     )
+    transaction_type = tables.Column(
+        verbose_name=_("Type de transaction"), orderable=False
+    )
     transaction_id = tables.Column(verbose_name=_("ID transaction"), orderable=False)
     amount = tables.Column(verbose_name=_("Montant"), orderable=False)
     currency = tables.Column(verbose_name=_("Devise"), orderable=False)
@@ -367,12 +370,99 @@ class TransactionsTable(tables.Table):
         model = Transaction
         fields = (
             "transaction_id",
+            "transaction_type",
             "creation_date",
             "updated_date",
             "amount",
             "currency",
             "status",
         )
+        template_name = "django_tables2/bootstrap.html"
+
+
+class MonetaryAmountColumn(tables.Column):
+    total_monetary_amount = 0
+
+    def render(self, value, bound_column, record):
+        self.total_monetary_amount += value
+        return value
+
+    def render_footer(self, bound_column, table):
+        return self.total_monetary_amount
+
+
+class ServiceFeeTable(tables.Table):
+    class MoneteryAmountColumn(tables.Column):
+        total_monetary_amount = 0
+
+        def render(self, value, bound_column, record):
+            self.total_monetary_amount += value
+            return value
+
+        def render_footer(self, bound_column, table):
+            return self.total_monetary_amount
+
+    class TimeSpentOnTaskAmountColumn(tables.Column):
+        time_spent_on_task_amount = 0
+
+        def render(self, value, bound_column, record):
+            self.time_spent_on_task_amount += value.total_seconds()
+            return value
+
+        def render_footer(self, bound_column, table):
+            return timedelta(seconds=self.time_spent_on_task_amount)
+
+    class ProvidedByFullName(tables.Column):
+        def render(self, value, bound_column, record):
+            return value.get_full_name()
+
+    permit_department = tables.Column(
+        verbose_name=_("Service"),
+        orderable=False,
+        footer=_("Total CHF"),
+    )
+    service_fee_type = tables.Column(
+        verbose_name=_("Prestation"),
+        orderable=False,
+    )
+    provided_by = ProvidedByFullName(
+        verbose_name=_("Saisie par"),
+        orderable=False,
+    )
+    provided_at = tables.Column(
+        verbose_name=_("Date de création"),
+        orderable=False,
+    )
+    time_spent_on_task = TimeSpentOnTaskAmountColumn(
+        verbose_name=_("Durée [hh:mm:ss]"),
+        orderable=False,
+    )
+    hourly_rate = tables.Column(
+        verbose_name=_("Tarif horaire [CHF]"),
+        orderable=False,
+    )
+    monetary_amount = MonetaryAmountColumn(
+        verbose_name=_("Montant [CHF]"),
+        orderable=False,
+    )
+    actions = tables.TemplateColumn(
+        template_name="tables/_submission_service_fees_table_actions.html",
+        verbose_name=_("Actions"),
+        orderable=False,
+    )
+
+    class Meta:
+        model = ServiceFee
+        fields = (
+            "permit_department",
+            "service_fee_type",
+            "provided_by",
+            "provided_at",
+            "time_spent_on_task",
+            "hourly_rate",
+            "monetary_amount",
+        )
+        empty_text = _("Le tableau des prestations est actuellement vide.")
         template_name = "django_tables2/bootstrap.html"
 
 

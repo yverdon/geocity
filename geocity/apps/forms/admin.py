@@ -236,6 +236,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "document_enabled",
         "publication_enabled",
         "permanent_publication_enabled",
+        "fees_module_enabled",
         "max_submissions_nb_submissions",
         "agenda_visible",
     ]
@@ -325,6 +326,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "publication_enabled",
                     "permanent_publication_enabled",
                     "agenda_visible",
+                    "fees_module_enabled",
                 )
             },
         ),

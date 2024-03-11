@@ -1,0 +1,19 @@
+{% load i18n %}
+{% load submissions_extras %}
+
+<ul class="list-inline text-left" id="actions-tabs" role="tablist">
+  <li>
+    <a title="{% translate 'Modifier la prestation.' %}"
+      href="{% url 'submissions:submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}?action=update">
+        <i class="fa fa-edit fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+
+  <li>
+    <a title="{% translate 'Supprimer la prestation.' %}"
+      href=" {% url 'submissions:submission_service_fees' submission_id=submission.pk service_fee_id=record.id %}?action=delete">
+        <i class="fa fa-trash fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+
+</ul>

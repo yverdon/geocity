@@ -24,7 +24,7 @@ from geocity.apps.submissions.models import (
     SubmissionGeoTime,
     SubmissionInquiry,
 )
-from geocity.apps.submissions.payments.models import SubmissionPrice
+from geocity.apps.submissions.payments.models import ServiceFee, SubmissionPrice
 from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
@@ -291,6 +291,23 @@ class SubmissionPriceSerializer(serializers.ModelSerializer):
         )
 
 
+class SubmissionServiceFeeSerializer(serializers.ModelSerializer):
+
+    permit_department = serializers.SlugRelatedField(
+        read_only=True, slug_field="shortname"
+    )
+    service_fee_type = serializers.SlugRelatedField(read_only=True, slug_field="name")
+
+    class Meta:
+        model = ServiceFee
+        fields = (
+            "permit_department",
+            "service_fee_type",
+            "time_spent_on_task",
+            "monetary_amount",
+        )
+
+
 class PostFinanceTransactionPrintSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         repr = super(PostFinanceTransactionPrintSerializer, self).to_representation(
@@ -338,6 +355,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "forms_names",
             "current_inquiry",
             "price",
+            "service_fees_total_price",
             "sent_date",
         )
 
@@ -638,6 +656,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         read_only=True, source="author.userprofile", default=None
     )
     validations = SubmissionValidationSerializer(source="*", read_only=True)
+    service_fee = SubmissionServiceFeeSerializer(many=True, read_only=True)
 
     def get_creditor_type(self, obj):
         if obj.creditor_type is not None:
@@ -673,6 +692,7 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "author",
             "geo_envelop",
             "validations",
+            "service_fee",
         )
 
     @classmethod
@@ -771,6 +791,7 @@ def get_agenda_form_fields(value, detailed, available_filters):
     obj = value.get_selected_forms().all()
     form_fields = obj.values(
         "submission__featured_agenda",
+        "submission__status_agenda",
         "field_values__field__name",
         "field_values__field__api_name",
         "field_values__value__val",
@@ -869,6 +890,11 @@ def get_agenda_form_fields(value, detailed, available_filters):
                     ]
 
                 result["properties"]["featured"] = field["submission__featured_agenda"]
+            result["properties"]["status"] = (
+                field["submission__status_agenda"]
+                if field["submission__status_agenda"] != "null"
+                else None
+            )
 
     # Custom way to retrieve starts_at and ends_at for both light and detailed
     geo_time_qs = value.geo_time.all()

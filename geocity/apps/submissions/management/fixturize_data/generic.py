@@ -2,10 +2,10 @@
 
 # Defines the number of each type of user to create on each entity
 iterations = {
-    "integrator_iterations": 3,
-    "pilot_iterations": 5,
-    "validator_iterations": 6,
-    "user_iterations": 8,
+    "integrator_iterations": 2,
+    "pilot_iterations": 2,
+    "validator_iterations": 2,
+    "user_iterations": 2,
 }
 
 # domain:entity
@@ -18,9 +18,6 @@ iterations = {
 entities = {
     "first.ch": "first_entity",
     "second.ch": "second_entity",
-    "third.ch": "third_entity",
-    "fourth.ch": "fourth_entity",
-    "fifth.ch": "fifth_entity",
 }
 
 # Geometries for the entities
@@ -218,6 +215,7 @@ form_categories = [
         ],
     ),
 ]
+
 
 form_additional_information = """
 Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.

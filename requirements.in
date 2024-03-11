@@ -43,7 +43,7 @@ django-axes[ipware]
 pdf2image
 django-simple-captcha
 django-rest-knox
-django-ckeditor
+django-ckeditor-5
 Jinja2
 docker
 django-polymorphic

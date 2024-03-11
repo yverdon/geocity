@@ -50,6 +50,16 @@ existing_submission_urlpatterns = [
         views.submission_prolongation,
         name="submission_prolongation",
     ),
+    path(
+        "service_fee/",
+        views.submission_service_fees,
+        name="create_submission_service_fees",
+    ),
+    path(
+        "service_fee/<int:service_fee_id>/",
+        views.submission_service_fees,
+        name="submission_service_fees",
+    ),
 ]
 
 urlpatterns = [
@@ -120,6 +130,16 @@ urlpatterns = [
         "transactions/confirm/<int:pk>",
         views.ConfirmTransactionCallback.as_view(),
         name="confirm_transaction",
+    ),
+    path(
+        "transactions/confirm_prolongation/<int:pk>/<int:prolongation_date>",
+        views.ConfirmProlongationTransactionView.as_view(),
+        name="confirm_prolongation_transaction",
+    ),
+    path(
+        "transactions/fail_prolongation/<int:pk>",
+        views.FailProlongationTransactionCallback.as_view(),
+        name="fail_prolongation_transaction",
     ),
     path(
         "transactions/fail/<int:pk>",

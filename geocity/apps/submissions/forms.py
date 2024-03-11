@@ -1,4 +1,5 @@
 import io
+import logging
 import mimetypes
 import string
 from collections import defaultdict
@@ -12,7 +13,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
@@ -35,13 +36,16 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
+from geocity.apps.submissions.models import Submission
 from geocity.fields import AddressWidget, GeometryWidgetAdvanced
 
 from ..forms.models import Price
 from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
-from .payments.models import SubmissionPrice
+from .payments.models import ServiceFee, ServiceFeeType, SubmissionPrice
 from .permissions import has_permission_to_amend_submission
+
+logger = logging.getLogger(__name__)
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -352,7 +356,7 @@ class FormsSingleSelectForm(FormsSelectForm):
         return self.instance
 
 
-class FormsPriceSelectForm(forms.Form):
+class AbstractFormsPriceSelectForm(forms.Form):
 
     selected_price = forms.ChoiceField(
         label=False, widget=SingleFormRadioSelectWidget(), required=True
@@ -364,7 +368,10 @@ class FormsPriceSelectForm(forms.Form):
         prices = form_for_payment.prices.order_by("formprice")
 
         initial = {}
-        if self.instance.submission_price is not None:
+        if (
+            self.instance.submission_price is not None
+            and self.instance.submission_price.original_price is not None
+        ):
             initial = {
                 "selected_price": self.instance.submission_price.original_price.pk
             }
@@ -372,18 +379,58 @@ class FormsPriceSelectForm(forms.Form):
             # Select the only available price
             initial = {"selected_price": prices.first().pk}
 
-        super(FormsPriceSelectForm, self).__init__(
-            *args, **{**kwargs, "initial": initial}
-        )
-
-        if self.instance.status != self.instance.STATUS_DRAFT:
-            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+        super().__init__(*args, **{**kwargs, "initial": initial})
 
         choices = []
         for price in prices:
             choices.append((price.pk, price.str_for_choice()))
         self.fields["selected_price"].choices = choices
 
+
+class FormsPriceSelectForm(AbstractFormsPriceSelectForm):
+
+    selected_price = forms.ChoiceField(
+        label=False, widget=SingleFormRadioSelectWidget(), required=True
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        super().__init__(instance, *args, **kwargs)
+        if self.instance.status != self.instance.STATUS_DRAFT:
+            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+
+    @transaction.atomic
+    def save(self):
+        selected_price_id = self.cleaned_data["selected_price"]
+        selected_price = Price.objects.get(pk=selected_price_id)
+        price_data = {
+            "amount": selected_price.amount,
+            "currency": selected_price.currency,
+            "text": selected_price.text,
+        }
+        current_submission_price = self.instance.get_submission_price()
+        if current_submission_price is None:
+            SubmissionPrice.objects.create(
+                **{
+                    **price_data,
+                    "original_price": selected_price,
+                    "submission": self.instance,
+                }
+            )
+        else:
+            if self.instance.status != self.instance.STATUS_DRAFT:
+                raise forms.ValidationError(
+                    _("Le prix ne peut pas être modifié pour cette demande.")
+                )
+            current_submission_price.amount = price_data["amount"]
+            current_submission_price.text = price_data["text"]
+            current_submission_price.currency = price_data["currency"]
+            current_submission_price.original_price = selected_price
+            current_submission_price.save()
+
+        return self.instance
+
+
+class ProlongationFormsPriceSelectForm(AbstractFormsPriceSelectForm):
     @transaction.atomic
     def save(self):
         selected_price_id = self.cleaned_data["selected_price"]
@@ -599,7 +646,6 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         }
 
     def get_regex_field_kwargs(self, field, default_kwargs):
-
         return {
             **default_kwargs,
             "widget": forms.Textarea(
@@ -657,7 +703,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
             "widget": DatePickerInput(
                 options={
                     "format": "DD.MM.YYYY",
-                    "locale": "fr-CH",
+                    "locale": settings.LANGUAGE_CODE,
                     "useCurrent": False,
                     "minDate": min_date,
                     "maxDate": max_date,
@@ -1013,15 +1059,22 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         required=False,
         help_text=_("(Optionnel) Raison du changement du statut de la demande"),
     )
+    status_agenda = forms.ChoiceField(
+        widget=forms.RadioSelect(),
+        choices=Submission.AgendaStatus.choices,
+        required=False,
+    )
 
     class Meta:
         model = models.Submission
         fields = [
             "is_public",
             "is_public_agenda",
+            "status_agenda",
             "featured_agenda",
             "shortname",
             "status",
+            "service_fees_total_price",
         ]
         widgets = {
             "is_public": forms.RadioSelect(
@@ -1033,6 +1086,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             "featured_agenda": forms.RadioSelect(
                 choices=BOOLEAN_CHOICES,
             ),
+            "service_fees_total_price": forms.TextInput(),
         }
 
     def __init__(self, user, *args, **kwargs):
@@ -1128,10 +1182,20 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             ):
                 self.fields["is_public"].widget = forms.HiddenInput()
 
+            # Show/Hide total fees prices if module id enabled in admin
+            fees_module_enabled = self.instance.forms.filter(
+                fees_module_enabled=True
+            ).exists()
+            if not fees_module_enabled:
+                self.fields["service_fees_total_price"].widget = forms.HiddenInput()
+            else:
+                self.fields["service_fees_total_price"].widget.attrs["readonly"] = True
+
             # Hide agenda fields if agenda is not activated
             if not self.instance.forms.filter(agenda_visible=True).exists():
                 self.fields["is_public_agenda"].widget = forms.HiddenInput()
                 self.fields["featured_agenda"].widget = forms.HiddenInput()
+                self.fields["status_agenda"].widget = forms.HiddenInput()
 
             for form, field in self.get_fields():
                 field_name = self.get_field_name(form.id, field.id)
@@ -1318,6 +1382,174 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
 
+class ServiceFeeForm(forms.ModelForm):
+    class Meta:
+        model = ServiceFee
+        localized_fields = "__all__"
+        fields = [
+            "service_fee_type",
+            "provided_by",
+            "provided_at",
+            "time_spent_on_task",
+            "monetary_amount",
+        ]
+
+        widgets = {
+            "service_fee_type": Select2Widget(
+                {"onchange": "updateFormMonetaryAmount();"}
+            ),
+            "provided_by": Select2Widget(),
+            "provided_at": DatePickerInput(
+                options={
+                    "format": "DD.MM.YYYY",
+                    "locale": settings.LANGUAGE_CODE,
+                    "useCurrent": False,
+                }
+            ),
+            "time_spent_on_task": forms.NumberInput(
+                attrs={"min": 0, "step": 1},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        submission = kwargs.pop("submission", None)
+        current_user = kwargs.pop("user", None)
+        service_fee = kwargs.get("instance", None)
+        mode = kwargs.pop("mode", None)
+
+        # Convert timedelta to minutes
+        if service_fee:
+            mode = (
+                "hourly_rate"
+                if service_fee.service_fee_type.fix_price == None
+                else "fix_price"
+            )
+            if mode == "hourly_rate":
+                service_fee.time_spent_on_task = int(
+                    service_fee.time_spent_on_task.total_seconds() / 60
+                )
+
+        # Assigns automatically provided_by when blank
+        # Mandatory. "provided_by" field is disabled for validators
+        if "data" in kwargs and kwargs["data"]:
+            data = kwargs["data"].copy()
+            data["provided_by"] = (
+                current_user if "provided_by" not in data else data["provided_by"]
+            )
+            kwargs["data"] = data
+
+        super().__init__(*args, **kwargs)
+
+        # Mode manager. Show fields according to selected "mode"
+        if mode == "hourly_rate":
+            self.fields.pop("monetary_amount")
+        elif mode == "fix_price":
+            self.fields.pop("time_spent_on_task")
+        elif mode not in ("hourly_rate", "fix_price", None):
+            # mode is None when reaching the /delete route:
+            raise ValueError(
+                _(
+                    "Bad value for Service Fee Type 'mode', it must be either 'hourly_rate' or 'fix_price'."
+                )
+            )
+
+        current_user_groups = current_user.groups.all()
+
+        backoffice_filter = Q(permit_department__is_backoffice=True)
+        validator_filter = Q(permit_department__is_validator=True)
+        administrative_entity_filter = Q(
+            permit_department__administrative_entity=submission.administrative_entity,
+        )
+
+        administrative_entity_groups = Group.objects.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+
+        current_user_administrative_entity_groups = current_user_groups.filter(
+            administrative_entity_filter & (backoffice_filter | validator_filter)
+        )
+
+        current_user_backoffice_groups = (
+            current_user_administrative_entity_groups.filter(backoffice_filter)
+        )
+
+        current_user_validator_groups = (
+            current_user_administrative_entity_groups.filter(validator_filter)
+        )
+
+        # Get service fee types for current administrative entity
+        fee_types_qs = ServiceFeeType.objects.filter(
+            administrative_entity=submission.administrative_entity
+        )
+
+        # Check if user is only validator for current administrative_entity
+        if not current_user_backoffice_groups and current_user_validator_groups:
+            fee_types_qs = fee_types_qs.filter(is_visible_by_validator=True)
+
+        if mode == "fix_price":
+            fee_types_qs = fee_types_qs.filter(fix_price__isnull=False)
+
+            self.monetary_amount = fee_types_qs.filter(
+                fix_price__isnull=False
+            ).values_list("fix_price", flat=True)
+
+            # ServiceFeeType monetary_amount for fix_price can be editable or not editable, depending on fix_price_editable value
+            self.fields["monetary_amount"].widget.attrs["readonly"] = True
+            if service_fee:
+                self.fields["monetary_amount"].widget.attrs["readonly"] = (
+                    not service_fee.service_fee_type.fix_price_editable
+                    if service_fee.service_fee_type
+                    else True
+                )
+
+        elif mode == "hourly_rate":
+            fee_types_qs = fee_types_qs.filter(fix_price__isnull=True)
+
+        # Assign de queryset to the field
+        self.fields["service_fee_type"].queryset = fee_types_qs
+
+        # Displayable users for backoffice
+        # Distinct to prevent error from being backoffice and validator
+        displayable_provided_by_users = User.objects.filter(
+            groups__in=administrative_entity_groups
+        ).distinct()
+
+        self.fields[
+            "provided_by"
+        ].label_from_instance = lambda obj: f"{obj.get_full_name()}"
+
+        # Backoffice and validator have access to the list
+        # Reason : Watching another validator fee should show name correctly
+        self.fields["provided_by"].queryset = displayable_provided_by_users
+
+        # Only backoffice can change user
+        if not current_user_backoffice_groups:
+            self.fields["provided_by"].widget.attrs["disabled"] = True
+
+    def clean_time_spent_on_task(self):
+        time_spent_on_task = int(float(self.data["time_spent_on_task"]))
+        if time_spent_on_task < 0 or not isinstance(time_spent_on_task, int):
+            raise ValidationError(
+                _(
+                    "Le temps passé pour réaliser la prestation doit être un nombre entier supérieur ou égal à zéro."
+                )
+            )
+
+        return timedelta(minutes=time_spent_on_task)
+
+    def clean_provided_at(self):
+        provided_at = self.cleaned_data["provided_at"]
+        if not isinstance(provided_at, date):
+            raise ValidationError({"provided_at": _("This date is wrongly formatted.")})
+
+        return provided_at
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        return cleaned_data
+
+
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
     template_name = "geometrywidget/geometrywidget.html"
@@ -1351,7 +1583,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             },
             attrs={"autocomplete": "off"},
@@ -1364,7 +1596,7 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             },
             attrs={"autocomplete": "off"},
@@ -1373,7 +1605,6 @@ class SubmissionGeoTimeForm(forms.ModelForm):
     )
 
     class Meta:
-
         model = models.SubmissionGeoTime
         fields = [
             "geom",
@@ -1648,7 +1879,7 @@ class SubmissionProlongationForm(forms.ModelForm):
         widget=DateTimePickerInput(
             options={
                 "format": "DD.MM.YYYY HH:mm",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
                 "minDate": (datetime.today()).strftime("%Y-%m-%d"),
             }
@@ -1877,7 +2108,7 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         ) and not self.cleaned_data.get("is_public"):
             raise ValidationError(
                 _(
-                    "Un département doit être renseigner ou le document doit être publique"
+                    "Un département doit être renseigné ou le document doit être publique"
                 )
             )
 
@@ -1960,7 +2191,7 @@ class SubmissionInquiryForm(forms.ModelForm):
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             }
         ),
@@ -1971,7 +2202,7 @@ class SubmissionInquiryForm(forms.ModelForm):
         widget=DatePickerInput(
             options={
                 "format": "DD.MM.YYYY",
-                "locale": "fr-CH",
+                "locale": settings.LANGUAGE_CODE,
                 "useCurrent": False,
             }
         ),
