@@ -12,9 +12,9 @@ class Migration(migrations.Migration):
 
         # Update sections containing "div" or "class" or "table"
         sections_with_keywords = (
-            SectionParagraph.objects.filter(content__contains="div")
-            | SectionParagraph.objects.filter(content__contains="class")
-            | SectionParagraph.objects.filter(content__contains="table")
+            SectionParagraph.objects.filter(content__contains="<div")
+            | SectionParagraph.objects.filter(content__contains="class=")
+            | SectionParagraph.objects.filter(content__contains="<table")
         )
 
         for section in sections_with_keywords:
