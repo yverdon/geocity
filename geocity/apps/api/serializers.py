@@ -159,54 +159,32 @@ def get_form_fields(
                     f'{field["form__name"]} ({field["form__category__name"]})'
                 )
 
-                # if not field["form__api_name"] in fields_dict:
-                #     fields_dict[field["form__api_name"]] = {
-                #         "title": {
-                #             "form": field["form__name"],
-                #             "category": field["form__category__name"],
-                #             "form_category": form_category,
-                #         },
-                #         "fields": {}
-                #     }
+                if not field["form__api_name"] in fields_dict:
+                    fields_dict[field["form__api_name"]] = {
+                        "title": {
+                            "form": field["form__name"],
+                            "category": field["form__category__name"],
+                            "form_category": form_category,
+                        },
+                        "fields": {},
+                    }
 
-                # fields_dict[field["form__api_name"]]["fields"][field["field_values__field__api_name"]] = (
-                #     {
-                #         "name": field["field_values__field__name"],
-                #         "value": get_field_value_based_on_field(field).url,
-                #     }
-                #     # Check this is a file and the file exist
-                #     if field["field_values__field__input_type"] == "file"
-                #     and get_field_value_based_on_field(field)
-                #     else {
-                #         "name": field["field_values__field__name"],
-                #         "value": field["field_values__value__val"],
-                #     }
-                # )
+                fields_dict[field["form__api_name"]]["fields"][
+                    field["field_values__field__api_name"]
+                ] = (
+                    {
+                        "name": field["field_values__field__name"],
+                        "value": get_field_value_based_on_field(field).url,
+                    }
+                    # Check this is a file and the file exist
+                    if field["field_values__field__input_type"] == "file"
+                    and get_field_value_based_on_field(field)
+                    else {
+                        "name": field["field_values__field__name"],
+                        "value": field["field_values__value__val"],
+                    }
+                )
 
-                fields_dict[field["form__api_name"]] = {
-                    # Put the title
-                    "title": {
-                        "form": field["form__name"],
-                        "category": field["form__category__name"],
-                        "form_category": form_category,
-                    },
-                    "fields": {
-                        field["field_values__field__api_name"]: {
-                            "name": field["field_values__field__name"],
-                            "value": get_field_value_based_on_field(field).url,
-                        }
-                        # Check this is a file and the file exist
-                        if field["field_values__field__input_type"] == "file"
-                        and get_field_value_based_on_field(field)
-                        else {
-                            "name": field["field_values__field__name"],
-                            "value": field["field_values__value__val"],
-                        }
-                        for field in form_fields
-                        if field["form_id"] == field["form_id"]
-                        and field["field_values__field__name"]
-                    },
-                }
     return fields_dict
 
 
