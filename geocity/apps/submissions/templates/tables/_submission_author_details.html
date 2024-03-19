@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load submissions_extras %}
 
-{% if not record.author.userprofile.is_anonymous %}
+{% if not record.author.userprofile.is_temporary %}
   {{ record.author.email }} / {{ record.author.userprofile.phone_first }} / {{ record.author.userprofile.address }}, {{ record.author.userprofile.zipcode }} {{ record.author.userprofile.city }}
 {% else %}
   —

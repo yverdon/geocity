@@ -43,7 +43,7 @@
     <div class="row floating-elem">
       <div class="col">
 
-        {% if not submission.author.userprofile.is_anonymous %}
+        {% if not submission.author.userprofile.is_temporary %}
 
         <dl>
           <dd>
@@ -121,9 +121,11 @@
                       {{ archive.history_date }}
                       <b>{% translate "Demande soumise par" %}</b>
                     </div>
-                    <div class="row-2 history_user">
-                      <b>{{ archive.history_user.get_full_name }}</b>
-                    </div>
+                    {% if not archive.history_user.userprofile.is_temporary %}
+                      <div class="row-2 history_user">
+                        <b>{{ archive.history_user.get_full_name }}</b>
+                      </div>
+                    {% endif %}
                   </li>
                 {% else %}
                   <li>
@@ -134,9 +136,11 @@
                     <div class="row-2 status_display">
                       <b>{{ archive.get_status_display }}</b>
                     </div>
-                    <div class="row-2 history_user">
-                      ({{ archive.history_user.get_full_name }})
-                    </div>
+                    {% if not archive.history_user.userprofile.is_temporary %}
+                      <div class="row-2 history_user">
+                        ({{ archive.history_user.get_full_name }})
+                      </div>
+                    {% endif %}
                   </li>
                 {% endif %}
               {% endfor %}
