@@ -169,21 +169,22 @@ def get_form_fields(
                         "fields": {},
                     }
 
-                fields_dict[field["form__api_name"]]["fields"][
-                    field["field_values__field__api_name"]
-                ] = (
-                    {
-                        "name": field["field_values__field__name"],
-                        "value": get_field_value_based_on_field(field).url,
-                    }
-                    # Check this is a file and the file exist
-                    if field["field_values__field__input_type"] == "file"
-                    and get_field_value_based_on_field(field)
-                    else {
-                        "name": field["field_values__field__name"],
-                        "value": field["field_values__value__val"],
-                    }
-                )
+                if field["field_values__field__name"]:
+                    fields_dict[field["form__api_name"]]["fields"][
+                        field["field_values__field__api_name"]
+                    ] = (
+                        {
+                            "name": field["field_values__field__name"],
+                            "value": get_field_value_based_on_field(field).url,
+                        }
+                        # Check this is a file and the file exist
+                        if field["field_values__field__input_type"] == "file"
+                        and get_field_value_based_on_field(field)
+                        else {
+                            "name": field["field_values__field__name"],
+                            "value": field["field_values__value__val"],
+                        }
+                    )
 
     return fields_dict
 
