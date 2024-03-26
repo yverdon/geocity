@@ -4,6 +4,7 @@ from datetime import timedelta, timezone
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Max, Min, Q
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -924,7 +925,6 @@ def get_agenda_form_fields(value, detailed, available_filters):
     if "poster" in result["properties"]:
         # _, used to remove permit_requests_uploads/ without using a replace. May change in the future, if it's removed from stored path
         _, submission_id, image_name = result["properties"]["poster"].split("/")
-        from django.urls import reverse
 
         src = Submission.get_absolute_url(
             reverse(

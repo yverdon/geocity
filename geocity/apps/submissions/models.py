@@ -5,6 +5,7 @@ import logging
 import os
 import tempfile
 import urllib.parse
+import uuid
 import zipfile
 from datetime import date, datetime, timedelta
 
@@ -749,7 +750,12 @@ class Submission(models.Model):
                 directory = "permit_requests_uploads/{}".format(self.pk)
                 ext = os.path.splitext(value.name)[1]
                 upper_ext = ext[1:].upper()
-                path = os.path.join(directory, "{}_{}{}".format(form.pk, field.pk, ext))
+
+                # Use uuid for file names to prevent thumbor to keep in cache a new file that uses the same name
+                file_uuid = uuid.uuid4()
+                path = os.path.join(
+                    directory, "{}_{}_{}{}".format(form.pk, field.pk, file_uuid, ext)
+                )
 
                 private_storage.save(path, value)
                 # Postprocess images: remove all exif metadata from for better security and user privacy
