@@ -963,7 +963,7 @@ class ArchivedSubmissionListView(SingleTableMixin, ListView):
                         return JsonResponse(
                             data={
                                 "error": True,
-                                "message": self.permission_error_message,
+                                "message": f"{self.permission_error_message} (N°{submission_id})",
                             },
                             status=403,
                         )
