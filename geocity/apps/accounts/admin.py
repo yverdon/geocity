@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
@@ -515,7 +516,7 @@ class UserInline(admin.TabularInline):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class GroupAdmin(admin.ModelAdmin):
+class GroupAdmin(BaseGroupAdmin):
     inlines = (PermitDepartmentInline, UserInline)
     form = GroupAdminForm
     list_display = [

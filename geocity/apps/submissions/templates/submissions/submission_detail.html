@@ -43,7 +43,7 @@
     <div class="row floating-elem">
       <div class="col">
 
-        {% if not submission.author.userprofile.is_anonymous %}
+        {% if submission.author and not submission.author.userprofile.is_temporary %}
 
         <dl>
           <dd>
@@ -119,11 +119,15 @@
                     <div class="row-1">
                       <i class="fa fa-circle status{{archive.status}}"></i>
                       {{ archive.history_date }}
-                      <b>{% translate "Demande soumise par" %}</b>
-                    </div>
-                    <div class="row-2 history_user">
-                      <b>{{ archive.history_user.get_full_name }}</b>
-                    </div>
+                      {% if archive.history_user and not archive.history_user.userprofile.is_temporary %}
+                          <b>{% translate "Demande soumise par" %}</b>
+                        </div>
+                        <div class="row-2 history_user">
+                          <b>{{ archive.history_user.get_full_name }}</b>
+                        </div>
+                      {% else %}
+                        </div>
+                      {% endif %}
                   </li>
                 {% else %}
                   <li>
@@ -134,9 +138,11 @@
                     <div class="row-2 status_display">
                       <b>{{ archive.get_status_display }}</b>
                     </div>
-                    <div class="row-2 history_user">
-                      ({{ archive.history_user.get_full_name }})
-                    </div>
+                    {% if archive.history_user and not archive.history_user.userprofile.is_temporary %}
+                      <div class="row-2 history_user">
+                        ({{ archive.history_user.get_full_name }})
+                      </div>
+                    {% endif %}
                   </li>
                 {% endif %}
               {% endfor %}

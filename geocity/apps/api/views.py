@@ -528,7 +528,7 @@ def image_thumbor_display(request, submission_id, image_name):
     if fit:
         thumbor_params += f"{fit}/"
 
-    thumbor_params += f"{width}x{height}/filters:format({format})"
+    thumbor_params += f"{width}x{height}/smart/filters:format({format})"
 
     if settings.USE_THUMBOR:
         try:
