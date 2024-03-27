@@ -54,9 +54,9 @@ def get_integrator_permissions():
 def get_users_list_for_integrator_admin(user, remove_anonymous=False):
     qs = User.objects.select_related("userprofile")
 
-    # Remove anonymous users
+    # Remove anonymous users if flag at true or user is not a superuser
     anonymous_users = []
-    if remove_anonymous:
+    if remove_anonymous or not user.is_superuser:
         for qs_user in qs:
             if qs_user.userprofile.is_anonymous:
                 anonymous_users.append(qs_user.pk)
@@ -86,16 +86,14 @@ def get_users_list_for_integrator_admin(user, remove_anonymous=False):
             qs.annotate(
                 email_domain=Substr("email", StrIndex("email", Value("@")) + 1),
             )
-            # hide anynomous user not belonging to the actual integrator
+            # hide users not belonging to the actual integrator
             .filter(
                 Q(is_superuser=False),
                 Q(email_domain__in=email_domains) | Q(email__in=emails),
                 Q(groups__permit_department__integrator=user_integrator_group.pk)
                 | Q(groups__isnull=True)
                 | Q(groups__permit_department__is_integrator_admin=True),
-            )
-            .exclude()
-            .distinct()
+            ).distinct()
         )
 
     return qs
