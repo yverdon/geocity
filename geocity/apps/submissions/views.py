@@ -1874,13 +1874,13 @@ class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
 
     def get_table_class(self):
         form_filter = self._get_form_filter()
+        if form_filter:
+            extra_columns = self._get_extra_column_specs(form_filter)
+            extra_column_names = tuple([col_name for col_name, __ in extra_columns])
+        else:
+            extra_column_names = tuple()
 
         if self.is_department_user():
-            if form_filter:
-                extra_columns = self._get_extra_column_specs(form_filter)
-                extra_column_names = tuple([col_name for col_name, __ in extra_columns])
-            else:
-                extra_column_names = tuple()
 
             if config.ENABLE_GEOCALENDAR:
                 extra_column_names += tuple(
@@ -1899,6 +1899,7 @@ class SubmissionList(PandasExportMixin, SingleTableMixin, FilterView):
                 if self.is_exporting()
                 else tables.OwnSubmissionsHTMLTable
             )
+            table_class = get_custom_dynamic_table(table_class, extra_column_names)
         return table_class
 
     def get_table_kwargs(self):

@@ -182,7 +182,7 @@ class SelectableSubmissionTable(ColumnShiftTable):
     check = SubmissionCheckboxColumn(accessor="id", verbose_name="Sélectionner")
 
 
-class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable):
+class OwnSubmissionsHTMLTable(DynamicColumnsTable, GenericSubmissionTable):
     forms_html = tables.TemplateColumn(
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
@@ -197,7 +197,6 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
     class Meta:
         model = models.Submission
         fields = (
-            "check",
             "id",
             "created_at",
             "sent_date",
@@ -211,7 +210,7 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
         template_name = "django_tables2/bootstrap.html"
 
 
-class OwnSubmissionsExportTable(GenericSubmissionTable):
+class OwnSubmissionsExportTable(DynamicColumnsTable, GenericSubmissionTable):
     forms_str = tables.TemplateColumn(
         verbose_name=_("Objets et types de demandes"),
         template_name="tables/_submission_forms_str.html",
