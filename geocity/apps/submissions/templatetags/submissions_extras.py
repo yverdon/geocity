@@ -51,7 +51,11 @@ def get_contacts_summary(submission):
 
 @register.inclusion_tag("submissions/_submission_summary.html", takes_context=True)
 def submission_summary(context, submission):
-    forms_infos = forms.get_submission_forms(submission)
+    (
+        forms_infos,
+        amend_properties_visible_by_author,
+        amend_properties_visible_by_validators,
+    ) = forms.get_submission_forms(submission)
     contacts = get_contacts_summary(submission)
     requires_payment = submission.requires_payment()
     submission_price = submission.get_submission_price()
@@ -94,6 +98,14 @@ def submission_summary(context, submission):
         else None
     )
 
+    user_is_author_of_submission = context.request.user == submission.author
+
+    display_amend_properties = (
+        amend_properties_visible_by_author
+        and user_is_author_of_submission
+        or amend_properties_visible_by_validators
+        and is_validator
+    )
     return {
         "user": context.request.user,
         "author": submission.author,
@@ -105,6 +117,7 @@ def submission_summary(context, submission):
         "requires_payment": requires_payment,
         "selected_price": selected_price,
         "is_validator": is_validator,
+        "display_amend_properties": display_amend_properties,
     }
 
 
