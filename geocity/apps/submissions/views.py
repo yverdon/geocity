@@ -954,6 +954,20 @@ class ArchivedSubmissionListView(SingleTableMixin, ListView):
                     submission = get_submission_for_user_or_404(
                         self.request.user, submission_id
                     )
+
+                    # Prevent from archiving a submission where user isn't pilot.
+                    # User could be pilot for other submissions and validator for the one he's trying to archive
+                    if not permissions.is_backoffice_of_submission(
+                        self.request.user, submission
+                    ):
+                        return JsonResponse(
+                            data={
+                                "error": True,
+                                "message": f"{self.permission_error_message} (N°{submission_id})",
+                            },
+                            status=403,
+                        )
+
                     submission.archive(self.request.user)
         except Exception:
             return JsonResponse(
