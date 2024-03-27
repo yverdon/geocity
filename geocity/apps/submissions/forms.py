@@ -2357,8 +2357,16 @@ def get_submission_forms(submission):
     appendices_by_object_type = dict(appendices_form.get_form_fields_by_form())
     amend_custom_fields_values = submission.get_amend_custom_fields_values()
     amend_custom_properties_by_object_type = defaultdict(list)
+    amend_properties_visible_by_author = False
+    amend_properties_visible_by_validators = False
+
     for value in amend_custom_fields_values:
         amend_custom_properties_by_object_type[value.form.form].append(value)
+        if value.field.is_visible_by_author:
+            amend_properties_visible_by_author = True
+        if value.field.is_visible_by_validators:
+            amend_properties_visible_by_validators = True
+
     forms_infos = [
         (
             selected_form.form,
@@ -2368,8 +2376,11 @@ def get_submission_forms(submission):
         )
         for selected_form in submission.selected_forms.all()
     ]
-
-    return forms_infos
+    return (
+        forms_infos,
+        amend_properties_visible_by_author,
+        amend_properties_visible_by_validators,
+    )
 
 
 class SubmissionValidationsForm(forms.ModelForm):
